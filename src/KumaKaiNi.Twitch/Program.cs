@@ -63,7 +63,7 @@ namespace KumaKaiNi.Twitch
 
         private void MessageReceived(object sender, OnMessageReceivedArgs message)
         {
-            Request request = new Request(message.ChatMessage.Message);
+            Request request = new Request(RequestProtocol.Twitch, message.ChatMessage.Message);
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") _twitch.SendMessage(message.ChatMessage.Channel, response.Message);
@@ -71,7 +71,7 @@ namespace KumaKaiNi.Twitch
 
         private void WhisperReceived(object sender, OnWhisperReceivedArgs message)
         {
-            Request request = new Request(message.WhisperMessage.Message);
+            Request request = new Request(RequestProtocol.Twitch, message.WhisperMessage.Message);
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") _twitch.SendWhisper(message.WhisperMessage.Username, response.Message);

@@ -80,6 +80,8 @@ namespace KumaKaiNi.Core
 
             if (method != null)
             {
+                if (method.DeclaringType == typeof(Admin) && !request.UserIsAdmin) return new Response();
+
                 if (method.GetParameters().Length > 0) response = (Response)method.Invoke(new object(), new object[] { request });
                 else response = (Response)method.Invoke(new object(), new object[] { });
             }

@@ -40,7 +40,7 @@ namespace KumaKaiNi.Discord
 
         private Task MessageReceived(SocketMessage message)
         {
-            Request request = new Request(message.Content);
+            Request request = new Request(RequestProtocol.Discord, message.Content);
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") message.Channel.SendMessageAsync(response.Message);

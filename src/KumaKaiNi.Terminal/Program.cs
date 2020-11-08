@@ -20,7 +20,7 @@ namespace KumaKaiNi.DevConsole
 
                 try
                 {
-                    Request request = new Request(message, true, true, true);
+                    Request request = new Request(RequestProtocol.Terminal, message, true, true, true);
                     Response response = _kuma.GetResponse(request);
 
                     if (response.Message != "") Console.WriteLine($"\n  {response.Message}\n");

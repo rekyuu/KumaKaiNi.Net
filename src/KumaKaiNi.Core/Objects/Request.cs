@@ -7,21 +7,23 @@ namespace KumaKaiNi.Core
 {
     public class Request
     {
+        public RequestProtocol Protocol;
         public string Message;
         public bool ChannelIsPrivate;
         public bool ChannelIsNSFW;
-        public bool UserIsModerator;
+        public bool UserIsAdmin;
 
         public bool IsCommand = false;
         public string Command;
         public string[] CommandArgs;
 
-        public Request(string message, bool channelIsPrivate = false, bool channelIsNSFW = false, bool userIsModerator = false)
+        public Request(RequestProtocol protocol, string message, bool channelIsPrivate = false, bool channelIsNSFW = false, bool userIsAdmin = false)
         {
+            Protocol = protocol;
             Message = message;
             ChannelIsPrivate = channelIsPrivate;
             ChannelIsNSFW = channelIsNSFW;
-            UserIsModerator = userIsModerator;
+            UserIsAdmin = userIsAdmin;
 
             if (message[0] == '!')
             {
