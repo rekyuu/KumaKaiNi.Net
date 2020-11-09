@@ -2,7 +2,9 @@
 using Discord.WebSocket;
 using KumaKaiNi.Core;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KumaKaiNi.Discord
@@ -40,13 +42,33 @@ namespace KumaKaiNi.Discord
 
         private Task MessageReceived(SocketMessage message)
         {
-            SocketTextChannel channel = _discord.GetChannel(message.Channel.Id) as SocketTextChannel;
+            SocketTextChannel channel = (SocketTextChannel)message.Channel;
+
+            bool isModerator = false;
+            foreach (SocketRole role in ((SocketGuildUser)message.Author).Roles)
+            {
+                if (role.Id.ToString() == ConfigurationManager.AppSettings.Get("ModeratorRoleID")) isModerator = true;
+            }
 
             bool isAdmin = message.Author.Id.ToString() == ConfigurationManager.AppSettings.Get("AdminID");
             bool isPrivate = channel == null;
             bool isNsfw = isPrivate || channel.IsNsfw;
 
-            Request request = new Request(RequestProtocol.Discord, message.Content, message.Author.Username, message.Channel.Id.ToString(), isPrivate, isNsfw, isAdmin);
+            UserAuthority authority = UserAuthority.User;
+            if (isAdmin) authority = UserAuthority.Admin;
+            else if (isModerator) authority = UserAuthority.Moderator;
+
+            Request request = new Request()
+            {
+                Message = message.Content,
+                MessageId = (long)message.Id,
+                Username = message.Author.Username,
+                Authority = authority,
+                Protocol = RequestProtocol.Discord,
+                ChannelId = (long)channel.Id,
+                ChannelIsPrivate = isPrivate,
+                ChannelIsNSFW = isNsfw,
+            };
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") message.Channel.SendMessageAsync(response.Message);

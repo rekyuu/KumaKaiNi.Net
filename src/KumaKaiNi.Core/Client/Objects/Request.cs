@@ -11,7 +11,7 @@ namespace KumaKaiNi.Core
         public long MessageId;
 
         public string Username;
-        public bool UserIsAdmin;
+        public UserAuthority Authority;
 
         public RequestProtocol Protocol;
         public long ChannelId;

@@ -64,8 +64,23 @@ namespace KumaKaiNi.Twitch
         private void MessageReceived(object sender, OnMessageReceivedArgs message)
         {
             bool isAdmin = message.ChatMessage.Username == "rekyuus";
+            bool isModerator = message.ChatMessage.IsModerator;
 
-            Request request = new Request(RequestProtocol.Twitch, message.ChatMessage.Message, message.ChatMessage.Username, message.ChatMessage.Channel, userIsAdmin: isAdmin);
+            UserAuthority authority = UserAuthority.User;
+            if (isAdmin) authority = UserAuthority.Admin;
+            else if (isModerator) authority = UserAuthority.Moderator;
+
+            Request request = new Request()
+            {
+                Message = message.ChatMessage.Message,
+                MessageId = 0,
+                Username = message.ChatMessage.Username,
+                Authority = authority,
+                Protocol = RequestProtocol.Twitch,
+                ChannelId = 0,
+                ChannelIsPrivate = false,
+                ChannelIsNSFW = false,
+            };
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") _twitch.SendMessage(message.ChatMessage.Channel, response.Message);
@@ -75,7 +90,20 @@ namespace KumaKaiNi.Twitch
         {
             bool isAdmin = message.WhisperMessage.Username == "rekyuus";
 
-            Request request = new Request(RequestProtocol.Twitch, message.WhisperMessage.Message, message.WhisperMessage.Username, "whisper", true, userIsAdmin: isAdmin);
+            UserAuthority authority = UserAuthority.User;
+            if (isAdmin) authority = UserAuthority.Admin;
+
+            Request request = new Request()
+            {
+                Message = message.WhisperMessage.Message,
+                MessageId = 0,
+                Username = message.WhisperMessage.Username,
+                Authority = authority,
+                Protocol = RequestProtocol.Twitch,
+                ChannelId = 0,
+                ChannelIsPrivate = true,
+                ChannelIsNSFW = false,
+            };
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") _twitch.SendWhisper(message.WhisperMessage.Username, response.Message);

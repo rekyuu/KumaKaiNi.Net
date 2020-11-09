@@ -8,6 +8,7 @@ using System.Text;
 
 namespace KumaKaiNi.Core
 {
+    [RequireAdmin]
     public static class Admin
     {
         [Command("init")]
@@ -38,88 +39,95 @@ namespace KumaKaiNi.Core
             string folder = @"C:\KumaKaiNiMigration\";
             if (request.CommandArgs.Length > 0) folder = request.CommandArgs[0];
 
+            ProcessCustomCommands(folder);
+            ProcessQuotes(folder);
+            ProcessLogs(folder);
+
+            return new Response("Should be good to go!");
+        }
+
+        private static void ProcessCustomCommands(string folder)
+        {
             Database.DropTable<CustomCommand>();
             Database.CreateTable<CustomCommand>();
 
             string commandsPath = $"{folder}commands.csv";
-            using (StreamReader reader = new StreamReader(commandsPath))
-            using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using StreamReader reader = new StreamReader(commandsPath);
+            using CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            IEnumerable<dynamic> commands = csv.GetRecords<dynamic>();
+
+            foreach (dynamic command in commands)
             {
-                IEnumerable<dynamic> commands = csv.GetRecords<dynamic>();
-
-                foreach (dynamic command in commands)
+                CustomCommand newCommand = new CustomCommand()
                 {
-                    CustomCommand newCommand = new CustomCommand()
-                    {
-                        Command = command.command,
-                        Response = command.response
-                    };
+                    Command = (string)(command.command).Replace("!", ""),
+                    Response = command.response
+                };
 
-                    newCommand.Insert();
-                }
+                newCommand.Insert();
             }
+        }
 
+        private static void ProcessQuotes(string folder)
+        {
             Database.DropTable<Quote>();
             Database.CreateTable<Quote>();
 
             string quotesPath = $"{folder}quotes.csv";
-            using (StreamReader reader = new StreamReader(quotesPath))
-            using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using StreamReader reader = new StreamReader(quotesPath);
+            using CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            IEnumerable<dynamic> quotes = csv.GetRecords<dynamic>();
+
+            foreach (dynamic quote in quotes)
             {
-                IEnumerable<dynamic> quotes = csv.GetRecords<dynamic>();
-
-                foreach (dynamic quote in quotes)
+                Quote newQuote = new Quote()
                 {
-                    Quote newQuote = new Quote()
-                    {
-                        Text = quote.text
-                    };
+                    Text = quote.text
+                };
 
-                    newQuote.Insert();
-                }
+                newQuote.Insert();
             }
+        }
 
+        private static void ProcessLogs(string folder)
+        {
             Database.DropTable<Log>();
             Database.CreateTable<Log>();
 
             string logsPath = $"{folder}logs.csv";
-            using (StreamReader reader = new StreamReader(logsPath))
-            using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using StreamReader reader = new StreamReader(logsPath);
+            using CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            csv.Configuration.BadDataFound = null;
+
+            IEnumerable<dynamic> logs = csv.GetRecords<dynamic>();
+            foreach (dynamic log in logs)
             {
-                csv.Configuration.BadDataFound = null;
-
-                IEnumerable<dynamic> logs = csv.GetRecords<dynamic>();
-                foreach (dynamic log in logs)
+                try
                 {
-                    try
+                    if (log.message != "")
                     {
-                        if (log.message != "")
+                        Log newLog = new Log()
                         {
-                            Log newLog = new Log()
-                            {
-                                Timestamp = DateTime.Parse(log.timestamp, null, DateTimeStyles.RoundtripKind),
-                                Protocol = (RequestProtocol)Enum.Parse(typeof(RequestProtocol), log.protocol),
-                                Message = log.message,
-                                Username = log.username
-                            };
+                            Timestamp = DateTime.Parse(log.timestamp, null, DateTimeStyles.RoundtripKind),
+                            Protocol = (RequestProtocol)Enum.Parse(typeof(RequestProtocol), log.protocol),
+                            Message = log.message,
+                            Username = log.username
+                        };
 
-                            try
-                            {
-                                newLog.ChannelId = long.Parse(log.channel);
-                            }
-                            catch { }
-
-                            newLog.Insert();
+                        try
+                        {
+                            newLog.ChannelId = long.Parse(log.channel);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogException(ex);
+                        catch { }
+
+                        newLog.Insert();
                     }
                 }
+                catch (Exception ex)
+                {
+                    Logging.LogException(ex);
+                }
             }
-
-            return new Response("Should be good to go!");
         }
     }
 }

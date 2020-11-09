@@ -48,19 +48,38 @@ namespace KumaKaiNi.Core
             command.ExecuteNonQuery();
         }
 
-        public static List<T> GetMany<T>(string whereClause = "") where T : DatabaseObject
+        public static List<T> GetMany<T>(WherePredicate[] wherePredicates = null) where T : DatabaseObject
         {
             List<T> results = new List<T>();
             DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
 
             string tablename = obj.GetTableName();
-            string sql = $"SELECT * FROM {tablename} {whereClause}";
+            string sql = $"SELECT * FROM {tablename}";
+
+            StringBuilder sb = new StringBuilder();
+            if (wherePredicates != null)
+            {
+                sb.Append(" WHERE ");
+                foreach (WherePredicate wherePredicate in wherePredicates)
+                {
+                    sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} @{wherePredicate.Source} AND");
+                }
+
+                string whereClause = sb.ToString();
+                sql += whereClause.Remove(whereClause.Length - 4, 4);
+            }
 
             using NpgsqlConnection connection = DatabaseConnection();
-
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
-            using NpgsqlDataReader reader = command.ExecuteReader();
+            if (wherePredicates != null)
+            {
+                foreach (WherePredicate wherePredicate in wherePredicates)
+                {
+                    command.Parameters.AddWithValue(wherePredicate.Source, wherePredicate.Target);
+                }
+            }
 
+            using NpgsqlDataReader reader = command.ExecuteReader();
             if (reader.HasRows)
             {
                 ReadOnlyCollection<NpgsqlDbColumn> columns = reader.GetColumnSchema();

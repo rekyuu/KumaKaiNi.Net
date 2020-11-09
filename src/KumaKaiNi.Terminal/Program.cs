@@ -23,9 +23,11 @@ namespace KumaKaiNi.DevConsole
                     Request request = new Request()
                     {
                         Message = message,
+                        MessageId = 0,
                         Username = "rekyuu",
-                        UserIsAdmin = true,
+                        Authority = UserAuthority.Admin,
                         Protocol = RequestProtocol.Terminal,
+                        ChannelId = 0,
                         ChannelIsPrivate = true,
                         ChannelIsNSFW = true,
                     };

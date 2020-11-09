@@ -4,6 +4,7 @@ using System.Text;
 
 namespace KumaKaiNi.Core
 {
+    [RequireAdmin]
     public static class Test
     {
         [Command("lastlog")]

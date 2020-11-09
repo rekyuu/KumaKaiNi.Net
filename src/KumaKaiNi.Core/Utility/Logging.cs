@@ -16,7 +16,8 @@ namespace KumaKaiNi.Core
                 Message = request.Message,
                 MessageId = request.MessageId,
                 Username = request.Username,
-                ChannelId = request.ChannelId
+                ChannelId = request.ChannelId,
+                Private = request.ChannelIsPrivate
             };
 
             Log responseLog = new Log()
@@ -25,7 +26,8 @@ namespace KumaKaiNi.Core
                 Protocol = request.Protocol,
                 Message = response.Message,
                 Username = "KumaKaiNi",
-                ChannelId = request.ChannelId
+                ChannelId = request.ChannelId,
+                Private = request.ChannelIsPrivate
             };
 
             try

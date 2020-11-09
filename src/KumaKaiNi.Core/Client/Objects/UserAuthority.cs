@@ -4,11 +4,10 @@ using System.Text;
 
 namespace KumaKaiNi.Core
 {
-    public enum RequestProtocol
+    public enum UserAuthority
     {
-        Discord,
-        Telegram,
-        Terminal,
-        Twitch
+        User,
+        Moderator,
+        Admin
     }
 }

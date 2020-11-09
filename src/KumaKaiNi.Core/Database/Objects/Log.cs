@@ -13,6 +13,7 @@ namespace KumaKaiNi.Core
         public long MessageId;
         public string Username;
         public long ChannelId;
+        public bool Private;
 
         public Log() : base() { }
         public Log(Dictionary<string, object> row) : base(row) { }
