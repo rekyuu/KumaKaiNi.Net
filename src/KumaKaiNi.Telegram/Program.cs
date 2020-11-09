@@ -32,6 +32,10 @@ namespace KumaKaiNi.Telegram
         static async void OnMessage(object sender, MessageEventArgs e)
         {
             bool isAdmin = e.Message.From.Id == int.Parse(ConfigurationManager.AppSettings.Get("TelegramAdminId"));
+            bool isPrivate = e.Message.Chat.Id == e.Message.From.Id;
+
+            if (!isAdmin && isPrivate) return;
+
             List<TelegramAllowlist> allowlist = Database.GetMany<TelegramAllowlist>();
 
             TelegramAllowlist allowlistEntry = null;
@@ -89,7 +93,7 @@ namespace KumaKaiNi.Telegram
                 Authority = authority,
                 Protocol = RequestProtocol.Telegram,
                 ChannelId = e.Message.Chat.Id,
-                ChannelIsPrivate = e.Message.Chat.Id == e.Message.From.Id,
+                ChannelIsPrivate = isPrivate,
                 ChannelIsNSFW = true,
             };
             Response response = _kuma.GetResponse(request);

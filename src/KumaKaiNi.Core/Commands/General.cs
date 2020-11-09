@@ -49,6 +49,12 @@ namespace KumaKaiNi.Core
             else return new Response();
         }
 
+        [Command("projection")]
+        public static Response Projection()
+        {
+            return new Response("Psychological projection is a theory in psychology in which humans defend themselves against their own unpleasant impulses by denying their existence while attributing them to others. For example, a person who is rude may constantly accuse other people of being rude. It can take the form of blame shifting.");
+        }
+
         [Command("moon")]
         public static Response MoonPhase()
         {
