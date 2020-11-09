@@ -73,14 +73,22 @@ namespace KumaKaiNi.Core
         private Dictionary<string, MethodInfo> GetCommands()
         {
             Dictionary<string, MethodInfo> commands = new Dictionary<string, MethodInfo>();
-            Assembly assembly = Assembly.GetExecutingAssembly();
+            Assembly core = Assembly.GetCallingAssembly();
+            Assembly entry = Assembly.GetEntryAssembly();
 
-            MethodInfo[] commandMethods = assembly.GetTypes()
+            MethodInfo[] coreCommands = core.GetTypes()
                 .SelectMany(t => t.GetMethods())
                 .Where(m => m.GetCustomAttributes<CommandAttribute>().Any())
                 .ToArray();
 
-            foreach (MethodInfo method in commandMethods)
+            MethodInfo[] entryCommands = entry.GetTypes()
+                .SelectMany(t => t.GetMethods())
+                .Where(m => m.GetCustomAttributes<CommandAttribute>().Any())
+                .ToArray();
+
+            MethodInfo[] allCommands = coreCommands.Concat(entryCommands).ToArray();
+
+            foreach (MethodInfo method in allCommands)
             {
                 IEnumerable<CommandAttribute> commandAttrs = method.GetCustomAttributes<CommandAttribute>();
                 foreach (CommandAttribute commandAttr in commandAttrs)
@@ -98,14 +106,22 @@ namespace KumaKaiNi.Core
         private Dictionary<string, MethodInfo> GetPhrases()
         {
             Dictionary<string, MethodInfo> phrases = new Dictionary<string, MethodInfo>();
-            Assembly assembly = Assembly.GetExecutingAssembly();
+            Assembly core = Assembly.GetCallingAssembly();
+            Assembly entry = Assembly.GetEntryAssembly();
 
-            MethodInfo[] phraseMethods = assembly.GetTypes()
+            MethodInfo[] corePhrases = core.GetTypes()
                 .SelectMany(t => t.GetMethods())
                 .Where(m => m.GetCustomAttributes<PhraseAttribute>().Any())
                 .ToArray();
 
-            foreach (MethodInfo method in phraseMethods)
+            MethodInfo[] entryPhrases = entry.GetTypes()
+                .SelectMany(t => t.GetMethods())
+                .Where(m => m.GetCustomAttributes<PhraseAttribute>().Any())
+                .ToArray();
+
+            MethodInfo[] allPhrases = corePhrases.Concat(entryPhrases).ToArray();
+
+            foreach (MethodInfo method in allPhrases)
             {
                 IEnumerable<PhraseAttribute> phraseAttrs = method.GetCustomAttributes<PhraseAttribute>();
                 foreach (PhraseAttribute phraseAttr in phraseAttrs)

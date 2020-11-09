@@ -47,10 +47,10 @@ namespace KumaKaiNi.Discord
             bool isModerator = false;
             foreach (SocketRole role in ((SocketGuildUser)message.Author).Roles)
             {
-                if (role.Id.ToString() == ConfigurationManager.AppSettings.Get("ModeratorRoleID")) isModerator = true;
+                if (role.Id.ToString() == ConfigurationManager.AppSettings.Get("DiscordModeratorRoleID")) isModerator = true;
             }
 
-            bool isAdmin = message.Author.Id.ToString() == ConfigurationManager.AppSettings.Get("AdminID");
+            bool isAdmin = message.Author.Id.ToString() == ConfigurationManager.AppSettings.Get("DiscordAdminID");
             bool isPrivate = channel == null;
             bool isNsfw = isPrivate || channel.IsNsfw;
 

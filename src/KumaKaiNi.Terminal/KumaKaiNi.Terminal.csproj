@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\KumaKaiNi.Core\App.config" Link="App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\KumaKaiNi.Core\KumaKaiNi.Core.csproj" />
   </ItemGroup>
 

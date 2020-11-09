@@ -1,5 +1,6 @@
 ﻿using KumaKaiNi.Core;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -31,13 +32,58 @@ namespace KumaKaiNi.Telegram
         static async void OnMessage(object sender, MessageEventArgs e)
         {
             bool isAdmin = e.Message.From.Id == int.Parse(ConfigurationManager.AppSettings.Get("TelegramAdminId"));
+            List<TelegramAllowlist> whitelist = Database.GetMany<TelegramAllowlist>();
+
+            TelegramAllowlist whitelistEntry = null;
+            foreach (TelegramAllowlist entry in whitelist)
+            {
+                if (entry.ChannelId == e.Message.Chat.Id)
+                {
+                    whitelistEntry = entry;
+                    break;
+                }
+            }
+
+            if (whitelistEntry == null)
+            {
+                whitelistEntry = new TelegramAllowlist()
+                {
+                    ChannelId = e.Message.Chat.Id,
+                    Approved = false,
+                    Warnings = 0
+                };
+
+                whitelistEntry.Insert();
+            }
+
+            if (!whitelistEntry.Approved && !isAdmin)
+            {
+                if (whitelistEntry.Warnings >= 5)
+                {
+                    await _telegram.LeaveChatAsync(e.Message.Chat.Id);
+                    return;
+                }
+                else
+                {
+                    whitelistEntry.Warnings++;
+                    whitelistEntry.Update();
+                    return;
+                }
+            }
 
             UserAuthority authority = UserAuthority.User;
             if (isAdmin) authority = UserAuthority.Admin;
 
+            string message = e.Message.Text ?? "";
+            if (message != "")
+            {
+                if (message[0] == '/') message = '!' + message[1..];
+                message = message.Replace("@KumaBot", "");
+            }
+
             Request request = new Request()
             {
-                Message = e.Message.Text == null ? "" : e.Message.Text.Replace("/", "!").Replace("@KumaBot", ""),
+                Message = message,
                 MessageId = e.Message.MessageId,
                 Username = e.Message.From.FirstName + (e.Message.From.LastName == "" ? "" : " " + e.Message.From.LastName),
                 Authority = authority,
