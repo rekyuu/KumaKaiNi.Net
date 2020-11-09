@@ -15,7 +15,7 @@ namespace KumaKaiNi.Twitch
         private KumaClient _kuma;
         private TwitchClient _twitch;
 
-        public static void Main(string[] args)
+        public static void Main()
         {
             new Program().MainAsync().GetAwaiter().GetResult();
         }

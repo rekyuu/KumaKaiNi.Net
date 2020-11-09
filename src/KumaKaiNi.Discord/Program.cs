@@ -12,7 +12,7 @@ namespace KumaKaiNi.Discord
         private KumaClient _kuma;
         private DiscordSocketClient _discord;
 
-        public static void Main(string[] args)
+        public static void Main()
         {
             new Program().MainAsync().GetAwaiter().GetResult();
         }

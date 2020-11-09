@@ -7,7 +7,7 @@ namespace KumaKaiNi.DevConsole
     {
         private static KumaClient _kuma;
 
-        static void Main(string[] args)
+        static void Main()
         {
             _kuma = new KumaClient();
 

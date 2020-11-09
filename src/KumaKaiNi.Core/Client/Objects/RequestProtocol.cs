@@ -6,6 +6,7 @@ namespace KumaKaiNi.Core
 {
     public enum RequestProtocol
     {
+        Backup,
         Discord,
         Telegram,
         Terminal,

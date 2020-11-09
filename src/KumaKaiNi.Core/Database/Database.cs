@@ -109,14 +109,14 @@ namespace KumaKaiNi.Core
         {
             return (type.Name.ToLower()) switch
             {
-                "bool" => "BOOLEAN",
+                "boolean" => "BOOLEAN",
                 "datetime" => "TIMESTAMP",
                 "decimal" => "NUMERIC",
                 "double" => "DOUBLE PRECISION",
-                "float" => "REAL",
+                "single" => "REAL",
                 "guid" => "UUID",
-                "int" => "INTEGER",
-                "long" => "BIGINT",
+                "int32" => "INTEGER",
+                "int64" => "BIGINT",
                 _ => "TEXT",
             };
         }
