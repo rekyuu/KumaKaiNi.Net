@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\KumaKaiNi.Core\KumaKaiNi.Core.csproj" />
+    <ProjectReference Include="..\KumaKaiNi.Core\KumaKaiNi.Core.csproj" />
   </ItemGroup>
 
 </Project>
