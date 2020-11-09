@@ -32,41 +32,41 @@ namespace KumaKaiNi.Telegram
         static async void OnMessage(object sender, MessageEventArgs e)
         {
             bool isAdmin = e.Message.From.Id == int.Parse(ConfigurationManager.AppSettings.Get("TelegramAdminId"));
-            List<TelegramAllowlist> whitelist = Database.GetMany<TelegramAllowlist>();
+            List<TelegramAllowlist> allowlist = Database.GetMany<TelegramAllowlist>();
 
-            TelegramAllowlist whitelistEntry = null;
-            foreach (TelegramAllowlist entry in whitelist)
+            TelegramAllowlist allowlistEntry = null;
+            foreach (TelegramAllowlist entry in allowlist)
             {
                 if (entry.ChannelId == e.Message.Chat.Id)
                 {
-                    whitelistEntry = entry;
+                    allowlistEntry = entry;
                     break;
                 }
             }
 
-            if (whitelistEntry == null)
+            if (allowlistEntry == null)
             {
-                whitelistEntry = new TelegramAllowlist()
+                allowlistEntry = new TelegramAllowlist()
                 {
                     ChannelId = e.Message.Chat.Id,
                     Approved = false,
                     Warnings = 0
                 };
 
-                whitelistEntry.Insert();
+                allowlistEntry.Insert();
             }
 
-            if (!whitelistEntry.Approved && !isAdmin)
+            if (!allowlistEntry.Approved && !isAdmin)
             {
-                if (whitelistEntry.Warnings >= 5)
+                if (allowlistEntry.Warnings >= 5)
                 {
                     await _telegram.LeaveChatAsync(e.Message.Chat.Id);
                     return;
                 }
                 else
                 {
-                    whitelistEntry.Warnings++;
-                    whitelistEntry.Update();
+                    allowlistEntry.Warnings++;
+                    allowlistEntry.Update();
                     return;
                 }
             }

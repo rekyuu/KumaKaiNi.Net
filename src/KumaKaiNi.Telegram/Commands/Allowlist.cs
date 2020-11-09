@@ -21,9 +21,9 @@ namespace KumaKaiNi.Telegram
         [Command("approve")]
         public static Response AddToAllowlist(Request request)
         {
-            List<TelegramAllowlist> whitelist = Database.GetMany<TelegramAllowlist>();
+            List<TelegramAllowlist> allowlist = Database.GetMany<TelegramAllowlist>();
 
-            foreach (TelegramAllowlist entry in whitelist)
+            foreach (TelegramAllowlist entry in allowlist)
             {
                 if (entry.ChannelId == request.ChannelId)
                 {
@@ -35,7 +35,7 @@ namespace KumaKaiNi.Telegram
                 }
             }
 
-            return new Response("Added to whitelist.");
+            return new Response("Added to allowlist.");
         }
     }
 }
