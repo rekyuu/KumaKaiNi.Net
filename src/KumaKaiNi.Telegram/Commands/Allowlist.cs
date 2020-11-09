@@ -10,7 +10,7 @@ namespace KumaKaiNi.Telegram
     public static class Allowlist
     {
         [Command("initallowlist")]
-        public static Response InitWhitelist()
+        public static Response InitAllowlist()
         {
             Database.DropTable<TelegramAllowlist>();
             Database.CreateTable<TelegramAllowlist>();
@@ -19,7 +19,7 @@ namespace KumaKaiNi.Telegram
         }
 
         [Command("approve")]
-        public static Response AddToWhitelist(Request request)
+        public static Response AddToAllowlist(Request request)
         {
             List<TelegramAllowlist> whitelist = Database.GetMany<TelegramAllowlist>();
 
@@ -30,6 +30,8 @@ namespace KumaKaiNi.Telegram
                     entry.Approved = true;
                     entry.Warnings = 0;
                     entry.Update();
+
+                    break;
                 }
             }
 
