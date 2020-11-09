@@ -8,14 +8,13 @@ namespace KumaKaiNi.Core
     public class Request
     {
         public string Message;
-        public string MessageId;
+        public long MessageId;
 
         public string Username;
-        public string UserId;
         public bool UserIsAdmin;
 
         public RequestProtocol Protocol;
-        public string ChannelId;
+        public long ChannelId;
         public bool ChannelIsPrivate;
         public bool ChannelIsNSFW;
 
@@ -23,26 +22,14 @@ namespace KumaKaiNi.Core
         public string Command;
         public string[] CommandArgs;
 
-        public Request(RequestProtocol protocol, string message, object messageId, string username, object userId, object channelId, bool userIsAdmin = false, bool channelIsPrivate = false, bool channelIsNSFW = false)
+        public void Parse()
         {
-            Protocol = protocol;
-            Message = message;
-            MessageId = messageId.ToString();
-
-            Username = username;
-            UserId = userId.ToString();
-            UserIsAdmin = userIsAdmin;
-
-            ChannelId = channelId.ToString();
-            ChannelIsPrivate = channelIsPrivate;
-            ChannelIsNSFW = channelIsNSFW;
-
-            if (message[0] == '!')
+            if (Message != "" && Message[0] == '!')
             {
-                string[] messageContents = message.Split(' ');
+                string[] messageContents = Message.Split(' ');
 
                 IsCommand = true;
-                Command = messageContents[0].Substring(1, messageContents[0].Length - 1);
+                Command = messageContents[0][1..];
                 CommandArgs = messageContents.Skip(1).ToArray();
             }
         }

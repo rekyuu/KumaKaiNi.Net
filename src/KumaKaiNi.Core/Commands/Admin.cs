@@ -9,8 +9,21 @@ namespace KumaKaiNi.Core
         [Command("init")]
         public static Response InitDatabase()
         {
-            Database.Init();
+            Database.CreateTable<Log>();
+            Database.CreateTable<Quote>();
+            Database.CreateTable<CustomCommand>();
+
             return new Response("That probably worked.");
+        }
+
+        [Command("drop")]
+        public static Response DropDatabase()
+        {
+            Database.DropTable<Log>();
+            Database.DropTable<Quote>();
+            Database.DropTable<CustomCommand>();
+
+            return new Response("Everyone is dead.");
         }
 
         [Command("migrate")]

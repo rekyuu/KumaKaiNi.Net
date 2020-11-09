@@ -27,9 +27,11 @@ namespace KumaKaiNi.Core
 
         public void Insert()
         {
-            if (Id != -1) throw new Exception("Object has likely already been inserted. Please use Update() instead.");
+            string tablename = GetTableName();
 
-            string tablename = GetType().Name.ToLower() + "s";
+            if (Id != -1) throw new Exception("Object has likely already been inserted. Please use Update() instead.");
+            if (!TableExists()) throw new Exception($"Database table '{tablename}' does not exist.");
+
             Dictionary<string, FieldInfo> fields = GetColumnToFieldMap();
             fields.Remove("id");
             string[] values = new string[fields.Count];
@@ -58,9 +60,11 @@ namespace KumaKaiNi.Core
 
         public void Update()
         {
-            if (Id == -1) throw new Exception("Object has likely not been inserted. Please use Insert() instead.");
+            string tablename = GetTableName();
 
-            string tablename = GetType().Name.ToLower() + "s";
+            if (Id == -1) throw new Exception("Object has likely not been inserted. Please use Insert() instead.");
+            if (!TableExists()) throw new Exception($"Database table '{tablename}' does not exist.");
+
             Dictionary<string, FieldInfo> fields = GetColumnToFieldMap();
             fields.Remove("id");
             string[] values = new string[fields.Count];
@@ -90,7 +94,7 @@ namespace KumaKaiNi.Core
 
         public void Delete()
         {
-            string tablename = GetType().Name.ToLower() + "s";
+            string tablename = GetTableName();
 
             using NpgsqlConnection connection = Database.DatabaseConnection();
             string sql = $"DELETE FROM {tablename} WHERE id = @id";
@@ -101,7 +105,7 @@ namespace KumaKaiNi.Core
             command.ExecuteNonQuery();
         }
 
-        private Dictionary<string, FieldInfo> GetColumnToFieldMap()
+        public Dictionary<string, FieldInfo> GetColumnToFieldMap()
         {
             Dictionary<string, FieldInfo> map = new Dictionary<string, FieldInfo>();
             FieldInfo[] fields = GetType().GetFields();
@@ -112,6 +116,24 @@ namespace KumaKaiNi.Core
             }
 
             return map;
+        }
+
+        public string GetTableName()
+        {
+            return Helpers.ToSnakeCase(GetType().Name + "s");
+        }
+
+        public bool TableExists()
+        {
+            string tablename = GetTableName();
+
+            using NpgsqlConnection connection = Database.DatabaseConnection();
+
+            using NpgsqlCommand command = new NpgsqlCommand("", connection);
+            command.CommandText = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = @tablename)";
+            command.Parameters.AddWithValue("tablename", tablename);
+
+            return (bool)command.ExecuteScalar();
         }
     }
 }

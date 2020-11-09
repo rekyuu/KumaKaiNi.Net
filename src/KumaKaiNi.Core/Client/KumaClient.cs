@@ -66,6 +66,8 @@ namespace KumaKaiNi.Core
 
         public Response GetResponse(Request request)
         {
+            request.Parse();
+
             Response response = new Response();
             MethodInfo method = null;
 
@@ -86,7 +88,7 @@ namespace KumaKaiNi.Core
                 else response = (Response)method.Invoke(new object(), new object[] { });
             }
 
-            if (request.Message != "") Logging.LogToDatabase(request);
+            if (request.Message != "") Logging.LogToDatabase(request, response);
 
             return response;
         }

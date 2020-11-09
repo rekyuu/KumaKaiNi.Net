@@ -10,9 +10,9 @@ namespace KumaKaiNi.Core
         public DateTime Timestamp;
         public RequestProtocol Protocol;
         public string Message;
-        public string MessageId;
-        public string UserId;
-        public string ChannelId;
+        public long MessageId;
+        public string Username;
+        public long ChannelId;
 
         public Log() : base() { }
         public Log(Dictionary<string, object> row) : base(row) { }

@@ -20,7 +20,15 @@ namespace KumaKaiNi.DevConsole
 
                 try
                 {
-                    Request request = new Request(RequestProtocol.Terminal, message, 0, "rekyuu", 0, 0, true, true, true);
+                    Request request = new Request()
+                    {
+                        Message = message,
+                        Username = "rekyuu",
+                        UserIsAdmin = true,
+                        Protocol = RequestProtocol.Terminal,
+                        ChannelIsPrivate = true,
+                        ChannelIsNSFW = true,
+                    };
                     Response response = _kuma.GetResponse(request);
 
                     if (response.Message != "") Console.WriteLine($"\n  {response.Message}\n");

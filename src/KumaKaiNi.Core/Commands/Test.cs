@@ -6,11 +6,17 @@ namespace KumaKaiNi.Core
 {
     public static class Test
     {
-        [Command("test")]
-        public static Response TestCommand()
+        [Command("lastlog")]
+        public static Response LastLog()
         {
-            List<Log> response = Database.GetResults<Log>();
+            List<Log> response = Database.GetMany<Log>();
             return new Response(response[^1].Message);
+        }
+
+        [Command("test")]
+        public static Response CreateTable()
+        {
+            return new Response("done");
         }
     }
 }

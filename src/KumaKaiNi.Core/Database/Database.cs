@@ -1,49 +1,64 @@
 ﻿using Npgsql;
 using Npgsql.Schema;
+using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Reflection;
 using System.Text;
 
 namespace KumaKaiNi.Core
 {
     public static class Database
     {
-        public static void Init()
+        public static void CreateTable<T>() where T : DatabaseObject
         {
+            DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
+            Dictionary<string, FieldInfo> fields = obj.GetColumnToFieldMap();
+            fields.Remove("id");
+
+            int i = 0;
+            string tablename = obj.GetTableName();
+            string[] columns = new string[fields.Count];
+            foreach (KeyValuePair<string, FieldInfo> field in fields)
+            {
+                columns[i] = $"{field.Key} {GetPostgresType(field.Value.FieldType)}";
+                i++;
+            }
+
             using NpgsqlConnection connection = DatabaseConnection();
 
-            using NpgsqlCommand command = new NpgsqlCommand("", connection);
-            command.CommandText = @"DROP TABLE IF EXISTS logs";
-            command.ExecuteNonQuery();
+            string sql = $"CREATE TABLE IF NOT EXISTS {tablename}(id SERIAL PRIMARY KEY, {string.Join(", ", columns)})";
+            using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
 
-            command.CommandText = @"DROP TABLE IF EXISTS quotes";
-            command.ExecuteNonQuery();
-
-            command.CommandText = @"DROP TABLE IF EXISTS custom_commands";
-            command.ExecuteNonQuery();
-
-            command.CommandText = @"CREATE TABLE IF NOT EXISTS logs(id SERIAL PRIMARY KEY, timestamp TIMESTAMP, protocol VARCHAR(255), message TEXT, message_id VARCHAR(255), user_id VARCHAR(255), channel_id VARCHAR(255))";
-            command.ExecuteNonQuery();
-
-            command.CommandText = @"CREATE TABLE IF NOT EXISTS quotes(id SERIAL PRIMARY KEY, text TEXT NOT NULL)";
-            command.ExecuteNonQuery();
-
-            command.CommandText = @"CREATE TABLE IF NOT EXISTS custom_commands(id SERIAL PRIMARY KEY, command VARCHAR(255), response TEXT)";
             command.ExecuteNonQuery();
         }
 
-        public static List<T> GetResults<T>(string queryString = "") where T : DatabaseObject
+        public static void DropTable<T>() where T : DatabaseObject
         {
-            List<T> results = new List<T>();
-
-            string tablename = typeof(T).Name.ToLower() + "s";
-            if (queryString == "") queryString = $"SELECT * FROM {tablename}";
+            DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
+            string tablename = obj.GetTableName();
 
             using NpgsqlConnection connection = DatabaseConnection();
 
-            using NpgsqlCommand command = new NpgsqlCommand(queryString, connection);
+            string sql = $"DROP TABLE IF EXISTS {tablename}";
+            using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
+
+            command.ExecuteNonQuery();
+        }
+
+        public static List<T> GetMany<T>(string whereClause = "") where T : DatabaseObject
+        {
+            List<T> results = new List<T>();
+            DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
+
+            string tablename = obj.GetTableName();
+            string sql = $"SELECT * FROM {tablename} {whereClause}";
+
+            using NpgsqlConnection connection = DatabaseConnection();
+
+            using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
             using NpgsqlDataReader reader = command.ExecuteReader();
 
             if (reader.HasRows)
@@ -88,6 +103,22 @@ namespace KumaKaiNi.Core
         public static string GetConnectionString()
         {
             return $"Host=localhost;Username=postgres;Password={ConfigurationManager.AppSettings.Get("PostgresSQLPassword")};Database=kumakaini";
+        }
+
+        public static string GetPostgresType(Type type)
+        {
+            return (type.Name.ToLower()) switch
+            {
+                "bool" => "BOOLEAN",
+                "datetime" => "TIMESTAMP",
+                "decimal" => "NUMERIC",
+                "double" => "DOUBLE PRECISION",
+                "float" => "REAL",
+                "guid" => "UUID",
+                "int" => "INTEGER",
+                "long" => "BIGINT",
+                _ => "TEXT",
+            };
         }
     }
 }
