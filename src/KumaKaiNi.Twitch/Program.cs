@@ -63,7 +63,9 @@ namespace KumaKaiNi.Twitch
 
         private void MessageReceived(object sender, OnMessageReceivedArgs message)
         {
-            Request request = new Request(RequestProtocol.Twitch, message.ChatMessage.Message);
+            bool isAdmin = message.ChatMessage.Username == "rekyuus";
+
+            Request request = new Request(RequestProtocol.Twitch, message.ChatMessage.Message, message.ChatMessage.Username, message.ChatMessage.Channel, userIsAdmin: isAdmin);
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") _twitch.SendMessage(message.ChatMessage.Channel, response.Message);
@@ -71,7 +73,9 @@ namespace KumaKaiNi.Twitch
 
         private void WhisperReceived(object sender, OnWhisperReceivedArgs message)
         {
-            Request request = new Request(RequestProtocol.Twitch, message.WhisperMessage.Message);
+            bool isAdmin = message.WhisperMessage.Username == "rekyuus";
+
+            Request request = new Request(RequestProtocol.Twitch, message.WhisperMessage.Message, message.WhisperMessage.Username, "whisper", true, userIsAdmin: isAdmin);
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") _twitch.SendWhisper(message.WhisperMessage.Username, response.Message);

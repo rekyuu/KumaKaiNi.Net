@@ -9,8 +9,8 @@ namespace KumaKaiNi.Core
         [Command("test")]
         public static Response TestCommand()
         {
-            string response = Database.GetVersion();
-            return new Response(response);
+            List<Log> response = Database.GetResults<Log>();
+            return new Response(response[^1].Message);
         }
     }
 }

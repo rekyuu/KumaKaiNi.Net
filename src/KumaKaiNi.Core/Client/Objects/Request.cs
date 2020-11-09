@@ -7,23 +7,35 @@ namespace KumaKaiNi.Core
 {
     public class Request
     {
-        public RequestProtocol Protocol;
         public string Message;
+        public string MessageId;
+
+        public string Username;
+        public string UserId;
+        public bool UserIsAdmin;
+
+        public RequestProtocol Protocol;
+        public string ChannelId;
         public bool ChannelIsPrivate;
         public bool ChannelIsNSFW;
-        public bool UserIsAdmin;
 
         public bool IsCommand = false;
         public string Command;
         public string[] CommandArgs;
 
-        public Request(RequestProtocol protocol, string message, bool channelIsPrivate = false, bool channelIsNSFW = false, bool userIsAdmin = false)
+        public Request(RequestProtocol protocol, string message, object messageId, string username, object userId, object channelId, bool userIsAdmin = false, bool channelIsPrivate = false, bool channelIsNSFW = false)
         {
             Protocol = protocol;
             Message = message;
+            MessageId = messageId.ToString();
+
+            Username = username;
+            UserId = userId.ToString();
+            UserIsAdmin = userIsAdmin;
+
+            ChannelId = channelId.ToString();
             ChannelIsPrivate = channelIsPrivate;
             ChannelIsNSFW = channelIsNSFW;
-            UserIsAdmin = userIsAdmin;
 
             if (message[0] == '!')
             {

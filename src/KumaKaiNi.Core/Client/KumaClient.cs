@@ -86,6 +86,8 @@ namespace KumaKaiNi.Core
                 else response = (Response)method.Invoke(new object(), new object[] { });
             }
 
+            if (request.Message != "") Logging.LogToDatabase(request);
+
             return response;
         }
     }

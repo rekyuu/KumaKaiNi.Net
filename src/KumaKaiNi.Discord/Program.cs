@@ -40,7 +40,13 @@ namespace KumaKaiNi.Discord
 
         private Task MessageReceived(SocketMessage message)
         {
-            Request request = new Request(RequestProtocol.Discord, message.Content);
+            SocketTextChannel channel = _discord.GetChannel(message.Channel.Id) as SocketTextChannel;
+
+            bool isAdmin = message.Author.Id.ToString() == ConfigurationManager.AppSettings.Get("AdminID");
+            bool isPrivate = channel == null;
+            bool isNsfw = isPrivate || channel.IsNsfw;
+
+            Request request = new Request(RequestProtocol.Discord, message.Content, message.Author.Username, message.Channel.Id.ToString(), isPrivate, isNsfw, isAdmin);
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") message.Channel.SendMessageAsync(response.Message);

@@ -12,5 +12,11 @@ namespace KumaKaiNi.Core
             Database.Init();
             return new Response("That probably worked.");
         }
+
+        [Command("migrate")]
+        public static Response Migrate()
+        {
+            return new Response();
+        }
     }
 }
