@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\KumaKaiNi.Core\App.config" Link="App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KumaKaiNi.Discord\KumaKaiNi.Discord.csproj" />
+    <ProjectReference Include="..\KumaKaiNi.Telegram\KumaKaiNi.Telegram.csproj" />
+    <ProjectReference Include="..\KumaKaiNi.Twitch\KumaKaiNi.Twitch.csproj" />
+  </ItemGroup>
+
+</Project>

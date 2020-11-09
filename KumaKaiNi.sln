@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KumaKaiNi.Terminal", "src\K
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KumaKaiNi.Telegram", "src\KumaKaiNi.Telegram\KumaKaiNi.Telegram.csproj", "{0D1D4D73-30E2-44AF-9192-7838F116E72D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Supervisor", "src\KumaKaiNi.Supervisor\KumaKaiNi.Supervisor.csproj", "{A0433359-454C-495B-9068-7CCD08990D73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{0D1D4D73-30E2-44AF-9192-7838F116E72D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D1D4D73-30E2-44AF-9192-7838F116E72D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D1D4D73-30E2-44AF-9192-7838F116E72D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0433359-454C-495B-9068-7CCD08990D73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0433359-454C-495B-9068-7CCD08990D73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0433359-454C-495B-9068-7CCD08990D73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0433359-454C-495B-9068-7CCD08990D73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
