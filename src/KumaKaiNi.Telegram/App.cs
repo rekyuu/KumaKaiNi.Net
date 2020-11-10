@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
+using Telegram.Bot.Types.Enums;
 
 namespace KumaKaiNi.Telegram
 {
@@ -99,6 +100,20 @@ namespace KumaKaiNi.Telegram
             if (response.Message != "")
             {
                 await _telegram.SendTextMessageAsync(chatId: e.Message.Chat.Id, text: response.Message);
+            }
+            else if (response.Image != null)
+            {
+                string caption = $"{response.Image.Description}";
+                if (response.Image.Referrer != "" && response.Image.Source != "") caption += $"\n\n[{response.Image.Referrer}]({response.Image.Source})";
+
+                try
+                {
+                    await _telegram.SendPhotoAsync(chatId: e.Message.Chat.Id, photo: response.Image.URL, caption: caption, parseMode: ParseMode.Markdown);
+                }
+                catch
+                {
+                    await _telegram.SendTextMessageAsync(chatId: e.Message.Chat.Id, text: $"Image was too large for telegram.\n\n[{response.Image.Referrer}]({response.Image.Source})\n\n{response.Image.Description}");
+                }
             }
         }
     }

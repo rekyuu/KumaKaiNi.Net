@@ -6,6 +6,11 @@ namespace KumaKaiNi.Core
 {
     public static class RNG
     {
+        public static T PickRandom<T>(List<T> choices)
+        {
+            return PickRandom<T>(choices.ToArray());
+        }
+
         public static T PickRandom<T>(T[] choices)
         {
             Random rng = new Random();

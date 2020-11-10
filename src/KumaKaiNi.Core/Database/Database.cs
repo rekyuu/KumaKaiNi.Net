@@ -48,7 +48,7 @@ namespace KumaKaiNi.Core
             command.ExecuteNonQuery();
         }
 
-        public static List<T> GetMany<T>(WherePredicate[] wherePredicates = null) where T : DatabaseObject
+        public static List<T> GetMany<T>(WherePredicate[] wherePredicates = null, int limit = 0) where T : DatabaseObject
         {
             List<T> results = new List<T>();
             DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
@@ -62,12 +62,15 @@ namespace KumaKaiNi.Core
                 sb.Append(" WHERE ");
                 foreach (WherePredicate wherePredicate in wherePredicates)
                 {
-                    sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} @{wherePredicate.Source} AND");
+                    sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} @{wherePredicate.Source} AND ");
                 }
 
                 string whereClause = sb.ToString();
-                sql += whereClause.Remove(whereClause.Length - 4, 4);
+                sql += whereClause.Remove(whereClause.Length - 5, 5);
             }
+
+            sql += " ORDER BY last_modified DESC";
+            if (limit > 0) sql += " LIMIT @limit";
 
             using NpgsqlConnection connection = DatabaseConnection();
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
@@ -75,9 +78,14 @@ namespace KumaKaiNi.Core
             {
                 foreach (WherePredicate wherePredicate in wherePredicates)
                 {
-                    command.Parameters.AddWithValue(wherePredicate.Source, wherePredicate.Target);
+                    object target = wherePredicate.Target;
+                    if (wherePredicate.Target.GetType().IsEnum) target = target.ToString();
+
+                    command.Parameters.AddWithValue(wherePredicate.Source, target);
                 }
             }
+
+            if (limit > 0) command.Parameters.AddWithValue("limit", limit);
 
             using NpgsqlDataReader reader = command.ExecuteReader();
             if (reader.HasRows)

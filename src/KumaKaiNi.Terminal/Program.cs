@@ -27,7 +27,7 @@ namespace KumaKaiNi.DevConsole
                         Username = "rekyuu",
                         Authority = UserAuthority.Admin,
                         Protocol = RequestProtocol.Terminal,
-                        ChannelId = 0,
+                        ChannelId = 5862,
                         ChannelIsPrivate = true,
                         ChannelIsNSFW = true,
                     };

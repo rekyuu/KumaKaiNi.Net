@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -11,9 +12,62 @@ namespace KumaKaiNi.Core
     [RequireAdmin]
     public static class Admin
     {
+        [Command("danban")]
+        public static Response BlockTags(Request request)
+        {
+            List<DanbooruBlocklist> blocklist = Database.GetMany<DanbooruBlocklist>();
+            string[] blockedTags = new string[blocklist.Count];
+
+            int i = 0;
+            foreach (DanbooruBlocklist entry in blocklist)
+            {
+                blockedTags[i] = entry.Tag;
+                i++;
+            }
+
+            int inserted = 0;
+            foreach (string tag in request.CommandArgs)
+            {
+                if (blockedTags.Contains(tag)) continue;
+
+                DanbooruBlocklist newTag = new DanbooruBlocklist() { Tag = tag };
+                newTag.Insert();
+                inserted++;
+            }
+
+            if (inserted > 0) return new Response($"Tags added.");
+            else return new Response("Nothing to add.");
+        }
+
+        [Command("danunban")]
+        public static Response AllowTags(Request request)
+        {
+            List<DanbooruBlocklist> blocklist = Database.GetMany<DanbooruBlocklist>();
+            Dictionary<string, DanbooruBlocklist> blockedTags = new Dictionary<string, DanbooruBlocklist>();
+
+            foreach (DanbooruBlocklist entry in blocklist)
+            {
+                blockedTags.Add(entry.Tag, entry);
+            }
+
+            int deleted = 0;
+            foreach (string tag in request.CommandArgs)
+            {
+                if (!blockedTags.ContainsKey(tag)) continue;
+
+                blockedTags[tag].Delete();
+                deleted++;
+            }
+
+            if (deleted > 0) return new Response($"Tags removed.");
+            else return new Response("Nothing to remove.");
+        }
+
         [Command("init")]
         public static Response InitDatabase()
         {
+            Database.CreateTable<DanbooruBlocklist>();
+            Database.CreateTable<DanbooruCache>();
             Database.CreateTable<CustomCommand>();
             Database.CreateTable<Error>();
             Database.CreateTable<Log>();
@@ -25,6 +79,8 @@ namespace KumaKaiNi.Core
         [Command("drop")]
         public static Response DropDatabase()
         {
+            Database.DropTable<DanbooruBlocklist>();
+            Database.DropTable<DanbooruCache>();
             Database.DropTable<CustomCommand>();
             Database.DropTable<Error>();
             Database.DropTable<Log>();

@@ -71,6 +71,20 @@ namespace KumaKaiNi.Discord
             Response response = _kuma.GetResponse(request);
 
             if (response.Message != "") message.Channel.SendMessageAsync(response.Message);
+            else if (response.Image != null)
+            {
+                EmbedBuilder embed = new EmbedBuilder()
+                {
+                    Color = new Color(0x00b6b6),
+                    Title = response.Image.Referrer,
+                    Url = response.Image.Source,
+                    Description = response.Image.Description,
+                    ImageUrl = response.Image.URL,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                message.Channel.SendMessageAsync(text: response.Message, embed: embed.Build());
+            }
 
             return Task.CompletedTask;
         }

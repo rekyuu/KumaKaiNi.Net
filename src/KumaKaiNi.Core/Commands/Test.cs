@@ -17,6 +17,8 @@ namespace KumaKaiNi.Core
         [Command("test")]
         public static Response CreateTable()
         {
+            Database.DropTable<DanbooruCache>();
+            Database.CreateTable<DanbooruCache>();
             return new Response("done");
         }
     }
