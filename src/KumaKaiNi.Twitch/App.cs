@@ -52,60 +52,78 @@ namespace KumaKaiNi.Twitch
 
         private void Connected(object sender, OnConnectedArgs e)
         {
-            Console.WriteLine($"[{DateTime.UtcNow}] Connected to {e.AutoJoinChannel}");
+            Console.WriteLine($"{DateTime.UtcNow} [KumaKaiNi.Twitch] Connected to {e.AutoJoinChannel}");
         }
 
         private void ChannelJoined(object sender, OnJoinedChannelArgs e)
         {
-            Console.WriteLine($"[{DateTime.UtcNow}] Joined {e.Channel}");
+            Console.WriteLine($"{DateTime.UtcNow} [KumaKaiNi.Twitch] Joined {e.Channel}");
         }
 
         private void MessageReceived(object sender, OnMessageReceivedArgs message)
         {
-            bool isAdmin = message.ChatMessage.Username == "rekyuus";
-            bool isModerator = message.ChatMessage.IsModerator;
-
-            UserAuthority authority = UserAuthority.User;
-            if (isAdmin) authority = UserAuthority.Admin;
-            else if (isModerator) authority = UserAuthority.Moderator;
-
-            Request request = new Request()
+            try
             {
-                Message = message.ChatMessage.Message,
-                MessageId = 0,
-                Username = message.ChatMessage.Username,
-                Authority = authority,
-                Protocol = RequestProtocol.Twitch,
-                ChannelId = 0,
-                ChannelIsPrivate = false,
-                ChannelIsNSFW = false,
-            };
-            Response response = _kuma.GetResponse(request);
+                if (message.ChatMessage.Username == "kumakaini") return;
 
-            if (response.Message != "") _twitch.SendMessage(message.ChatMessage.Channel, response.Message);
+                bool isAdmin = message.ChatMessage.Username == "rekyuus";
+                bool isModerator = message.ChatMessage.IsModerator;
+
+                UserAuthority authority = UserAuthority.User;
+                if (isAdmin) authority = UserAuthority.Admin;
+                else if (isModerator) authority = UserAuthority.Moderator;
+
+                Request request = new Request()
+                {
+                    Message = message.ChatMessage.Message,
+                    MessageId = 0,
+                    Username = message.ChatMessage.Username,
+                    Authority = authority,
+                    Protocol = RequestProtocol.Twitch,
+                    ChannelId = 0,
+                    ChannelIsPrivate = false,
+                    ChannelIsNSFW = false,
+                };
+                Response response = _kuma.GetResponse(request);
+
+                if (response.Message != "") _twitch.SendMessage(message.ChatMessage.Channel, response.Message);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException(ex);
+            }
         }
 
         private void WhisperReceived(object sender, OnWhisperReceivedArgs message)
         {
-            bool isAdmin = message.WhisperMessage.Username == "rekyuus";
-
-            UserAuthority authority = UserAuthority.User;
-            if (isAdmin) authority = UserAuthority.Admin;
-
-            Request request = new Request()
+            try
             {
-                Message = message.WhisperMessage.Message,
-                MessageId = 0,
-                Username = message.WhisperMessage.Username,
-                Authority = authority,
-                Protocol = RequestProtocol.Twitch,
-                ChannelId = 0,
-                ChannelIsPrivate = true,
-                ChannelIsNSFW = false,
-            };
-            Response response = _kuma.GetResponse(request);
+                if (message.WhisperMessage.Username == "kumakaini") return;
 
-            if (response.Message != "") _twitch.SendWhisper(message.WhisperMessage.Username, response.Message);
+                bool isAdmin = message.WhisperMessage.Username == "rekyuus";
+
+                UserAuthority authority = UserAuthority.User;
+                if (isAdmin) authority = UserAuthority.Admin;
+
+                Request request = new Request()
+                {
+                    Message = message.WhisperMessage.Message,
+                    MessageId = 0,
+                    Username = message.WhisperMessage.Username,
+                    Authority = authority,
+                    Protocol = RequestProtocol.Twitch,
+                    ChannelId = 0,
+                    ChannelIsPrivate = true,
+                    ChannelIsNSFW = false,
+                };
+                Response response = _kuma.GetResponse(request);
+
+                if (response.Message != "") _twitch.SendWhisper(message.WhisperMessage.Username, response.Message);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException(ex);
+            }
         }
     }
 }
