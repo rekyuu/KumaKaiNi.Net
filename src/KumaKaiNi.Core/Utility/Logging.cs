@@ -17,11 +17,14 @@ namespace KumaKaiNi.Core
                 Private = request.ChannelIsPrivate
             };
 
+            string responseString = response.Message;
+            if (responseString == "" && response.Image != null) responseString = $"{response.Image.Referrer}\n{response.Image.Description}\n{response.Image.URL}\n{response.Image.Source}";
+
             Log responseLog = new Log()
             {
                 Timestamp = DateTime.UtcNow,
                 Protocol = request.Protocol,
-                Message = response.Message,
+                Message = responseString,
                 Username = "KumaKaiNi",
                 ChannelId = request.ChannelId,
                 Private = request.ChannelIsPrivate
@@ -29,8 +32,17 @@ namespace KumaKaiNi.Core
 
             try
             {
-                if (requestLog.Message != "") requestLog.Insert();
-                if (responseLog.Message != "") responseLog.Insert();
+                if (requestLog.Message != "")
+                {
+                    requestLog.Insert();
+                    Console.WriteLine($"{requestLog.Timestamp} [{request.Protocol}] {request.Username}: {request.Message}");
+                }
+
+                if (responseLog.Message != "")
+                {
+                    responseLog.Insert();
+                    Console.WriteLine($"{responseLog.Timestamp} [{request.Protocol}] KumaKaiNi: {responseLog.Message}");
+                }
             }
             catch (Exception ex)
             {
