@@ -1,6 +1,5 @@
 ﻿using Npgsql;
 using Npgsql.Schema;
-using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

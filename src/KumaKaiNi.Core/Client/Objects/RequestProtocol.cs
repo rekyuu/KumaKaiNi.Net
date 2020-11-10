@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace KumaKaiNi.Core
+﻿namespace KumaKaiNi.Core
 {
     public enum RequestProtocol
     {

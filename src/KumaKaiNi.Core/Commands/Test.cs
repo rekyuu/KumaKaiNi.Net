@@ -1,24 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace KumaKaiNi.Core
+﻿namespace KumaKaiNi.Core
 {
     [RequireAdmin]
     public static class Test
     {
-        [Command("lastlog")]
-        public static Response LastLog()
-        {
-            List<Log> response = Database.GetMany<Log>();
-            return new Response(response[^1].Message);
-        }
-
         [Command("test")]
         public static Response CreateTable()
         {
-            Database.DropTable<DanbooruCache>();
-            Database.CreateTable<DanbooruCache>();
             return new Response("done");
         }
     }

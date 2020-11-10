@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace KumaKaiNi.Core
 {
@@ -66,9 +64,9 @@ namespace KumaKaiNi.Core
         [Command("init")]
         public static Response InitDatabase()
         {
+            Database.CreateTable<CustomCommand>();
             Database.CreateTable<DanbooruBlocklist>();
             Database.CreateTable<DanbooruCache>();
-            Database.CreateTable<CustomCommand>();
             Database.CreateTable<Error>();
             Database.CreateTable<Log>();
             Database.CreateTable<Quote>();
@@ -76,12 +74,12 @@ namespace KumaKaiNi.Core
             return new Response("That probably worked.");
         }
 
-        [Command("drop")]
+        // [Command("drop")]
         public static Response DropDatabase()
         {
+            Database.DropTable<CustomCommand>();
             Database.DropTable<DanbooruBlocklist>();
             Database.DropTable<DanbooruCache>();
-            Database.DropTable<CustomCommand>();
             Database.DropTable<Error>();
             Database.DropTable<Log>();
             Database.DropTable<Quote>();

@@ -2,9 +2,7 @@
 using Discord.WebSocket;
 using KumaKaiNi.Core;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace KumaKaiNi.Discord

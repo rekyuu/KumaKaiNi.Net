@@ -1,12 +1,4 @@
-﻿using KumaKaiNi.Core;
-using System;
-using System.Threading.Tasks;
-using System.Configuration;
-using TwitchLib.Client;
-using TwitchLib.Client.Events;
-using TwitchLib.Client.Models;
-using TwitchLib.Communication.Clients;
-using TwitchLib.Communication.Models;
+﻿using System.Threading.Tasks;
 
 namespace KumaKaiNi.Twitch
 {
