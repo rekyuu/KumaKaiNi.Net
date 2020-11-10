@@ -97,7 +97,7 @@ namespace KumaKaiNi.Telegram
                 {
                     Message = message,
                     MessageId = e.Message.MessageId,
-                    Username = e.Message.From.FirstName + (e.Message.From.LastName == "" ? "" : " " + e.Message.From.LastName),
+                    Username = e.Message.From.FirstName + (e.Message.From.LastName == null ? "" : " " + e.Message.From.LastName),
                     Authority = authority,
                     Protocol = RequestProtocol.Telegram,
                     ChannelId = e.Message.Chat.Id,
