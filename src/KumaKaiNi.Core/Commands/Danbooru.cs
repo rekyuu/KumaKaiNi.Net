@@ -29,7 +29,7 @@ namespace KumaKaiNi.Core.Commands
         {
             string[] baseTags = new string[] { "rating:s" };
             string[] requestTags = baseTags.Concat(request.CommandArgs).ToArray();
-            ResponseImage image = GetDanbooruImage(request.CommandArgs, request.Protocol, request.ChannelId);
+            ResponseImage image = GetDanbooruImage(requestTags, request.Protocol, request.ChannelId);
 
             if (image.URL != null) return new Response() { Image = image };
             else return new Response("Nothing found!");
@@ -43,7 +43,7 @@ namespace KumaKaiNi.Core.Commands
 
             string[] baseTags = new string[] { "-rating:s" };
             string[] requestTags = baseTags.Concat(request.CommandArgs).ToArray();
-            ResponseImage image = GetDanbooruImage(request.CommandArgs, request.Protocol, request.ChannelId);
+            ResponseImage image = GetDanbooruImage(requestTags, request.Protocol, request.ChannelId);
 
             if (image.URL != null) return new Response() { Image = image };
             else return new Response("Nothing found!");

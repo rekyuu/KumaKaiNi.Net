@@ -63,7 +63,11 @@ namespace KumaKaiNi.Telegram
             {
                 if (allowlistEntry.Warnings >= 5)
                 {
-                    await _telegram.LeaveChatAsync(e.Message.Chat.Id);
+                    try
+                    {
+                        await _telegram.LeaveChatAsync(e.Message.Chat.Id);
+                    }
+                    catch { }
                     return;
                 }
                 else
