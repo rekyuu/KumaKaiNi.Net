@@ -45,6 +45,7 @@ namespace KumaKaiNi.Discord
         {
             try
             {
+                if (message.Author.IsWebhook) return Task.CompletedTask;
                 if (message.Author.Id == _discord.CurrentUser.Id) return Task.CompletedTask;
 
                 SocketTextChannel channel = (SocketTextChannel)message.Channel;
