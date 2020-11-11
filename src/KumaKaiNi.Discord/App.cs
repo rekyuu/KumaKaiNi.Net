@@ -15,6 +15,8 @@ namespace KumaKaiNi.Discord
         private readonly KumaClient _kuma;
         private readonly DiscordSocketClient _discord;
 
+        private int _currentMoonPhase = -1;
+
         public App()
         {
             _kuma = new KumaClient();
@@ -122,6 +124,8 @@ namespace KumaKaiNi.Discord
             try
             {
                 int phase = Helpers.GetMoonPhase(DateTime.UtcNow);
+                if (phase == _currentMoonPhase) return;
+                _currentMoonPhase = phase;
 
                 Assembly assembly = Assembly.GetExecutingAssembly();
                 using Stream stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.Phase{phase}.jpg");
