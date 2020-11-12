@@ -15,6 +15,18 @@ namespace KumaKaiNi.Core
             return new Response(result);
         }
 
+        [Command("pick")]
+        [Command("choose")]
+        public static Response PickOne(Request request)
+        {
+            if (request.CommandArgs.Length < 2) return new Response("Usage: !pick option1, option2, [option3, ...]");
+
+            string[] commaSplitArgs = string.Join(" ", request.CommandArgs).Split(", ");
+
+            string result = RNG.PickRandom(commaSplitArgs);
+            return new Response(result);
+        }
+
         [Command("roll")]
         [Command("dice")]
         public static Response RollDice(Request request)
