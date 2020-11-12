@@ -86,7 +86,11 @@ namespace KumaKaiNi.Twitch
                 };
                 Response response = _kuma.GetResponse(request);
 
-                if (response.Message != "") _twitch.SendMessage(message.ChatMessage.Channel, response.Message);
+                if (response.Message != "")
+                {
+                    if (response.Message[0] == '/') response.Message = response.Message[1..];
+                    _twitch.SendMessage(message.ChatMessage.Channel, response.Message);
+                }
             }
             catch (Exception ex)
             {
@@ -118,7 +122,11 @@ namespace KumaKaiNi.Twitch
                 };
                 Response response = _kuma.GetResponse(request);
 
-                if (response.Message != "") _twitch.SendWhisper(message.WhisperMessage.Username, response.Message);
+                if (response.Message != "")
+                {
+                    if (response.Message[0] == '/') response.Message = response.Message[1..];
+                    _twitch.SendWhisper(message.WhisperMessage.Username, response.Message);
+                }
             }
             catch (Exception ex)
             {
