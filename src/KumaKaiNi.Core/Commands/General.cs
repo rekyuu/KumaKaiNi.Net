@@ -31,7 +31,8 @@ namespace KumaKaiNi.Core
         {
             string reply = RNG.PickRandom(new string[] { "sup", "yo", "ay", "hi", "wassup" });
 
-            return new Response(reply);
+            if (RNG.OneTo(25)) return new Response(reply);
+            else return new Response();
         }
 
         [Phrase(new string[] { "ty kuma", "thanks kuma", "thank you kuma" })]
