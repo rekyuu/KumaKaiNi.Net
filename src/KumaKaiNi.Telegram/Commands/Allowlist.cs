@@ -37,5 +37,14 @@ namespace KumaKaiNi.Telegram
 
             return new Response("Added to allowlist.");
         }
+
+        [Command("leave")]
+        public static Response LeaveChat()
+        {
+            return new Response()
+            {
+                AdminMessage = "LEAVE_CHAT"
+            };
+        }
     }
 }
