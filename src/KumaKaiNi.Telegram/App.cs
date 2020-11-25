@@ -106,7 +106,11 @@ namespace KumaKaiNi.Telegram
                 };
                 Response response = _kuma.GetResponse(request);
 
-                if (response.Message != "")
+                if (response.AdminMessage == "LEAVE_CHAT")
+                {
+                    await _telegram.LeaveChatAsync(e.Message.Chat.Id);
+                }
+                else if (response.Message != "")
                 {
                     await _telegram.SendTextMessageAsync(chatId: e.Message.Chat.Id, text: response.Message);
                 }

@@ -4,8 +4,9 @@
     {
         public string Message;
         public ResponseImage Image;
+        public string AdminMessage = "";
 
-        public Response (string message = "")
+        public Response(string message = "")
         {
             Message = message;
         }
