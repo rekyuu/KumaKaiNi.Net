@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\KumaFestive.png" />
+    <None Remove="Resources\KumaStandard.png" />
     <None Remove="Resources\phase0.jpg" />
     <None Remove="Resources\phase1.jpg" />
     <None Remove="Resources\phase10.jpg" />
@@ -39,6 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\KumaFestive.png" />
+    <EmbeddedResource Include="Resources\KumaStandard.png" />
     <EmbeddedResource Include="Resources\Phase0.jpg" />
     <EmbeddedResource Include="Resources\Phase1.jpg" />
     <EmbeddedResource Include="Resources\Phase10.jpg" />
