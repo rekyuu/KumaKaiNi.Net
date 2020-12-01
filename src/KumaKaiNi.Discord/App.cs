@@ -16,6 +16,8 @@ namespace KumaKaiNi.Discord
         private readonly DiscordSocketClient _discord;
 
         private int _currentMoonPhase = -1;
+        private int _currentMonth = -1;
+        private bool _avatarIsFestive = false;
 
         public App()
         {
@@ -111,6 +113,12 @@ namespace KumaKaiNi.Discord
             moonTimer.Elapsed += new ElapsedEventHandler(MoonPhaseHandler);
             moonTimer.Start();
 
+            UpdateFestiveAvatar();
+
+            Timer festiveTimer = new Timer(24 * 60 * 60 * 1000);
+            festiveTimer.Elapsed += new ElapsedEventHandler(FestiveAvatarHandler);
+            festiveTimer.Start();
+
             return Task.CompletedTask;
         }
 
@@ -127,12 +135,51 @@ namespace KumaKaiNi.Discord
                 if (phase == _currentMoonPhase) return;
                 _currentMoonPhase = phase;
 
+                Console.WriteLine($"{DateTime.UtcNow} [KumaKaiNi.Discord] Updating moon phase: {_currentMoonPhase}");
+
                 Assembly assembly = Assembly.GetExecutingAssembly();
                 using Stream stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.Phase{phase}.jpg");
                 using Image currentPhase = new Image(stream);
 
                 SocketGuild guild = _discord.GetGuild(214268737887404042);
                 guild.ModifyAsync(delegate (GuildProperties p) { p.Icon = currentPhase; });
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException(ex);
+            }
+        }
+
+        private void FestiveAvatarHandler(object source, ElapsedEventArgs e)
+        {
+            UpdateFestiveAvatar();
+        }
+
+        private void UpdateFestiveAvatar()
+        {
+            try
+            {
+                _currentMonth = DateTime.UtcNow.Month;
+
+                if (_currentMonth == 12 && _avatarIsFestive || _currentMonth != 12 && !_avatarIsFestive) return;
+                else
+                {
+                    Assembly assembly = Assembly.GetExecutingAssembly();
+                    Stream stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.KumaStandard.png"); ;
+
+                    if (_currentMonth != 12 && _avatarIsFestive) _avatarIsFestive = false;
+                    else if (_currentMonth == 12 && !_avatarIsFestive)
+                    {
+                        stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.KumaFestive.png");
+                        _avatarIsFestive = true;
+                    }
+
+                    string avatarLogString = _avatarIsFestive ? "Festive" : "Standard";
+                    Console.WriteLine($"{DateTime.UtcNow} [KumaKaiNi.Discord] Updating avatar: {avatarLogString}");
+
+                    using Image avatar = new Image(stream);
+                    _discord.CurrentUser.ModifyAsync(delegate (SelfUserProperties p) { p.Avatar = avatar; });
+                }
             }
             catch (Exception ex)
             {
