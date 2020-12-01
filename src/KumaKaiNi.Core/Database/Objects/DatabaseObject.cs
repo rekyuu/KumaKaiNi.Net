@@ -21,6 +21,7 @@ namespace KumaKaiNi.Core
                 {
                     object value = row[field.Key];
                     if (field.Value.FieldType.IsEnum) value = Enum.Parse(field.Value.FieldType, value.ToString());
+                    if (value.GetType() == typeof(DBNull)) value = null;
 
                     field.Value.SetValue(this, value);
                 }

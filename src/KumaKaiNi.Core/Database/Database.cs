@@ -59,9 +59,20 @@ namespace KumaKaiNi.Core
             if (wherePredicates != null)
             {
                 sb.Append(" WHERE ");
+
+                int i = 0;
                 foreach (WherePredicate wherePredicate in wherePredicates)
                 {
-                    sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} @{wherePredicate.Source} AND ");
+                    if (wherePredicate.Target.GetType().IsArray)
+                    {
+                        sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} (@{wherePredicate.Source}{i}) AND ");
+                    }
+                    else
+                    {
+                        sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} @{wherePredicate.Source}{i} AND ");
+                    }
+
+                    i++;
                 }
 
                 string whereClause = sb.ToString();
@@ -73,14 +84,17 @@ namespace KumaKaiNi.Core
 
             using NpgsqlConnection connection = DatabaseConnection();
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
+
             if (wherePredicates != null)
             {
+                int i = 0;
                 foreach (WherePredicate wherePredicate in wherePredicates)
                 {
                     object target = wherePredicate.Target;
                     if (wherePredicate.Target.GetType().IsEnum) target = target.ToString();
 
-                    command.Parameters.AddWithValue(wherePredicate.Source, target);
+                    command.Parameters.AddWithValue($"{wherePredicate.Source}{i}", target);
+                    i++;
                 }
             }
 
