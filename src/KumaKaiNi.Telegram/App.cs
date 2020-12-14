@@ -104,6 +104,8 @@ namespace KumaKaiNi.Telegram
                     ChannelIsPrivate = isPrivate,
                     ChannelIsNSFW = true,
                 };
+
+                _ = _telegram.SendChatActionAsync(chatId: e.Message.Chat.Id, chatAction: ChatAction.Typing);
                 Response response = _kuma.GetResponse(request);
 
                 if (response.AdminMessage == "LEAVE_CHAT")

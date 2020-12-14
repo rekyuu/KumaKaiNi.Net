@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,19 +8,19 @@ namespace KumaKaiNi.Core
     public static class Markov
     {
         [Command("markov")]
-        public static Response MarkovCommand(Request request)
+        public static Response MarkovCommand()
         {
             WherePredicate logProtocol = new WherePredicate()
             {
                 Source = "protocol",
-                Comparitor = "= any",
+                Comparitor = "= ANY",
                 Target = new string[] { "Twitch", "Discord" }
             };
 
             WherePredicate logChannels = new WherePredicate()
             {
                 Source = "channel_id",
-                Comparitor = "= any",
+                Comparitor = "= ANY",
                 Target = new long[] { 0, 214268737887404042 }
             };
 
@@ -43,7 +42,7 @@ namespace KumaKaiNi.Core
             {
                 Source = "message",
                 Comparitor = "!~*",
-                Target = ".*((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??(?:[-\\+=&;%@.\\w_]*)#?(?:[\\w]*))?).*"
+                Target = @".*((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?).*"
             };
 
             List<Log> logs = Database.GetMany<Log>(new WherePredicate[] { logProtocol, logChannels, excludeKuma, excludeCommands, excludeLinks }, 1000);
@@ -58,7 +57,7 @@ namespace KumaKaiNi.Core
             return new Response(markovResponse);
         }
 
-        private static string GetMarkovResponse(string[] lines)
+        public static string GetMarkovResponse(string[] lines)
         {
             Dictionary<string, List<string>> wordDictionary = CreateWordDictionary(lines);
             string startWord = RNG.PickRandom(wordDictionary.Keys.ToArray());
@@ -77,15 +76,12 @@ namespace KumaKaiNi.Core
                 string word2 = CleanEmoteWord(words[1]);
                 words = words[1..];
 
-                switch (word1)
+                if (word1 == "\n") continue;
+                else
                 {
-                    case "\n":
-                        break;
-                    default:
-                        List<string> wordValues = wordDictionary.GetValueOrDefault(word1, new List<string>());
-                        wordValues.Add(word2);
-                        wordDictionary[word1] = wordValues;
-                        break;
+                    List<string> wordValues = wordDictionary.GetValueOrDefault(word1, new List<string>());
+                    wordValues.Add(word2);
+                    wordDictionary[word1] = wordValues;
                 }
             }
 
