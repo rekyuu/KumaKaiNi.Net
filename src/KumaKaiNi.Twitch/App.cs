@@ -7,6 +7,7 @@ using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Models;
+using System.Timers;
 
 namespace KumaKaiNi.Twitch
 {
@@ -40,9 +41,24 @@ namespace KumaKaiNi.Twitch
             ConnectionCredentials credentials = new ConnectionCredentials("KumaKaiNi", ConfigurationManager.AppSettings.Get("TwitchAccessToken"));
 
             _twitch.Initialize(credentials, "rekyuus");
-            _twitch.Connect();
+            Reconnect();
+
+            Timer reconnectTimer = new Timer(24 * 60 * 60 * 1000);
+            reconnectTimer.Elapsed += new ElapsedEventHandler(ReconnectHandler);
+            reconnectTimer.Start();
 
             await Task.Delay(-1);
+        }
+
+        private void ReconnectHandler(object source, ElapsedEventArgs e)
+        {
+            Reconnect();
+        }
+
+        private void Reconnect()
+        {            
+            if (_twitch.IsConnected) _twitch.Disconnect();
+            _twitch.Connect();
         }
 
         private void Log(object sender, OnLogArgs e)

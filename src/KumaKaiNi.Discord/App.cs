@@ -79,22 +79,29 @@ namespace KumaKaiNi.Discord
                     ChannelIsPrivate = isPrivate,
                     ChannelIsNSFW = isNsfw,
                 };
-                Response response = _kuma.GetResponse(request);
 
-                if (response.Message != "") message.Channel.SendMessageAsync(response.Message);
-                else if (response.Image != null)
+                using (message.Channel.EnterTypingState())
                 {
-                    EmbedBuilder embed = new EmbedBuilder()
-                    {
-                        Color = new Color(0x00b6b6),
-                        Title = response.Image.Referrer,
-                        Url = response.Image.Source,
-                        Description = response.Image.Description,
-                        ImageUrl = response.Image.URL,
-                        Timestamp = DateTime.UtcNow
-                    };
+                    Response response = _kuma.GetResponse(request);
 
-                    message.Channel.SendMessageAsync(text: response.Message, embed: embed.Build());
+                    if (response.Message != "")
+                    {
+                        message.Channel.SendMessageAsync(response.Message);
+                    }
+                    else if (response.Image != null)
+                    {
+                        EmbedBuilder embed = new EmbedBuilder()
+                        {
+                            Color = new Color(0x00b6b6),
+                            Title = response.Image.Referrer,
+                            Url = response.Image.Source,
+                            Description = response.Image.Description,
+                            ImageUrl = response.Image.URL,
+                            Timestamp = DateTime.UtcNow
+                        };
+
+                        message.Channel.SendMessageAsync(text: response.Message, embed: embed.Build());
+                    }
                 }
             }
             catch (Exception ex)
@@ -165,13 +172,17 @@ namespace KumaKaiNi.Discord
                 else
                 {
                     Assembly assembly = Assembly.GetExecutingAssembly();
-                    Stream stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.KumaStandard.png"); ;
+                    Stream stream;
 
-                    if (_currentMonth != 12 && _avatarIsFestive) _avatarIsFestive = false;
-                    else if (_currentMonth == 12 && !_avatarIsFestive)
+                    if (_currentMonth == 12 && !_avatarIsFestive)
                     {
                         stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.KumaFestive.png");
                         _avatarIsFestive = true;
+                    }
+                    else
+                    {
+                        stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.KumaStandard.png");
+                        _avatarIsFestive = false;
                     }
 
                     string avatarLogString = _avatarIsFestive ? "Festive" : "Standard";
