@@ -105,19 +105,23 @@ namespace KumaKaiNi.Telegram
                     ChannelIsNSFW = true,
                 };
 
-                _ = _telegram.SendChatActionAsync(chatId: e.Message.Chat.Id, chatAction: ChatAction.Typing);
                 Response response = _kuma.GetResponse(request);
 
                 if (response.AdminMessage == "LEAVE_CHAT")
                 {
+                _ = _telegram.SendChatActionAsync(chatId: e.Message.Chat.Id, chatAction: ChatAction.Typing);
                     await _telegram.LeaveChatAsync(e.Message.Chat.Id);
                 }
                 else if (response.Message != "")
                 {
+                    _ = _telegram.SendChatActionAsync(chatId: e.Message.Chat.Id, chatAction: ChatAction.Typing);
+
                     await _telegram.SendTextMessageAsync(chatId: e.Message.Chat.Id, text: response.Message);
                 }
                 else if (response.Image != null)
                 {
+                    _ = _telegram.SendChatActionAsync(chatId: e.Message.Chat.Id, chatAction: ChatAction.Typing);
+
                     string caption = $"{response.Image.Description}";
                     if (response.Image.Referrer != "" && response.Image.Source != "") caption += $"\n\n[{response.Image.Referrer}]({response.Image.Source})";
 

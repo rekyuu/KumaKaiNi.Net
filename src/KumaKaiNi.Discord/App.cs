@@ -79,16 +79,18 @@ namespace KumaKaiNi.Discord
                     ChannelIsPrivate = isPrivate,
                     ChannelIsNSFW = isNsfw,
                 };
-
-                using (message.Channel.EnterTypingState())
-                {
                     Response response = _kuma.GetResponse(request);
 
-                    if (response.Message != "")
+                if (response.Message != "")
+                {
+                    using (message.Channel.EnterTypingState())
                     {
                         message.Channel.SendMessageAsync(response.Message);
                     }
-                    else if (response.Image != null)
+                }
+                else if (response.Image != null)
+                {
+                    using (message.Channel.EnterTypingState())
                     {
                         EmbedBuilder embed = new EmbedBuilder()
                         {
