@@ -79,7 +79,8 @@ namespace KumaKaiNi.Discord
                     ChannelIsPrivate = isPrivate,
                     ChannelIsNSFW = isNsfw,
                 };
-                    Response response = _kuma.GetResponse(request);
+                
+                Response response = _kuma.GetResponse(request);
 
                 if (response.Message != "")
                 {
