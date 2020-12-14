@@ -109,13 +109,11 @@ namespace KumaKaiNi.Telegram
 
                 if (response.AdminMessage == "LEAVE_CHAT")
                 {
-                _ = _telegram.SendChatActionAsync(chatId: e.Message.Chat.Id, chatAction: ChatAction.Typing);
                     await _telegram.LeaveChatAsync(e.Message.Chat.Id);
                 }
                 else if (response.Message != "")
                 {
                     _ = _telegram.SendChatActionAsync(chatId: e.Message.Chat.Id, chatAction: ChatAction.Typing);
-
                     await _telegram.SendTextMessageAsync(chatId: e.Message.Chat.Id, text: response.Message);
                 }
                 else if (response.Image != null)
