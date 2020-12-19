@@ -140,7 +140,7 @@ namespace KumaKaiNi.Core
                         string spamCheck = message;
                         if (words.Length > 1) spamCheck = message.Replace(words[0], "").Replace(" ", "");
 
-                        if ((spamCheck.Length > 0 || message.Length <= 2000) && words.Length >= 3)
+                        if (spamCheck.Length > 0 && message.Length <= 2000 && words.Length >= 3)
                         {
                             GptResponse gpt = new GptResponse()
                             {
