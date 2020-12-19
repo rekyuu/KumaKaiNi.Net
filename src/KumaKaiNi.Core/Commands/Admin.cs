@@ -100,6 +100,14 @@ namespace KumaKaiNi.Core
             return new Response("Should be good to go!");
         }
 
+        [Command("dropgpt")]
+        public static Response DropGPTResponses()
+        {
+            Database.DropTable<GptResponse>();
+
+            return new Response("Done.");
+        }
+
         [Command("newgpt")]
         public static Response ProcessNewGPTResponses()
         {
@@ -126,12 +134,13 @@ namespace KumaKaiNi.Core
                     foreach (string response in responses)
                     {
                         string message = response.Replace("<|startoftext|>", "");
+                        message = response.Replace("@everyone", "everyone");
                         string[] words = message.Split(" ");
 
                         string spamCheck = message;
                         if (words.Length > 1) spamCheck = message.Replace(words[0], "").Replace(" ", "");
 
-                        if (spamCheck.Length > 0 || message.Length <= 2000)
+                        if ((spamCheck.Length > 0 || message.Length <= 2000) && words.Length >= 3)
                         {
                             GptResponse gpt = new GptResponse()
                             {
