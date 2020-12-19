@@ -86,6 +86,8 @@ namespace KumaKaiNi.Discord
                 {
                     using (message.Channel.EnterTypingState())
                     {
+                        System.Threading.Thread.Sleep(1000);
+
                         message.Channel.SendMessageAsync(response.Message);
                     }
                 }
@@ -93,6 +95,8 @@ namespace KumaKaiNi.Discord
                 {
                     using (message.Channel.EnterTypingState())
                     {
+                        System.Threading.Thread.Sleep(1000);
+
                         EmbedBuilder embed = new EmbedBuilder()
                         {
                             Color = new Color(0x00b6b6),
