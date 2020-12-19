@@ -47,7 +47,7 @@ namespace KumaKaiNi.Core
             command.ExecuteNonQuery();
         }
 
-        public static List<T> GetMany<T>(WherePredicate[] wherePredicates = null, int limit = 0) where T : DatabaseObject
+        public static List<T> GetMany<T>(WherePredicate[] wherePredicates = null, int limit = 0, bool randomOrder = false) where T : DatabaseObject
         {
             List<T> results = new List<T>();
             DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
@@ -79,7 +79,9 @@ namespace KumaKaiNi.Core
                 sql += whereClause.Remove(whereClause.Length - 5, 5);
             }
 
-            sql += " ORDER BY last_modified DESC";
+            if (randomOrder) sql += " ORDER BY RANDOM()";
+            else sql += " ORDER BY last_modified DESC";
+
             if (limit > 0) sql += " LIMIT @limit";
 
             using NpgsqlConnection connection = DatabaseConnection();

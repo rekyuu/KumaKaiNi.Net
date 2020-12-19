@@ -87,7 +87,7 @@ namespace KumaKaiNi.Core
             return new Response("Everyone is dead.");
         }
 
-        [Command("restore")]
+        //[Command("restore")]
         public static Response Restore(Request request)
         {
             string folder = @"C:\KumaKaiNiMigration\";
@@ -98,6 +98,61 @@ namespace KumaKaiNi.Core
             ProcessLogs(folder);
 
             return new Response("Should be good to go!");
+        }
+
+        [Command("newgpt")]
+        public static Response ProcessNewGPTResponses()
+        {
+            Database.CreateTable<GptResponse>();
+
+            string kumaRootWindows = @"C:\KumaRoot\GPT\";
+            string kumaRootLinux = $"/srv/KumaRoot/GPT/";
+            string kumaRoot = Helpers.IsLinux() ? kumaRootLinux : kumaRootWindows;
+            string newGPTDir = kumaRoot + "New";
+            string processedGPTDir = kumaRoot + "Processed";
+
+            string[] files = Directory.GetFiles(newGPTDir);
+            int responsesAdded = 0;
+
+            if (files.Length == 0) return new Response("There are no new responses to add.");
+
+            foreach (string sourceFile in files)
+            {
+                using (StreamReader reader = new StreamReader(sourceFile))
+                {
+                    string content = reader.ReadToEnd();
+                    string[] responses = content.Split("\n====================\n");
+
+                    foreach (string response in responses)
+                    {
+                        string message = response.Replace("<|startoftext|>", "");
+                        string[] words = message.Split(" ");
+
+                        string spamCheck = message;
+                        if (words.Length > 1) spamCheck = message.Replace(words[0], "").Replace(" ", "");
+
+                        if (spamCheck.Length > 0 || message.Length <= 2000)
+                        {
+                            GptResponse gpt = new GptResponse()
+                            {
+                                Message = message,
+                                Returned = false
+                            };
+
+                            gpt.Insert();
+                            responsesAdded++;
+                        }
+                    }
+                }
+
+                string filename = Path.GetFileName(sourceFile);
+                string destinationFile = Path.Combine(processedGPTDir, filename);
+
+                Directory.CreateDirectory(processedGPTDir);
+                File.Move(sourceFile, destinationFile);
+            }
+
+            return new Response($"{responsesAdded} new responses added.");
         }
 
         private static void ProcessCustomCommands(string folder)

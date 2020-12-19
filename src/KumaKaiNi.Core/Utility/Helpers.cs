@@ -34,5 +34,11 @@ namespace KumaKaiNi.Core
 
             return (int)((newMoons - (int)newMoons) * cycleLength);
         }
+
+        public static bool IsLinux()
+        {
+            int p = (int)Environment.OSVersion.Platform;
+            return (p == 4) || (p == 6) || (p == 128);
+        }
     }
 }
