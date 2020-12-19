@@ -5,8 +5,30 @@ using System.Text.RegularExpressions;
 
 namespace KumaKaiNi.Core
 {
-    public static class Markov
+    public static class TextGeneration
     {
+        [Command("gpt")]
+        public static Response GPTResponse()
+        {
+            WherePredicate unsaidResponses = new WherePredicate()
+            {
+                Source = "returned",
+                Comparitor = "=",
+                Target = false
+            };
+
+            List<GptResponse> results = Database.GetMany<GptResponse>(new WherePredicate[] { unsaidResponses }, 1, true);
+
+            if (results.Count == 0) return new Response("I have nothing more to say...");
+
+            GptResponse gpt = results[0];
+
+            gpt.Returned = true;
+            gpt.Update();
+
+            return new Response(gpt.Message);
+        }
+
         [Command("markov")]
         public static Response MarkovCommand()
         {
