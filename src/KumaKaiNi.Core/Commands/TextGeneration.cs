@@ -8,7 +8,7 @@ namespace KumaKaiNi.Core
     public static class TextGeneration
     {
         [Command("gpt")]
-        public static Response GPTResponse()
+        public static Response GptResponse()
         {
             WherePredicate unsaidResponses = new WherePredicate()
             {
@@ -17,7 +17,7 @@ namespace KumaKaiNi.Core
                 Target = false
             };
 
-            List<GptResponse> results = Database.GetMany<GptResponse>(new WherePredicate[] { unsaidResponses }, 1, true);
+            List<GptResponse> results = Database.GetMany<GptResponse>(new[] { unsaidResponses }, 1, true);
 
             if (results.Count == 0) return new Response("I have nothing more to say...");
 
@@ -36,14 +36,14 @@ namespace KumaKaiNi.Core
             {
                 Source = "protocol",
                 Comparitor = "= ANY",
-                Target = new string[] { "Twitch", "Discord" }
+                Target = new[] { "Twitch", "Discord" }
             };
 
             WherePredicate logChannels = new WherePredicate()
             {
                 Source = "channel_id",
                 Comparitor = "= ANY",
-                Target = new long[] { 0, 214268737887404042 }
+                Target = new[] { 0, 214268737887404042 }
             };
 
             WherePredicate excludeKuma = new WherePredicate()
@@ -67,7 +67,7 @@ namespace KumaKaiNi.Core
                 Target = @".*((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?).*"
             };
 
-            List<Log> logs = Database.GetMany<Log>(new WherePredicate[] { logProtocol, logChannels, excludeKuma, excludeCommands, excludeLinks }, 1000);
+            List<Log> logs = Database.GetMany<Log>(new[] { logProtocol, logChannels, excludeKuma, excludeCommands, excludeLinks }, 1000);
 
             string[] lines = new string[logs.Count];
             for (int i = 0; i < logs.Count; i++)
@@ -79,10 +79,10 @@ namespace KumaKaiNi.Core
             return new Response(markovResponse);
         }
 
-        public static string GetMarkovResponse(string[] lines)
+        private static string GetMarkovResponse(string[] lines)
         {
             Dictionary<string, List<string>> wordDictionary = CreateWordDictionary(lines);
-            string startWord = RNG.PickRandom(wordDictionary.Keys.ToArray());
+            string startWord = Rng.PickRandom(wordDictionary.Keys.ToArray());
 
             return GenerateMarkov(wordDictionary, startWord);
         }
@@ -98,8 +98,7 @@ namespace KumaKaiNi.Core
                 string word2 = CleanEmoteWord(words[1]);
                 words = words[1..];
 
-                if (word1 == "\n") continue;
-                else
+                if (word1 != "\n")
                 {
                     List<string> wordValues = wordDictionary.GetValueOrDefault(word1, new List<string>());
                     wordValues.Add(word2);
@@ -114,8 +113,7 @@ namespace KumaKaiNi.Core
         {
             MatchCollection matches = Regex.Matches(word, @"<:(?<emote>.+):\d{18}>");
 
-            if (matches.Count == 0) return word;
-            else return matches[0].Groups["emote"].Value;
+            return matches.Count == 0 ? word : matches[0].Groups["emote"].Value;
         }
 
         private static string GenerateMarkov(Dictionary<string, List<string>> wordDictionary, string startWord)
@@ -125,7 +123,7 @@ namespace KumaKaiNi.Core
             string lastWord = startWord;
             while (true)
             {
-                string nextWord = RNG.PickRandom(wordDictionary[lastWord]);
+                string nextWord = Rng.PickRandom(wordDictionary[lastWord]);
                 if (nextWord == "\n") break;
 
                 sb.Append($" {nextWord}");

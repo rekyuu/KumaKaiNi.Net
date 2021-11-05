@@ -77,7 +77,7 @@ namespace KumaKaiNi.Discord
                     Protocol = RequestProtocol.Discord,
                     ChannelId = (long)channel.Id,
                     ChannelIsPrivate = isPrivate,
-                    ChannelIsNSFW = isNsfw,
+                    ChannelIsNsfw = isNsfw,
                 };
                 
                 Response response = _kuma.GetResponse(request);
@@ -103,7 +103,7 @@ namespace KumaKaiNi.Discord
                             Title = response.Image.Referrer,
                             Url = response.Image.Source,
                             Description = response.Image.Description,
-                            ImageUrl = response.Image.URL,
+                            ImageUrl = response.Image.Url,
                             Timestamp = DateTime.UtcNow
                         };
 

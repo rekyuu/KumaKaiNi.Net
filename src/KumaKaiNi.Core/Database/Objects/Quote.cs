@@ -6,7 +6,8 @@ namespace KumaKaiNi.Core
     {
         public string Text;
 
-        public Quote() : base() { }
+        public Quote() { }
+        
         public Quote(Dictionary<string, object> row) : base(row) { }
     }
 }

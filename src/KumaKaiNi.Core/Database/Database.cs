@@ -3,7 +3,6 @@ using Npgsql.Schema;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
 using System.Reflection;
 using System.Text;
 
@@ -18,17 +17,17 @@ namespace KumaKaiNi.Core
             fields.Remove("id");
 
             int i = 0;
-            string tablename = obj.GetTableName();
+            string tableName = obj.GetTableName();
             string[] columns = new string[fields.Count];
-            foreach (KeyValuePair<string, FieldInfo> field in fields)
+            foreach (var (key, value) in fields)
             {
-                columns[i] = $"{field.Key} {GetPostgresType(field.Value.FieldType)}";
+                columns[i] = $"{key} {GetPostgresType(value.FieldType)}";
                 i++;
             }
 
             using NpgsqlConnection connection = DatabaseConnection();
 
-            string sql = $"CREATE TABLE IF NOT EXISTS {tablename}(id SERIAL PRIMARY KEY, {string.Join(", ", columns)})";
+            string sql = $"CREATE TABLE IF NOT EXISTS {tableName}(id SERIAL PRIMARY KEY, {string.Join(", ", columns)})";
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
 
             command.ExecuteNonQuery();
@@ -37,11 +36,11 @@ namespace KumaKaiNi.Core
         public static void DropTable<T>() where T : DatabaseObject
         {
             DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
-            string tablename = obj.GetTableName();
+            string tableName = obj.GetTableName();
 
             using NpgsqlConnection connection = DatabaseConnection();
 
-            string sql = $"DROP TABLE IF EXISTS {tablename}";
+            string sql = $"DROP TABLE IF EXISTS {tableName}";
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
 
             command.ExecuteNonQuery();
@@ -52,8 +51,8 @@ namespace KumaKaiNi.Core
             List<T> results = new List<T>();
             DatabaseObject obj = (DatabaseObject)Activator.CreateInstance(typeof(T));
 
-            string tablename = obj.GetTableName();
-            string sql = $"SELECT * FROM {tablename}";
+            string tableName = obj.GetTableName();
+            string sql = $"SELECT * FROM {tableName}";
 
             StringBuilder sb = new StringBuilder();
             if (wherePredicates != null)
@@ -63,14 +62,9 @@ namespace KumaKaiNi.Core
                 int i = 0;
                 foreach (WherePredicate wherePredicate in wherePredicates)
                 {
-                    if (wherePredicate.Target.GetType().IsArray)
-                    {
-                        sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} (@{wherePredicate.Source}{i}) AND ");
-                    }
-                    else
-                    {
-                        sb.Append($"{wherePredicate.Source} {wherePredicate.Comparitor} @{wherePredicate.Source}{i} AND ");
-                    }
+                    sb.Append(wherePredicate.Target.GetType().IsArray
+                        ? $"{wherePredicate.Source} {wherePredicate.Comparitor} (@{wherePredicate.Source}{i}) AND "
+                        : $"{wherePredicate.Source} {wherePredicate.Comparitor} @{wherePredicate.Source}{i} AND ");
 
                     i++;
                 }
@@ -142,14 +136,19 @@ namespace KumaKaiNi.Core
             return connection;
         }
 
-        public static string GetConnectionString()
+        private static string GetConnectionString()
         {
-            return $"Host=localhost;Username=postgres;Password={ConfigurationManager.AppSettings.Get("PostgresSQLPassword")};Database=kumakaini";
+            string host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
+            string username = Environment.GetEnvironmentVariable("POSTGRES_USERNAME");
+            string password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+            string database = Environment.GetEnvironmentVariable("POSTGRES_DATABASE");
+            
+            return $"Host={host};Username={username};Password={password};Database={database}";
         }
 
-        public static string GetPostgresType(Type type)
+        private static string GetPostgresType(Type type)
         {
-            return (type.Name.ToLower()) switch
+            return type.Name.ToLower() switch
             {
                 "boolean" => "BOOLEAN",
                 "datetime" => "TIMESTAMP",

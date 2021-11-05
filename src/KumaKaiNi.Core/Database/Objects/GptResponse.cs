@@ -7,7 +7,8 @@ namespace KumaKaiNi.Core
         public string Message;
         public bool Returned;
 
-        public GptResponse() : base() { }
+        public GptResponse() { }
+        
         public GptResponse(Dictionary<string, object> row) : base(row) { }
     }
 }

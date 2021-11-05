@@ -98,7 +98,7 @@ namespace KumaKaiNi.Twitch
                     Protocol = RequestProtocol.Twitch,
                     ChannelId = 0,
                     ChannelIsPrivate = false,
-                    ChannelIsNSFW = false,
+                    ChannelIsNsfw = false,
                 };
                 Response response = _kuma.GetResponse(request);
 
@@ -134,7 +134,7 @@ namespace KumaKaiNi.Twitch
                     Protocol = RequestProtocol.Twitch,
                     ChannelId = 0,
                     ChannelIsPrivate = true,
-                    ChannelIsNSFW = false,
+                    ChannelIsNsfw = false,
                 };
                 Response response = _kuma.GetResponse(request);
 

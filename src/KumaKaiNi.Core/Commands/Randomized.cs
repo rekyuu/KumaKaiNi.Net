@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 
 namespace KumaKaiNi.Core
 {
@@ -11,7 +10,7 @@ namespace KumaKaiNi.Core
         [Command("flip")]
         public static Response CoinFlip()
         {
-            string result = RNG.PickRandom(new[] { "Heads.", "Tails." });
+            string result = Rng.PickRandom(new[] { "Heads.", "Tails." });
             return new Response(result);
         }
 
@@ -23,7 +22,7 @@ namespace KumaKaiNi.Core
 
             string[] commaSplitArgs = string.Join(" ", request.CommandArgs).Split(", ");
 
-            string result = RNG.PickRandom(commaSplitArgs);
+            string result = Rng.PickRandom(commaSplitArgs);
             return new Response(result);
         }
 
@@ -57,7 +56,7 @@ namespace KumaKaiNi.Core
                 }
                 catch
                 {
-                    // Assume the argumentsd given were not proper and return a help message.
+                    // Assume the arguments given were not proper and return a help message.
                     return new Response("Usage: !roll\n       !roll {dice sides}\n       !roll {dice amount}d{dice sides}\n");
                 }
 
@@ -122,12 +121,12 @@ namespace KumaKaiNi.Core
                 "Very doubtful."
             };
 
-            string result = RNG.PickRandom(predictions);
+            string result = Rng.PickRandom(predictions);
             return new Response(result);
         }
 
         [Command("gdq")]
-        public static Response GDQ()
+        public static Response Gdq()
         {
             using HttpClient client = new HttpClient();
             HttpResponseMessage request = client.GetAsync("https://taskinoz.com/gdq/api/").Result;

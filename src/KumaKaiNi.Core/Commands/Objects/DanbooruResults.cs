@@ -3,7 +3,7 @@ using System;
 
 namespace KumaKaiNi.Core
 {
-    public partial class DanbooruResults
+    public class DanbooruResults
     {
         [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public long? Id { get; set; }

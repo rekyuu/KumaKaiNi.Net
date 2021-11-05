@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace KumaKaiNi.Core
 {
-    public static class RNG
+    public static class Rng
     {
         public static T PickRandom<T>(List<T> choices)
         {
-            return PickRandom<T>(choices.ToArray());
+            return PickRandom(choices.ToArray());
         }
 
         public static T PickRandom<T>(T[] choices)

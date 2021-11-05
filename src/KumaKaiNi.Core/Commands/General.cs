@@ -14,7 +14,7 @@ namespace KumaKaiNi.Core
         [Command("ping")]
         public static Response Kuma()
         {
-            string reply = RNG.PickRandom(new[] { "Kuma?", "Kuma~!", "Kuma...", "Kuma!!", "Kuma.", "Kuma...?" });
+            string reply = Rng.PickRandom(new[] { "Kuma?", "Kuma~!", "Kuma...", "Kuma!!", "Kuma.", "Kuma...?" });
 
             return new Response(reply);
         }
@@ -26,19 +26,19 @@ namespace KumaKaiNi.Core
             return new Response(string.Join(" ", request.CommandArgs));
         }
 
-        [Phrase(new string[] { "hi", "hello", "hey", "sup" })]
+        [Phrase(new[] { "hi", "hello", "hey", "sup" })]
         public static Response Hello()
         {
-            string reply = RNG.PickRandom(new string[] { "sup", "yo", "ay", "hi", "wassup" });
+            string reply = Rng.PickRandom(new[] { "sup", "yo", "ay", "hi", "wassup" });
 
-            if (RNG.OneTo(25)) return new Response(reply);
+            if (Rng.OneTo(25)) return new Response(reply);
             else return new Response();
         }
 
-        [Phrase(new string[] { "ty kuma", "thanks kuma", "thank you kuma" })]
+        [Phrase(new[] { "ty kuma", "thanks kuma", "thank you kuma" })]
         public static Response Thanks()
         {
-            string reply = RNG.PickRandom(new string[] { "np", "don't mention it", "anytime", "sure thing", "ye whateva" });
+            string reply = Rng.PickRandom(new[] { "np", "don't mention it", "anytime", "sure thing", "ye whateva" });
 
             return new Response(reply);
         }
@@ -46,7 +46,7 @@ namespace KumaKaiNi.Core
         [Phrase("same")]
         public static Response Same()
         {
-            if (RNG.OneTo(25)) return new Response("same");
+            if (Rng.OneTo(25)) return new Response("same");
             else return new Response();
         }
 

@@ -102,7 +102,7 @@ namespace KumaKaiNi.Telegram
                     Protocol = RequestProtocol.Telegram,
                     ChannelId = e.Message.Chat.Id,
                     ChannelIsPrivate = isPrivate,
-                    ChannelIsNSFW = true,
+                    ChannelIsNsfw = true,
                 };
 
                 Response response = _kuma.GetResponse(request);
@@ -125,7 +125,7 @@ namespace KumaKaiNi.Telegram
 
                     try
                     {
-                        await _telegram.SendPhotoAsync(chatId: e.Message.Chat.Id, photo: response.Image.URL, caption: caption, parseMode: ParseMode.Markdown);
+                        await _telegram.SendPhotoAsync(chatId: e.Message.Chat.Id, photo: response.Image.Url, caption: caption, parseMode: ParseMode.Markdown);
                     }
                     catch
                     {

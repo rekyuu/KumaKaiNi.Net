@@ -18,7 +18,7 @@ namespace KumaKaiNi.Core
             };
 
             string responseString = response.Message;
-            if (responseString == "" && response.Image != null) responseString = $"{response.Image.Referrer}\n{response.Image.Description}\n{response.Image.URL}\n{response.Image.Source}";
+            if (responseString == "" && response.Image != null) responseString = $"{response.Image.Referrer}\n{response.Image.Description}\n{response.Image.Url}\n{response.Image.Source}";
 
             Log responseLog = new Log()
             {

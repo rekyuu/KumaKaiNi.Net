@@ -13,11 +13,11 @@ namespace KumaKaiNi.Core
             client.DefaultRequestHeaders.Add("Authorization", $"Client-ID {ConfigurationManager.AppSettings.Get("ImgurClientID")}");
             HttpResponseMessage request = client.GetAsync("https://api.imgur.com/3/album/zSNC1").Result;
             ImgurResults response = JsonConvert.DeserializeObject<ImgurResults>(request.Content.ReadAsStringAsync().Result);
-            ImgurImage result = RNG.PickRandom(response.Data.Images);
+            ImgurImage result = Rng.PickRandom(response.Data.Images);
 
             ResponseImage image = new ResponseImage()
             {
-                URL = result.Link.ToString(),
+                Url = result.Link.ToString(),
                 Source = $"https://imgur.com/{result.Id}",
                 Description = "",
                 Referrer = "imgur.com"

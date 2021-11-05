@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -74,10 +75,6 @@
     <EmbeddedResource Include="Resources\Phase7.jpg" />
     <EmbeddedResource Include="Resources\Phase8.jpg" />
     <EmbeddedResource Include="Resources\Phase9.jpg" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\KumaKaiNi.Core\App.config" Link="App.config" />
   </ItemGroup>
 
   <ItemGroup>

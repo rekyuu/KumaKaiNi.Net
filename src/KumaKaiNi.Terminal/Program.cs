@@ -29,12 +29,12 @@ namespace KumaKaiNi.DevConsole
                         Protocol = RequestProtocol.Terminal,
                         ChannelId = 5862,
                         ChannelIsPrivate = true,
-                        ChannelIsNSFW = true,
+                        ChannelIsNsfw = true,
                     };
                     Response response = _kuma.GetResponse(request);
 
                     if (response.Message != "") Console.WriteLine($"\n  {response.Message}\n");
-                    else if (response.Image != null) Console.WriteLine($"\n  {response.Image.URL}\n");
+                    else if (response.Image != null) Console.WriteLine($"\n  {response.Image.Url}\n");
                 }
                 catch (Exception ex)
                 {

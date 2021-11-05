@@ -13,7 +13,7 @@ namespace KumaKaiNi.Core
         public RequestProtocol Protocol;
         public long ChannelId;
         public bool ChannelIsPrivate;
-        public bool ChannelIsNSFW;
+        public bool ChannelIsNsfw;
 
         public bool IsCommand = false;
         public string Command;

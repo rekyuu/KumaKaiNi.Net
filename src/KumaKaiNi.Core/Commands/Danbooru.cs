@@ -15,70 +15,64 @@ namespace KumaKaiNi.Core.Commands
         [Command("dan")]
         public static Response GetDanbooru(Request request)
         {
-            if (!request.ChannelIsNSFW) return new Response();
+            if (!request.ChannelIsNsfw) return new Response();
 
             ResponseImage image = GetDanbooruImage(request.CommandArgs, request.Protocol, request.ChannelId);
 
-            if (image.URL != null) return new Response() { Image = image };
-            else return new Response("Nothing found!");
+            return image.Url != null ? new Response() { Image = image } : new Response("Nothing found!");
         }
 
         [Command("safe")]
         [Command("sfw")]
         public static Response GetSafeDanbooru(Request request)
         {
-            string[] baseTags = new string[] { "rating:s" };
+            string[] baseTags = { "rating:s" };
             string[] requestTags = baseTags.Concat(request.CommandArgs).ToArray();
             ResponseImage image = GetDanbooruImage(requestTags, request.Protocol, request.ChannelId);
 
-            if (image.URL != null) return new Response() { Image = image };
-            else return new Response("Nothing found!");
+            return image.Url != null ? new Response() { Image = image } : new Response("Nothing found!");
         }
 
         [Command("lewd")]
         [Command("nsfw")]
         public static Response GetLewdDanbooru(Request request)
         {
-            if (!request.ChannelIsNSFW) return new Response();
+            if (!request.ChannelIsNsfw) return new Response();
 
-            string[] baseTags = new string[] { "-rating:s" };
+            string[] baseTags = { "-rating:s" };
             string[] requestTags = baseTags.Concat(request.CommandArgs).ToArray();
             ResponseImage image = GetDanbooruImage(requestTags, request.Protocol, request.ChannelId);
 
-            if (image.URL != null) return new Response() { Image = image };
-            else return new Response("Nothing found!");
+            return image.Url != null ? new Response() { Image = image } : new Response("Nothing found!");
         }
 
-        private static ResponseImage GetDanbooruImage(string[] tags, RequestProtocol protocol, long channelID)
+        private static ResponseImage GetDanbooruImage(string[] tags, RequestProtocol protocol, long channelId)
         {
-            List<DanbooruBlocklist> blocklist = Database.GetMany<DanbooruBlocklist>();
-            string[] blockedTags = new string[blocklist.Count];
+            List<DanbooruBlockList> blockList = Database.GetMany<DanbooruBlockList>();
+            string[] blockedTags = new string[blockList.Count];
 
             int i = 0;
-            foreach (DanbooruBlocklist entry in blocklist)
+            foreach (DanbooruBlockList entry in blockList)
             {
                 blockedTags[i] = entry.Tag;
                 i++;
             }
 
-            foreach (string tag in tags)
-            {
-                if (blockedTags.Contains(tag)) return new ResponseImage();
-            }
+            if (tags.Any(tag => blockedTags.Contains(tag))) return new ResponseImage();
 
             string requestTags = string.Join("+", tags);
             string user = ConfigurationManager.AppSettings.Get("DanbooruUser");
             string pass = ConfigurationManager.AppSettings.Get("DanbooruAPIKey");
             byte[] authToken = Encoding.ASCII.GetBytes($"{user}:{pass}");
             int page = 1;
-            int limit = 50;
+            const int limit = 50;
             DanbooruResults result = null;
 
             WherePredicate whereChannel = new WherePredicate()
             {
                 Source = "channel_id",
                 Comparitor = "=",
-                Target = channelID
+                Target = channelId
             };
 
             WherePredicate whereProtocol = new WherePredicate()
@@ -88,8 +82,8 @@ namespace KumaKaiNi.Core.Commands
                 Target = protocol
             };
 
-            string[] cache = new string[] { };
-            if (channelID != 0)
+            string[] cache = { };
+            if (channelId != 0)
             {
                 WherePredicate whereExpires = new WherePredicate()
                 {
@@ -98,7 +92,7 @@ namespace KumaKaiNi.Core.Commands
                     Target = DateTime.UtcNow
                 };
 
-                List<DanbooruCache> danCache = Database.GetMany<DanbooruCache>(new WherePredicate[] { whereExpires, whereProtocol, whereChannel });
+                List<DanbooruCache> danCache = Database.GetMany<DanbooruCache>(new[] { whereExpires, whereProtocol, whereChannel });
 
                 i = 0;
                 cache = new string[danCache.Count];
@@ -113,14 +107,14 @@ namespace KumaKaiNi.Core.Commands
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
             while (true)
             {
-                string requestURL = $"https://danbooru.donmai.us/posts.json?limit={limit}&page={page}&tags={requestTags}";
-                HttpResponseMessage request = client.GetAsync(requestURL).Result;
+                string requestUrl = $"https://danbooru.donmai.us/posts.json?limit={limit}&page={page}&tags={requestTags}";
+                HttpResponseMessage request = client.GetAsync(requestUrl).Result;
                 string content = request.Content.ReadAsStringAsync().Result;
                 List<DanbooruResults> results = JsonConvert.DeserializeObject<List<DanbooruResults>>(content);
 
                 if (results.Count == 0) break;
 
-                result = RNG.PickRandom(results);
+                result = Rng.PickRandom(results);
                 results.Remove(result);
 
                 bool badImage = false;
@@ -128,7 +122,7 @@ namespace KumaKaiNi.Core.Commands
                 {
                     if (badImage)
                     {
-                        result = RNG.PickRandom(results);
+                        result = Rng.PickRandom(results);
                         results.Remove(result);
                         badImage = false;
                     }
@@ -140,13 +134,9 @@ namespace KumaKaiNi.Core.Commands
                     }
 
                     string[] resultTags = result.TagString.Split(" ");
-                    foreach (string tag in blockedTags)
+                    if (blockedTags.Any(tag => resultTags.Contains(tag)))
                     {
-                        if (resultTags.Contains(tag))
-                        {
-                            badImage = true;
-                            break;
-                        }
+                        badImage = true;
                     }
 
                     if (!badImage) break;
@@ -186,14 +176,14 @@ namespace KumaKaiNi.Core.Commands
                 string[] artist = result.TagStringArtist.Split("_");
                 string artistString = string.Join(" ", artist);
 
-                string descriptionString = "";
+                string descriptionString;
                 if (characterString != "" && copyrightString != "") descriptionString = $"{characterString} - {copyrightString}";
                 else if (copyrightString != "") descriptionString = $"Unknown - {copyrightString}";
                 else descriptionString = $"Original";
 
                 descriptionString += $"\nDrawn by {artistString}";
 
-                if (channelID != 0)
+                if (channelId != 0)
                 {
                     WherePredicate whereFileUrl = new WherePredicate
                     {
@@ -202,7 +192,7 @@ namespace KumaKaiNi.Core.Commands
                         Target = result.FileUrl
                     };
 
-                    List<DanbooruCache> cachedItems = Database.GetMany<DanbooruCache>(new WherePredicate[] { whereFileUrl, whereProtocol, whereChannel });
+                    List<DanbooruCache> cachedItems = Database.GetMany<DanbooruCache>(new[] { whereFileUrl, whereProtocol, whereChannel });
                     if (cachedItems.Count > 1) throw new Exception("Multiple entries for file in Danbooru cache.");
                     else if (cachedItems.Count == 1)
                     {
@@ -216,7 +206,7 @@ namespace KumaKaiNi.Core.Commands
                             FileUrl = result.FileUrl,
                             Expires = DateTime.UtcNow.AddDays(1),
                             Protocol = protocol,
-                            ChannelId = channelID
+                            ChannelId = channelId
                         };
 
                         cacheItem.Insert();
@@ -225,13 +215,14 @@ namespace KumaKaiNi.Core.Commands
 
                 return new ResponseImage()
                 {
-                    URL = fileUrl,
+                    Url = fileUrl,
                     Source = $"https://danbooru.donmai.us/posts/{result.Id}",
                     Description = descriptionString,
                     Referrer = "danbooru.donmai.us",
                 };
             }
-            else return new ResponseImage();
+
+            return new ResponseImage();
         }
     }
 }
