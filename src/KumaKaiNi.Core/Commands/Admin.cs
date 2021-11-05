@@ -1,7 +1,4 @@
-﻿using CsvHelper;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -82,19 +79,6 @@ namespace KumaKaiNi.Core
             return new Response("Everyone is dead.");
         }
 
-        //[Command("restore")]
-        public static Response Restore(Request request)
-        {
-            string folder = @"C:\KumaKaiNiMigration\";
-            if (request.CommandArgs.Length > 0) folder = request.CommandArgs[0];
-
-            ProcessCustomCommands(folder);
-            ProcessQuotes(folder);
-            ProcessLogs(folder);
-
-            return new Response("Should be good to go!");
-        }
-
         [Command("dropgpt")]
         public static Response DropGptResponses()
         {
@@ -158,90 +142,6 @@ namespace KumaKaiNi.Core
             }
 
             return new Response($"{responsesAdded} new responses added.");
-        }
-
-        private static void ProcessCustomCommands(string folder)
-        {
-            Database.DropTable<CustomCommand>();
-            Database.CreateTable<CustomCommand>();
-
-            string commandsPath = $"{folder}commands.csv";
-            using StreamReader reader = new StreamReader(commandsPath);
-            using CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-            IEnumerable<dynamic> commands = csv.GetRecords<dynamic>();
-
-            foreach (dynamic command in commands)
-            {
-                CustomCommand newCommand = new CustomCommand()
-                {
-                    Command = (string)(command.command).Replace("!", ""),
-                    Response = command.response
-                };
-
-                newCommand.Insert();
-            }
-        }
-
-        private static void ProcessQuotes(string folder)
-        {
-            Database.DropTable<Quote>();
-            Database.CreateTable<Quote>();
-
-            string quotesPath = $"{folder}quotes.csv";
-            using StreamReader reader = new StreamReader(quotesPath);
-            using CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-            IEnumerable<dynamic> quotes = csv.GetRecords<dynamic>();
-
-            foreach (dynamic quote in quotes)
-            {
-                Quote newQuote = new Quote()
-                {
-                    Text = quote.text
-                };
-
-                newQuote.Insert();
-            }
-        }
-
-        private static void ProcessLogs(string folder)
-        {
-            Database.DropTable<Log>();
-            Database.CreateTable<Log>();
-
-            string logsPath = $"{folder}logs.csv";
-            using StreamReader reader = new StreamReader(logsPath);
-            using CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-            csv.Configuration.BadDataFound = null;
-
-            IEnumerable<dynamic> logs = csv.GetRecords<dynamic>();
-            foreach (dynamic log in logs)
-            {
-                try
-                {
-                    if (log.message != "")
-                    {
-                        Log newLog = new Log()
-                        {
-                            Timestamp = DateTime.Parse(log.timestamp, null, DateTimeStyles.RoundtripKind),
-                            Protocol = (RequestProtocol)Enum.Parse(typeof(RequestProtocol), log.protocol),
-                            Message = log.message,
-                            Username = log.username
-                        };
-
-                        try
-                        {
-                            newLog.ChannelId = long.Parse(log.channel);
-                        }
-                        catch { /* ignored */ }
-
-                        newLog.Insert();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logging.LogException(ex);
-                }
-            }
         }
     }
 }
