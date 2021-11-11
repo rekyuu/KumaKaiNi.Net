@@ -1,12 +1,12 @@
-﻿FROM mcr.microsoft.com/dotnet/core/runtime:3.1 AS base
+﻿FROM mcr.microsoft.com/dotnet/runtime:5.0 AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["src/KumaKaiNi.Telegram/KumaKaiNi.Telegram.csproj", "KumaKaiNi.Telegram/"]
+COPY ["src/KumaKaiNi.Telegram/KumaKaiNi.Telegram.csproj", "src/KumaKaiNi.Telegram/"]
 RUN dotnet restore "src/KumaKaiNi.Telegram/KumaKaiNi.Telegram.csproj"
 COPY . .
-WORKDIR "/src/KumaKaiNi.Telegram"
+WORKDIR "/src/src/KumaKaiNi.Telegram"
 RUN dotnet build "KumaKaiNi.Telegram.csproj" -c Release -o /app/build
 
 FROM build AS publish
