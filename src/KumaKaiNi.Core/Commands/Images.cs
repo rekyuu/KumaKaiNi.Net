@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using System.Configuration;
+﻿using System;
+using Newtonsoft.Json;
 using System.Net.Http;
 
 namespace KumaKaiNi.Core
@@ -10,10 +10,10 @@ namespace KumaKaiNi.Core
         public static Response Smug()
         {
             using HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Authorization", $"Client-ID {ConfigurationManager.AppSettings.Get("ImgurClientID")}");
+            client.DefaultRequestHeaders.Add("Authorization", $"Client-ID {Config.ImgurClientId}");
             HttpResponseMessage request = client.GetAsync("https://api.imgur.com/3/album/zSNC1").Result;
             ImgurResults response = JsonConvert.DeserializeObject<ImgurResults>(request.Content.ReadAsStringAsync().Result);
-            ImgurImage result = Rng.PickRandom(response.Data.Images);
+            ImgurImage result = Rng.PickRandom(response?.Data.Images);
 
             ResponseImage image = new ResponseImage()
             {

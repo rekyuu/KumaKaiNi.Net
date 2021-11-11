@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using KumaKaiNi.Core;
 using System;
-using System.Configuration;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -31,9 +30,7 @@ namespace KumaKaiNi.Discord
 
         public async Task Start()
         {
-            string token = ConfigurationManager.AppSettings.Get("DiscordToken");
-
-            await _discord.LoginAsync(TokenType.Bot, token);
+            await _discord.LoginAsync(TokenType.Bot, BotConfig.DiscordToken);
             await _discord.StartAsync();
 
             await Task.Delay(-1);
@@ -57,10 +54,10 @@ namespace KumaKaiNi.Discord
                 bool isModerator = false;
                 foreach (SocketRole role in ((SocketGuildUser)message.Author).Roles)
                 {
-                    if (role.Id.ToString() == ConfigurationManager.AppSettings.Get("DiscordModeratorRoleID")) isModerator = true;
+                    if (role.Id.ToString() == BotConfig.DiscordModRoleId) isModerator = true;
                 }
 
-                bool isAdmin = message.Author.Id.ToString() == ConfigurationManager.AppSettings.Get("DiscordAdminID");
+                bool isAdmin = message.Author.Id.ToString() == BotConfig.DiscordAdminId;
                 bool isPrivate = channel == null;
                 bool isNsfw = isPrivate || channel.IsNsfw;
 

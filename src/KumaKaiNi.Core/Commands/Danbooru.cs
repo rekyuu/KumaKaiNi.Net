@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -61,9 +60,7 @@ namespace KumaKaiNi.Core.Commands
             if (tags.Any(tag => blockedTags.Contains(tag))) return new ResponseImage();
 
             string requestTags = string.Join("+", tags);
-            string user = ConfigurationManager.AppSettings.Get("DanbooruUser");
-            string pass = ConfigurationManager.AppSettings.Get("DanbooruAPIKey");
-            byte[] authToken = Encoding.ASCII.GetBytes($"{user}:{pass}");
+            byte[] authToken = Encoding.ASCII.GetBytes($"{Config.DanbooruUser}:{Config.DanbooruApiKey}");
             int page = 1;
             const int limit = 50;
             DanbooruResults result = null;

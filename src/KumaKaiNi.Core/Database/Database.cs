@@ -138,12 +138,7 @@ namespace KumaKaiNi.Core
 
         private static string GetConnectionString()
         {
-            string host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
-            string username = Environment.GetEnvironmentVariable("POSTGRES_USERNAME");
-            string password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-            string database = Environment.GetEnvironmentVariable("POSTGRES_DATABASE");
-            
-            return $"Host={host};Username={username};Password={password};Database={database}";
+            return $"Host={Config.PostgresHost};Username={Config.PostgresUsername};Password={Config.PostgresPassword};Database={Config.PostgresDatabase}";
         }
 
         private static string GetPostgresType(Type type)
