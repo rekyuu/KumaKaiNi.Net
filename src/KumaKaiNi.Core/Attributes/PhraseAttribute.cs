@@ -5,7 +5,7 @@ namespace KumaKaiNi.Core
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class PhraseAttribute : Attribute
     {
-        public string[] Phrases;
+        public readonly string[] Phrases;
 
         public PhraseAttribute(string command)
         {

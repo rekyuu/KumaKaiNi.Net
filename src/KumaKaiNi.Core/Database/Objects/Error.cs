@@ -10,8 +10,10 @@ namespace KumaKaiNi.Core
         public string Message;
         public string StackTrace;
 
-        public Error() : base() { }
+        public Error() { }
+        
         public Error(Dictionary<string, object> row) : base(row) { }
+        
         public Error(Exception ex)
         {
             Timestamp = DateTime.UtcNow;

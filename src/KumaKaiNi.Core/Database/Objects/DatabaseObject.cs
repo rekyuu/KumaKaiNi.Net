@@ -1,6 +1,7 @@
 ﻿using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace KumaKaiNi.Core
@@ -12,28 +13,29 @@ namespace KumaKaiNi.Core
         public DateTime LastModified;
 
         public DatabaseObject() { }
+        
         public DatabaseObject(Dictionary<string, object> row)
         {
             Dictionary<string, FieldInfo> fields = GetColumnToFieldMap();
-            foreach (KeyValuePair<string, FieldInfo> field in fields)
+            foreach (var (key, fieldInfo) in fields)
             {
-                if (row.ContainsKey(field.Key))
+                if (row.ContainsKey(key))
                 {
-                    object value = row[field.Key];
-                    if (field.Value.FieldType.IsEnum) value = Enum.Parse(field.Value.FieldType, value.ToString());
-                    if (value.GetType() == typeof(DBNull)) value = null;
+                    object value = row[key];
+                    if (fieldInfo.FieldType.IsEnum) value = Enum.Parse(fieldInfo.FieldType, value.ToString());
+                    if (value is DBNull) value = null;
 
-                    field.Value.SetValue(this, value);
+                    fieldInfo.SetValue(this, value);
                 }
             }
         }
 
         public void Insert()
         {
-            string tablename = GetTableName();
+            string tableName = GetTableName();
 
             if (Id != -1) throw new Exception("Object has likely already been inserted. Please use Update() instead.");
-            if (!TableExists()) throw new Exception($"Database table '{tablename}' does not exist.");
+            if (!TableExists()) throw new Exception($"Database table '{tableName}' does not exist.");
 
             InsertedAt = DateTime.UtcNow;
             LastModified = DateTime.UtcNow;
@@ -50,15 +52,15 @@ namespace KumaKaiNi.Core
             }
 
             using NpgsqlConnection connection = Database.DatabaseConnection();
-            string sql = $"INSERT INTO {tablename} ({string.Join(", ", fields.Keys)}) VALUES ({string.Join(", ", values)}) RETURNING id";
+            string sql = $"INSERT INTO {tableName} ({string.Join(", ", fields.Keys)}) VALUES ({string.Join(", ", values)}) RETURNING id";
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
 
-            foreach (KeyValuePair<string, FieldInfo> field in fields)
+            foreach (var (key, fieldInfo) in fields)
             {
-                object value = field.Value.GetValue(this);
-                if (field.Value.FieldType.IsEnum) value = value.ToString();
+                object value = fieldInfo.GetValue(this);
+                if (fieldInfo.FieldType.IsEnum) value = value.ToString();
 
-                command.Parameters.AddWithValue(field.Key, value);
+                command.Parameters.AddWithValue(key, value);
             }
 
             Id = (int)command.ExecuteScalar();
@@ -66,10 +68,10 @@ namespace KumaKaiNi.Core
 
         public void Update()
         {
-            string tablename = GetTableName();
+            string tableName = GetTableName();
 
             if (Id == -1) throw new Exception("Object has likely not been inserted. Please use Insert() instead.");
-            if (!TableExists()) throw new Exception($"Database table '{tablename}' does not exist.");
+            if (!TableExists()) throw new Exception($"Database table '{tableName}' does not exist.");
 
             LastModified = DateTime.UtcNow;
 
@@ -85,7 +87,7 @@ namespace KumaKaiNi.Core
             }
 
             using NpgsqlConnection connection = Database.DatabaseConnection();
-            string sql = $"UPDATE {tablename} SET {string.Join(", ", values)} WHERE id = @id";
+            string sql = $"UPDATE {tableName} SET {string.Join(", ", values)} WHERE id = @id";
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("id", Id);
@@ -102,10 +104,10 @@ namespace KumaKaiNi.Core
 
         public void Delete()
         {
-            string tablename = GetTableName();
+            string tableName = GetTableName();
 
             using NpgsqlConnection connection = Database.DatabaseConnection();
-            string sql = $"DELETE FROM {tablename} WHERE id = @id";
+            string sql = $"DELETE FROM {tableName} WHERE id = @id";
             using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("id", Id);
@@ -115,15 +117,9 @@ namespace KumaKaiNi.Core
 
         public Dictionary<string, FieldInfo> GetColumnToFieldMap()
         {
-            Dictionary<string, FieldInfo> map = new Dictionary<string, FieldInfo>();
             FieldInfo[] fields = GetType().GetFields();
 
-            for (int i = 0; i < fields.Length; i++)
-            {
-                map.Add(Helpers.ToSnakeCase(fields[i].Name), fields[i]);
-            }
-
-            return map;
+            return fields.ToDictionary(field => Helpers.ToSnakeCase(field.Name));
         }
 
         public string GetTableName()
@@ -133,13 +129,13 @@ namespace KumaKaiNi.Core
 
         public bool TableExists()
         {
-            string tablename = GetTableName();
+            string tableName = GetTableName();
 
             using NpgsqlConnection connection = Database.DatabaseConnection();
 
             using NpgsqlCommand command = new NpgsqlCommand("", connection);
-            command.CommandText = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = @tablename)";
-            command.Parameters.AddWithValue("tablename", tablename);
+            command.CommandText = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = @tableName)";
+            command.Parameters.AddWithValue("tableName", tableName);
 
             return (bool)command.ExecuteScalar();
         }

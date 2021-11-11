@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  discord:
+    build: src/KumaKaiNi.Discord
+  
+  telegram:
+    build: src/KumaKaiNi.Telegram
+    
+  twitch:
+    build: src/KumaKaiNi.Twitch

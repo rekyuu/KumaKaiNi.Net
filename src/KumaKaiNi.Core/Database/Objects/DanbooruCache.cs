@@ -10,7 +10,8 @@ namespace KumaKaiNi.Core
         public RequestProtocol Protocol;
         public long ChannelId;
 
-        public DanbooruCache() : base() { }
+        public DanbooruCache() { }
+        
         public DanbooruCache(Dictionary<string, object> row) : base(row) { }
     }
 }

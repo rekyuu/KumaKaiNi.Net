@@ -2,14 +2,14 @@
 
 namespace KumaKaiNi.Core
 {
-    public partial class ImgurResults
+    public class ImgurResults
     {
         public ImgurData Data { get; set; }
         public bool Success { get; set; }
         public long Status { get; set; }
     }
 
-    public partial class ImgurData
+    public class ImgurData
     {
         public string Id { get; set; }
         public string Title { get; set; }
@@ -37,7 +37,7 @@ namespace KumaKaiNi.Core
         public ImgurAdConfig AdConfig { get; set; }
     }
 
-    public partial class ImgurAdConfig
+    public class ImgurAdConfig
     {
         public string[] SafeFlags { get; set; }
         public object[] HighRiskFlags { get; set; }
@@ -46,7 +46,7 @@ namespace KumaKaiNi.Core
         public bool ShowsAds { get; set; }
     }
 
-    public partial class ImgurImage
+    public class ImgurImage
     {
         public string Id { get; set; }
         public object Title { get; set; }

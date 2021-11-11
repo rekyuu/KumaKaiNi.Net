@@ -1,7 +1,6 @@
 ﻿using KumaKaiNi.Core;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -17,7 +16,7 @@ namespace KumaKaiNi.Telegram
         public App()
         {
             _kuma = new KumaClient();
-            _telegram = new TelegramBotClient(ConfigurationManager.AppSettings.Get("TelegramToken"));
+            _telegram = new TelegramBotClient(BotConfig.TelegramToken);
 
             _telegram.OnMessage += OnMessage;
         }
@@ -35,7 +34,7 @@ namespace KumaKaiNi.Telegram
             {
                 if (e.Message.From.Id == _telegram.BotId) return;
 
-                bool isAdmin = e.Message.From.Id == int.Parse(ConfigurationManager.AppSettings.Get("TelegramAdminId"));
+                bool isAdmin = e.Message.From.Id == BotConfig.TelegramAdminId;
                 bool isPrivate = e.Message.Chat.Id == e.Message.From.Id;
 
                 if (!isAdmin && isPrivate) return;
@@ -102,7 +101,7 @@ namespace KumaKaiNi.Telegram
                     Protocol = RequestProtocol.Telegram,
                     ChannelId = e.Message.Chat.Id,
                     ChannelIsPrivate = isPrivate,
-                    ChannelIsNSFW = true,
+                    ChannelIsNsfw = true,
                 };
 
                 Response response = _kuma.GetResponse(request);
@@ -125,7 +124,7 @@ namespace KumaKaiNi.Telegram
 
                     try
                     {
-                        await _telegram.SendPhotoAsync(chatId: e.Message.Chat.Id, photo: response.Image.URL, caption: caption, parseMode: ParseMode.Markdown);
+                        await _telegram.SendPhotoAsync(chatId: e.Message.Chat.Id, photo: response.Image.Url, caption: caption, parseMode: ParseMode.Markdown);
                     }
                     catch
                     {

@@ -9,12 +9,11 @@ namespace KumaKaiNi.Core
         [Command("command")]
         public static Response CustomCommand(Request request)
         {
-            string errorResponse = "Usage: !command [add|edit|del] <command> <response>";
+            const string errorResponse = "Usage: !command [add|edit|del] <command> <response>";
 
             if (request.CommandArgs.Length == 0) return new Response(errorResponse);
 
             string command;
-            string response;
             string result;
 
             switch (request.CommandArgs[0])
@@ -27,7 +26,7 @@ namespace KumaKaiNi.Core
                     if (request.CommandArgs.Length < 3) return new Response(errorResponse);
 
                     command = request.CommandArgs[1];
-                    response = string.Join(" ", request.CommandArgs[2..]);
+                    string response = string.Join(" ", request.CommandArgs[2..]);
 
                     result = AddOrEditCommand(command, response);
                     return new Response(result);
@@ -46,7 +45,7 @@ namespace KumaKaiNi.Core
             }
         }
 
-        public static string AddOrEditCommand(string command, string response)
+        private static string AddOrEditCommand(string command, string response)
         {
             if (command[0] == '!') command = command[1..];
 
@@ -57,7 +56,7 @@ namespace KumaKaiNi.Core
                 Target = command
             };
 
-            List<CustomCommand> customCommands = Database.GetMany<CustomCommand>(new WherePredicate[] { where });
+            List<CustomCommand> customCommands = Database.GetMany<CustomCommand>(new[] { where });
             if (customCommands.Count == 1)
             {
                 customCommands[0].Response = response;
@@ -65,22 +64,24 @@ namespace KumaKaiNi.Core
 
                 return $"Command !{command} updated.";
             }
-            else if (customCommands.Count > 1) throw new Exception($"There are multiple custom commands of the same name: {command}");
-            else
+
+            if (customCommands.Count > 1)
             {
-                CustomCommand newCustomCommand = new CustomCommand()
-                {
-                    Command = command,
-                    Response = response
-                };
-
-                newCustomCommand.Insert();
-
-                return $"Command !{command} added.";
+                throw new Exception($"There are multiple custom commands of the same name: {command}");
             }
+
+            CustomCommand newCustomCommand = new CustomCommand()
+            {
+                Command = command,
+                Response = response
+            };
+
+            newCustomCommand.Insert();
+
+            return $"Command !{command} added.";
         }
 
-        public static string RemoveCommand(string command)
+        private static string RemoveCommand(string command)
         {
             if (command[0] == '!') command = command[1..];
 
@@ -91,15 +92,20 @@ namespace KumaKaiNi.Core
                 Target = command
             };
 
-            List<CustomCommand> customCommands = Database.GetMany<CustomCommand>(new WherePredicate[] { where });
+            List<CustomCommand> customCommands = Database.GetMany<CustomCommand>(new[] { where });
             if (customCommands.Count == 1)
             {
                 customCommands[0].Delete();
 
                 return $"Command !{command} removed.";
             }
-            else if (customCommands.Count > 1) throw new Exception($"There are multiple custom commands of the same name: {command}");
-            else return "";
+
+            if (customCommands.Count > 1)
+            {
+                throw new Exception($"There are multiple custom commands of the same name: {command}");
+            }
+            
+            return "";
         }
     }
 }

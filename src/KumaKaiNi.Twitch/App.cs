@@ -1,7 +1,6 @@
 ﻿using KumaKaiNi.Core;
 using System;
 using System.Threading.Tasks;
-using System.Configuration;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
@@ -38,7 +37,7 @@ namespace KumaKaiNi.Twitch
 
         public async Task Start()
         {
-            ConnectionCredentials credentials = new ConnectionCredentials("KumaKaiNi", ConfigurationManager.AppSettings.Get("TwitchAccessToken"));
+            ConnectionCredentials credentials = new("KumaKaiNi", BotConfig.TwitchAccessToken);
 
             _twitch.Initialize(credentials, "rekyuus");
             Reconnect();
@@ -98,7 +97,7 @@ namespace KumaKaiNi.Twitch
                     Protocol = RequestProtocol.Twitch,
                     ChannelId = 0,
                     ChannelIsPrivate = false,
-                    ChannelIsNSFW = false,
+                    ChannelIsNsfw = false,
                 };
                 Response response = _kuma.GetResponse(request);
 
@@ -134,7 +133,7 @@ namespace KumaKaiNi.Twitch
                     Protocol = RequestProtocol.Twitch,
                     ChannelId = 0,
                     ChannelIsPrivate = true,
-                    ChannelIsNSFW = false,
+                    ChannelIsNsfw = false,
                 };
                 Response response = _kuma.GetResponse(request);
 

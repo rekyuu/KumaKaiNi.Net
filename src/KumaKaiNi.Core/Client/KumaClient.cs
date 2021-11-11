@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -51,8 +52,8 @@ namespace KumaKaiNi.Core
 
             if (method != null)
             {
-                bool requiresAdmin = method.DeclaringType.GetCustomAttribute<RequireAdminAttribute>() != null;
-                bool requiresModerator = method.DeclaringType.GetCustomAttribute<RequireModeratorAttribute>() != null;
+                bool requiresAdmin = method.DeclaringType?.GetCustomAttribute<RequireAdminAttribute>() != null;
+                bool requiresModerator = method.DeclaringType?.GetCustomAttribute<RequireModeratorAttribute>() != null;
 
                 if (requiresAdmin && request.Authority != UserAuthority.Admin) return new Response();
                 if (requiresModerator && request.Authority == UserAuthority.User) return new Response();
@@ -68,7 +69,7 @@ namespace KumaKaiNi.Core
             return response;
         }
 
-        private Dictionary<string, MethodInfo> GetCommands()
+        private static Dictionary<string, MethodInfo> GetCommands()
         {
             Dictionary<string, MethodInfo> commands = new Dictionary<string, MethodInfo>();
             Assembly core = Assembly.GetCallingAssembly();
@@ -79,12 +80,12 @@ namespace KumaKaiNi.Core
                 .Where(m => m.GetCustomAttributes<CommandAttribute>().Any())
                 .ToArray();
 
-            MethodInfo[] entryCommands = entry.GetTypes()
+            MethodInfo[] entryCommands = entry?.GetTypes()
                 .SelectMany(t => t.GetMethods())
                 .Where(m => m.GetCustomAttributes<CommandAttribute>().Any())
                 .ToArray();
 
-            MethodInfo[] allCommands = coreCommands.Concat(entryCommands).ToArray();
+            MethodInfo[] allCommands = coreCommands.Concat(entryCommands ?? Array.Empty<MethodInfo>()).ToArray();
 
             foreach (MethodInfo method in allCommands)
             {
@@ -101,7 +102,7 @@ namespace KumaKaiNi.Core
             return commands;
         }
 
-        private Dictionary<string, MethodInfo> GetPhrases()
+        private static Dictionary<string, MethodInfo> GetPhrases()
         {
             Dictionary<string, MethodInfo> phrases = new Dictionary<string, MethodInfo>();
             Assembly core = Assembly.GetCallingAssembly();
@@ -112,12 +113,12 @@ namespace KumaKaiNi.Core
                 .Where(m => m.GetCustomAttributes<PhraseAttribute>().Any())
                 .ToArray();
 
-            MethodInfo[] entryPhrases = entry.GetTypes()
+            MethodInfo[] entryPhrases = entry?.GetTypes()
                 .SelectMany(t => t.GetMethods())
                 .Where(m => m.GetCustomAttributes<PhraseAttribute>().Any())
                 .ToArray();
 
-            MethodInfo[] allPhrases = corePhrases.Concat(entryPhrases).ToArray();
+            MethodInfo[] allPhrases = corePhrases.Concat(entryPhrases ?? Array.Empty<MethodInfo>()).ToArray();
 
             foreach (MethodInfo method in allPhrases)
             {
@@ -134,7 +135,7 @@ namespace KumaKaiNi.Core
             return phrases;
         }
 
-        private Dictionary<string, string> GetCustomCommands()
+        private static Dictionary<string, string> GetCustomCommands()
         {
             Dictionary<string, string> customCommands = new Dictionary<string, string>();
             List<CustomCommand> commands = Database.GetMany<CustomCommand>();

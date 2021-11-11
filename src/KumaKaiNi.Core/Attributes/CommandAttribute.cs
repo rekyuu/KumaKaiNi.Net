@@ -5,7 +5,7 @@ namespace KumaKaiNi.Core
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class CommandAttribute : Attribute
     {
-        public string[] Commands;
+        public readonly string[] Commands;
 
         public CommandAttribute(string command)
         {

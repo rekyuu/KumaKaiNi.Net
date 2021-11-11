@@ -7,7 +7,8 @@ namespace KumaKaiNi.Core
         public string Command;
         public string Response;
 
-        public CustomCommand() : base() { }
+        public CustomCommand() { }
+        
         public CustomCommand(Dictionary<string, object> row) : base(row) { }
     }
 }
