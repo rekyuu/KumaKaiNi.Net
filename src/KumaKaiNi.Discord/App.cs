@@ -172,29 +172,27 @@ namespace KumaKaiNi.Discord
             {
                 _currentMonth = DateTime.UtcNow.Month;
 
-                if (_currentMonth == 12 && _avatarIsFestive || _currentMonth != 12 && !_avatarIsFestive) return;
+                if (_currentMonth >= 11 && _avatarIsFestive || _currentMonth < 11 && !_avatarIsFestive) return;
+                
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                Stream stream;
+
+                if (_currentMonth >= 11 && !_avatarIsFestive)
+                {
+                    stream = assembly.GetManifestResourceStream("KumaKaiNi.Discord.Resources.KumaFestive.png");
+                    _avatarIsFestive = true;
+                }
                 else
                 {
-                    Assembly assembly = Assembly.GetExecutingAssembly();
-                    Stream stream;
-
-                    if (_currentMonth == 12 && !_avatarIsFestive)
-                    {
-                        stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.KumaFestive.png");
-                        _avatarIsFestive = true;
-                    }
-                    else
-                    {
-                        stream = assembly.GetManifestResourceStream($"KumaKaiNi.Discord.Resources.KumaStandard.png");
-                        _avatarIsFestive = false;
-                    }
-
-                    string avatarLogString = _avatarIsFestive ? "Festive" : "Standard";
-                    Console.WriteLine($"{DateTime.UtcNow} [KumaKaiNi.Discord] Updating avatar: {avatarLogString}");
-
-                    using Image avatar = new Image(stream);
-                    _discord.CurrentUser.ModifyAsync(delegate (SelfUserProperties p) { p.Avatar = avatar; });
+                    stream = assembly.GetManifestResourceStream("KumaKaiNi.Discord.Resources.KumaStandard.png");
+                    _avatarIsFestive = false;
                 }
+
+                string avatarLogString = _avatarIsFestive ? "Festive" : "Standard";
+                Console.WriteLine($"{DateTime.UtcNow} [KumaKaiNi.Discord] Updating avatar: {avatarLogString}");
+
+                using Image avatar = new Image(stream);
+                _discord.CurrentUser.ModifyAsync(delegate (SelfUserProperties p) { p.Avatar = avatar; });
             }
             catch (Exception ex)
             {
