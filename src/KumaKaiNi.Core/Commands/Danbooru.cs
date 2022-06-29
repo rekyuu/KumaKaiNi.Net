@@ -25,7 +25,7 @@ namespace KumaKaiNi.Core.Commands
         [Command("sfw")]
         public static Response GetSafeDanbooru(Request request)
         {
-            string[] baseTags = { "rating:s" };
+            string[] baseTags = { "rating:g" };
             string[] requestTags = baseTags.Concat(request.CommandArgs).ToArray();
             ResponseImage image = GetDanbooruImage(requestTags, request.Protocol, request.ChannelId);
 
@@ -38,7 +38,7 @@ namespace KumaKaiNi.Core.Commands
         {
             if (!request.ChannelIsNsfw) return new Response();
 
-            string[] baseTags = { "-rating:s" };
+            string[] baseTags = { "-rating:g" };
             string[] requestTags = baseTags.Concat(request.CommandArgs).ToArray();
             ResponseImage image = GetDanbooruImage(requestTags, request.Protocol, request.ChannelId);
 
