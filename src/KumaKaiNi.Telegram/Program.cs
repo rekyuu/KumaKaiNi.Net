@@ -2,14 +2,9 @@
 
 namespace KumaKaiNi.Telegram
 {
-    class Program
+    public class Program
     {
-        public static void Main()
-        {
-            new Program().MainAsync().GetAwaiter().GetResult();
-        }
-
-        public async Task MainAsync()
+        public static async Task Main()
         {
             App telegram = new App();
             await telegram.Start();

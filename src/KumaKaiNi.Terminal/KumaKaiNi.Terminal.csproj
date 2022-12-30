@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>KumaKaiNi.Terminal</AssemblyName>
     <RootNamespace>KumaKaiNi.Terminal</RootNamespace>
     <LangVersion>default</LangVersion>
