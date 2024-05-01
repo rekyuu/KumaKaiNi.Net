@@ -1,29 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+namespace KumaKaiNi.Core.Utility;
 
-namespace KumaKaiNi.Core
+public static class Rng
 {
-    public static class Rng
+    public static T PickRandom<T>(IEnumerable<T> choices)
     {
-        public static T PickRandom<T>(List<T> choices)
-        {
-            return PickRandom(choices.ToArray());
-        }
+        Random rng = new();
+        IEnumerable<T> enumerable = choices as T[] ?? choices.ToArray();
+        int result = rng.Next(0, enumerable.Count());
 
-        public static T PickRandom<T>(T[] choices)
-        {
-            Random rng = new Random();
-            int result = rng.Next(0, choices.Length);
+        return enumerable.ElementAt(result);
+    }
 
-            return choices[result];
-        }
+    public static bool OneTo(int odds)
+    {
+        Random rng = new();
+        int result = rng.Next(0, odds);
 
-        public static bool OneTo(int odds)
-        {
-            Random rng = new Random();
-            int result = rng.Next(0, odds);
-
-            return result == 0;
-        }
+        return result == 0;
     }
 }

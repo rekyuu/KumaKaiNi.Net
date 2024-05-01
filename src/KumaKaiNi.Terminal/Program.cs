@@ -1,46 +1,62 @@
 ﻿using KumaKaiNi.Core;
-using System;
+using KumaKaiNi.Core.Models;
+using Serilog;
 
-namespace KumaKaiNi.DevConsole
+namespace KumaKaiNi.Terminal;
+
+internal static class Program
 {
-    class Program
+    private static KumaClient? _kuma;
+    private static CancellationTokenSource? _cts;
+
+    private static int Main()
     {
-        private static KumaClient _kuma;
-
-        static void Main()
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .WriteTo.Console()
+            .CreateLogger();
+        
+        _cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, eventArgs) =>
         {
-            _kuma = new KumaClient();
+            _cts.Cancel();
+            eventArgs.Cancel = true;
 
-            while (true)
-            {
-                Console.Write("> ");
-                string message = Console.ReadLine();
+            Environment.Exit(0);
+        };
+        
+        _kuma = new KumaClient();
+        _kuma.Responded += OnKumaResponse;
+        
+        while (true)
+        {
+            if (_cts.IsCancellationRequested) break;
+            
+            Log.Verbose("Starting loop");
+            
+            Console.Write("> ");
+            string? message = Console.ReadLine();
 
-                if (message == "exit") Environment.Exit(0);
+            if (string.IsNullOrEmpty(message)) continue;
+            if (message == "exit") Environment.Exit(0);
 
-                try
-                {
-                    Request request = new Request()
-                    {
-                        Message = message,
-                        MessageId = 0,
-                        Username = "rekyuu",
-                        Authority = UserAuthority.Admin,
-                        Protocol = RequestProtocol.Terminal,
-                        ChannelId = 5862,
-                        ChannelIsPrivate = true,
-                        ChannelIsNsfw = true,
-                    };
-                    Response response = _kuma.GetResponse(request);
+            KumaRequest kumaRequest = new(
+                "rekyuu",
+                message,
+                SourceSystem.Terminal,
+                userAuthority: UserAuthority.User,
+                channelId: 5862,
+                channelIsPrivate: true,
+                channelIsNsfw: true);
 
-                    if (response.Message != "") Console.WriteLine($"\n  {response.Message}\n");
-                    else if (response.Image != null) Console.WriteLine($"\n  {response.Image.Url}\n");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"\n  ERROR: {ex}\n");
-                }
-            }
+            _ = _kuma.SendRequest(kumaRequest);
         }
+
+        return 0;
+    }
+
+    private static void OnKumaResponse(KumaResponse kumaResponse)
+    {
+        Log.Verbose("Got response: {Response}", kumaResponse);
     }
 }

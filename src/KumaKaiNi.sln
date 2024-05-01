@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30309.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Core", "KumaKaiNi.Core\KumaKaiNi.Core.csproj", "{4D8AABDB-49F6-4CDE-9CC0-9C33F9CB6160}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Terminal", "KumaKaiNi.Terminal\KumaKaiNi.Terminal.csproj", "{B7DFE62E-58B4-4F17-91BE-D16321CE0E8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Discord", "KumaKaiNi.Discord\KumaKaiNi.Discord.csproj", "{244691D9-A251-4F54-B4BF-7FE6F458FDCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Telegram", "KumaKaiNi.Telegram\KumaKaiNi.Telegram.csproj", "{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D8AABDB-49F6-4CDE-9CC0-9C33F9CB6160}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D8AABDB-49F6-4CDE-9CC0-9C33F9CB6160}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D8AABDB-49F6-4CDE-9CC0-9C33F9CB6160}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D8AABDB-49F6-4CDE-9CC0-9C33F9CB6160}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7DFE62E-58B4-4F17-91BE-D16321CE0E8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7DFE62E-58B4-4F17-91BE-D16321CE0E8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7DFE62E-58B4-4F17-91BE-D16321CE0E8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7DFE62E-58B4-4F17-91BE-D16321CE0E8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{244691D9-A251-4F54-B4BF-7FE6F458FDCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{244691D9-A251-4F54-B4BF-7FE6F458FDCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{244691D9-A251-4F54-B4BF-7FE6F458FDCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{244691D9-A251-4F54-B4BF-7FE6F458FDCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2C290286-6956-48AB-8271-A938123C2476}
+	EndGlobalSection
+EndGlobal
