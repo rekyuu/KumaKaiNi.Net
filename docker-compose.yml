@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   discord:
     build:
@@ -9,9 +7,4 @@ services:
   telegram:
     build:
       dockerfile: KumaKaiNi.Telegram/Dockerfile
-      context: ./src
-  
-  twitch:
-    build:
-      dockerfile: KumaKaiNi.Twitch/Dockerfile
       context: ./src
