@@ -2,13 +2,14 @@
 using System.Timers;
 using Discord;
 using Discord.WebSocket;
+using KumaKaiNi.Core;
 using KumaKaiNi.Core.Models;
 using KumaKaiNi.Core.Utility;
 using Serilog;
 using StackExchange.Redis;
 using Timer = System.Timers.Timer;
 
-namespace KumaKaiNi.Discord;
+namespace KumaKaiNi.Client.Discord;
 
 internal static class Program
 {
@@ -27,7 +28,7 @@ internal static class Program
         try
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
+                .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
                 .WriteTo.Console()
                 .CreateLogger();
 
@@ -43,7 +44,7 @@ internal static class Program
                 _cts.Cancel();
                 eventArgs.Cancel = true;
             };
-            
+
             _streamConsumer = new RedisStreamConsumer(
                 ConsumerStreamName,
                 cancellationToken: _cts.Token);
@@ -63,22 +64,26 @@ internal static class Program
             _discordClient.Log += OnDiscordLog;
             _discordClient.Ready += OnDiscordReady;
             _discordClient.MessageReceived += OnDiscordMessageReceived;
-            
+
             await _discordClient.LoginAsync(TokenType.Bot, KumaDiscordConfig.DiscordToken);
             await _discordClient.StartAsync();
 
-            Log.Information("Listening for updates");
+            Log.Information("[KumaKaiNi.Client.Discord] Listening for updates");
             await Task.Delay(-1, _cts.Token);
         }
         catch (TaskCanceledException)
         {
-            Log.Information("Exiting");
+            Log.Information("[KumaKaiNi.Client.Discord] Exiting");
             Environment.Exit(0);
         }
         catch (Exception ex)
         {
-            await Logging.LogExceptionToDatabaseAsync(ex, "An exception was thrown while starting");
+            await Logging.LogExceptionToDatabaseAsync(ex, "[KumaKaiNi.Client.Discord] An exception was thrown while starting");
             Environment.Exit(1);
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
         }
     }
 

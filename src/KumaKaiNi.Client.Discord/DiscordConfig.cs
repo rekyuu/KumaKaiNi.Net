@@ -1,4 +1,4 @@
-namespace KumaKaiNi.Discord;
+namespace KumaKaiNi.Client.Discord;
 
 public static class KumaDiscordConfig
 {

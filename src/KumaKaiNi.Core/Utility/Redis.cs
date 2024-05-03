@@ -26,7 +26,7 @@ public static class Redis
             ConfigurationOptions redisConfig = new()
             {
                 Password = KumaConfig.RedisPassword,
-                AbortOnConnectFail = true
+                AbortOnConnectFail = false
             };
             redisConfig.EndPoints.Add(KumaConfig.RedisHost);
             

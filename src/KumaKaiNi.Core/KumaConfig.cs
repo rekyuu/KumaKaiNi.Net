@@ -1,4 +1,6 @@
 using System.Reflection;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace KumaKaiNi.Core;
 
@@ -69,6 +71,11 @@ public static class KumaConfig
     /// </summary>
     public static string PostgresDatabase { get; private set; }
 
+    /// <summary>
+    /// The log level of the application. Set by the LOG_LEVEL environment variable.
+    /// </summary>
+    public static string LogLevel { get; private set; }
+
     static KumaConfig()
     {
         Assembly? assembly = Assembly.GetEntryAssembly();
@@ -91,5 +98,36 @@ public static class KumaConfig
         PostgresUsername = Environment.GetEnvironmentVariable("POSTGRES_USERNAME") ?? "postgres";
         PostgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres";
         PostgresDatabase = Environment.GetEnvironmentVariable("POSTGRES_DATABASE") ?? "kumakaini";
+        LogLevel = Environment.GetEnvironmentVariable("LOG_LEVEL") ?? "INFO";
+    }
+
+    public static LoggingLevelSwitch GetLogLevel()
+    {
+        LoggingLevelSwitch loggingLevelSwitch = new();
+
+        switch (LogLevel)
+        {
+            case "VERBOSE":
+                loggingLevelSwitch.MinimumLevel = LogEventLevel.Verbose;
+                break;
+            case "DEBUG":
+                loggingLevelSwitch.MinimumLevel = LogEventLevel.Debug;
+                break;
+            case "WARN":
+                loggingLevelSwitch.MinimumLevel = LogEventLevel.Warning;
+                break;
+            case "ERROR":
+                loggingLevelSwitch.MinimumLevel = LogEventLevel.Error;
+                break;
+            case "FATAL":
+                loggingLevelSwitch.MinimumLevel = LogEventLevel.Fatal;
+                break;
+            case "INFO":
+            default:
+                loggingLevelSwitch.MinimumLevel = LogEventLevel.Information;
+                break;
+        }
+
+        return loggingLevelSwitch;
     }
 }

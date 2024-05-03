@@ -3,6 +3,9 @@ name: Build and Push Docker Image
 on:
   workflow_call: 
     inputs:
+      build_version:
+        required: true
+        type: string
       dotnet_project_name:
         required: true
         type: string
@@ -53,6 +56,8 @@ jobs:
             src/${{ inputs.dotnet_project_name }}/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args:
+            - BUILD_VERSION=${{ inputs.build_version }}
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -5,7 +5,7 @@ using KumaKaiNi.Core.Utility;
 using Serilog;
 using StackExchange.Redis;
 
-namespace KumaKaiNi.Terminal;
+namespace KumaKaiNi.Client.Terminal;
 
 internal static class Program
 {
@@ -18,7 +18,7 @@ internal static class Program
     private static async Task<int> Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Verbose()
+            .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
             .WriteTo.Console()
             .CreateLogger();
 
@@ -70,6 +70,8 @@ internal static class Program
             _ = useRedisStreams ? Redis.AddRequestToStream(kumaRequest) : _kuma?.ProcessRequest(kumaRequest);
         }
 
+        await Log.CloseAndFlushAsync();
+        
         return 0;
     }
 

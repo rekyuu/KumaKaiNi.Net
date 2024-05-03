@@ -20,7 +20,7 @@ public static class Program
         try
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
+                .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
                 .WriteTo.Console()
                 .CreateLogger();
             
@@ -58,6 +58,10 @@ public static class Program
         {
             await Logging.LogExceptionToDatabaseAsync(ex, "An exception was thrown while starting");
             Environment.Exit(1);
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
         }
     }
 

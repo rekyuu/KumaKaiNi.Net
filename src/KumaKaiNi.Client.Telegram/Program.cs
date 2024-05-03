@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using KumaKaiNi.Core;
 using KumaKaiNi.Core.Database;
 using KumaKaiNi.Core.Database.Entities;
 using KumaKaiNi.Core.Models;
@@ -11,7 +12,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace KumaKaiNi.Telegram;
+namespace KumaKaiNi.Client.Telegram;
 
 internal static class Program
 {
@@ -27,7 +28,7 @@ internal static class Program
         try
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
+                .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
                 .WriteTo.Console()
                 .CreateLogger();
 
@@ -59,7 +60,7 @@ internal static class Program
             _telegramClient = new TelegramBotClient(KumaTelegramConfig.TelegramAccessToken);
             User me = await _telegramClient.GetMeAsync();
             _botUsername = me.Username;
-            Log.Information("Logged in as @{Username}", _botUsername);
+            Log.Information("[KumaKaiNi.Client.Telegram] Logged in as @{Username}", _botUsername);
 
             _telegramClient.StartReceiving(
                 updateHandler: HandleTelegramUpdateAsync,
@@ -67,18 +68,22 @@ internal static class Program
                 receiverOptions: receiverOptions,
                 cancellationToken: _cts.Token);
 
-            Log.Information("Listening for updates");
+            Log.Information("[KumaKaiNi.Client.Telegram] Listening for updates");
             await Task.Delay(-1, _cts.Token);
         }
         catch (TaskCanceledException)
         {
-            Log.Information("Exiting");
+            Log.Information("[KumaKaiNi.Client.Telegram] Exiting");
             Environment.Exit(0);
         }
         catch (Exception ex)
         {
-            await Logging.LogExceptionToDatabaseAsync(ex, "An exception was thrown while starting");
+            await Logging.LogExceptionToDatabaseAsync(ex, "[KumaKaiNi.Client.Telegram] An exception was thrown while starting");
             Environment.Exit(1);
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
         }
     }
 
@@ -125,7 +130,7 @@ internal static class Program
                 }
                 catch (Exception ex)
                 {
-                    await Logging.LogExceptionToDatabaseAsync(ex, "Exception was thrown while trying to leave chat {ChatId}", message.Chat.Id);
+                    await Logging.LogExceptionToDatabaseAsync(ex, "[KumaKaiNi.Client.Telegram] Exception was thrown while trying to leave chat {ChatId}", message.Chat.Id);
                 }
                 
                 return;
@@ -160,10 +165,9 @@ internal static class Program
         await Redis.AddRequestToStream(kumaRequest);
     }
 
-    private static Task HandleTelegramPollingErrorAsync(ITelegramBotClient client, Exception ex, CancellationToken ct)
+    private static async Task HandleTelegramPollingErrorAsync(ITelegramBotClient client, Exception ex, CancellationToken ct)
     {
-        Log.Error(ex, "An exception was thrown while polling Telegram");
-        return Task.CompletedTask;
+        await Logging.LogExceptionToDatabaseAsync(ex, "[Telegram.Bot] An exception was thrown while polling Telegram");
     }
 
     private static void OnKumaProcessing(long? channelId)

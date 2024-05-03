@@ -1,4 +1,4 @@
-namespace KumaKaiNi.Telegram;
+namespace KumaKaiNi.Client.Telegram;
 
 public static class KumaTelegramConfig
 {

@@ -5,6 +5,7 @@
 
 # Top secret
 .env
+docker-data/
 
 # User-specific files
 *.rsuser

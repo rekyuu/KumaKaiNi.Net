@@ -1,15 +1,19 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS base
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+ARG BUILD_VERSION=0.0.0-alpha
+ENV BUILD_VERSION=$BUILD_VERSION
+
 WORKDIR /src
-COPY ["KumaKaiNi.Telegram/KumaKaiNi.Telegram.csproj", "KumaKaiNi.Telegram/"]
-RUN dotnet restore "KumaKaiNi.Telegram/KumaKaiNi.Telegram.csproj"
+COPY ["KumaKaiNi.Client.Telegram/KumaKaiNi.Client.Telegram.csproj", "KumaKaiNi.Client.Telegram/"]
+RUN dotnet restore "KumaKaiNi.Client.Telegram/KumaKaiNi.Client.Telegram.csproj"
 COPY . .
-WORKDIR "/src/KumaKaiNi.Telegram"
-RUN dotnet publish "KumaKaiNi.Telegram.csproj" -c Release -o /app/publish
+WORKDIR "/src/KumaKaiNi.Client.Telegram"
+RUN dotnet publish "KumaKaiNi.Client.Telegram.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "KumaKaiNi.Telegram.dll"]
+ENTRYPOINT ["dotnet", "KumaKaiNi.Client.Telegram.dll"]

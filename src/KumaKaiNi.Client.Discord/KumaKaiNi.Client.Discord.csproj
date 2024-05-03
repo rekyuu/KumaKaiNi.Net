@@ -13,7 +13,8 @@
         <Description>Kuma!</Description>
         <RepositoryUrl>https://github.com/rekyuu/KumaKaiNi.Net</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <RootNamespace>KumaKaiNi.Discord</RootNamespace>
+        <RootNamespace>KumaKaiNi.Client.Discord</RootNamespace>
+        <InvariantGlobalization>false</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>

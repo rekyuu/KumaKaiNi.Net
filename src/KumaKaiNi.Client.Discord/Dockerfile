@@ -1,15 +1,21 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS base
 WORKDIR /app
 
+RUN apk add --no-cache icu-libs
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+ARG BUILD_VERSION=0.0.0-alpha
+ENV BUILD_VERSION=$BUILD_VERSION
+
 WORKDIR /src
-COPY ["KumaKaiNi.Discord/KumaKaiNi.Discord.csproj", "KumaKaiNi.Discord/"]
-RUN dotnet restore "KumaKaiNi.Discord/KumaKaiNi.Discord.csproj"
+COPY ["KumaKaiNi.Client.Discord/KumaKaiNi.Client.Discord.csproj", "KumaKaiNi.Client.Discord/"]
+RUN dotnet restore "KumaKaiNi.Client.Discord/KumaKaiNi.Client.Discord.csproj"
 COPY . .
-WORKDIR "/src/KumaKaiNi.Discord"
-RUN dotnet publish "KumaKaiNi.Discord.csproj" -c Release -o /app/publish
+WORKDIR "/src/KumaKaiNi.Client.Discord"
+RUN dotnet publish "KumaKaiNi.Client.Discord.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "KumaKaiNi.Discord.dll"]
+ENTRYPOINT ["dotnet", "KumaKaiNi.Client.Discord.dll"]

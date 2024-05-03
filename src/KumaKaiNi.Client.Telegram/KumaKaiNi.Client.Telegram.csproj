@@ -13,7 +13,8 @@
         <Description>Kuma!</Description>
         <RepositoryUrl>https://github.com/rekyuu/KumaKaiNi.Net</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <RootNamespace>KumaKaiNi.Telegram</RootNamespace>
+        <RootNamespace>KumaKaiNi.Client.Telegram</RootNamespace>
+        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>
