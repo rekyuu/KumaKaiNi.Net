@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace KumaKaiNi.Core.Models;
 
 /// <summary>
@@ -12,20 +14,24 @@ public class ResponseImage(string url, string source, string description, string
     /// <summary>
     /// The direct URL to the image.
     /// </summary>
+    [JsonPropertyName("url")]
     public string Url { get; set; } = url;
 
     /// <summary>
     /// Where the image was found.
     /// </summary>
+    [JsonPropertyName("source")]
     public string Source { get; set; } = source;
 
     /// <summary>
     /// Description of the image.
     /// </summary>
+    [JsonPropertyName("description")]
     public string Description { get; set; } = description;
 
     /// <summary>
     /// The host of the image.
     /// </summary>
+    [JsonPropertyName("referrer")]
     public string Referrer { get; set; } = referrer;
 }

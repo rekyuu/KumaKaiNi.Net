@@ -20,7 +20,7 @@ public static class Logging
         await using KumaKaiNiDbContext db = new();
         
         ChatLog requestChatLog = new(
-            DateTime.UtcNow, 
+            kumaRequest.Timestamp, 
             kumaRequest.SourceSystem, 
             kumaRequest.Message, 
             kumaRequest.MessageId,
@@ -38,24 +38,24 @@ public static class Logging
     /// Log the outgoing response to the ChatLogs database.
     /// </summary>
     /// <param name="kumaRequest">The incoming request.</param>
-    /// <param name="response">The outgoing response.</param>
-    public static async Task LogResponseToDatabaseAsync(KumaRequest kumaRequest, KumaResponse response)
+    /// <param name="kumaResponse">The outgoing response.</param>
+    public static async Task LogResponseToDatabaseAsync(KumaRequest kumaRequest, KumaResponse kumaResponse)
     {
         await using KumaKaiNiDbContext db = new();
 
-        string? responseString = response.Message;
-        if (string.IsNullOrEmpty(responseString) && response.Image != null) 
-            responseString = $"{response.Image.Referrer}\n{response.Image.Description}\n{response.Image.Url}\n{response.Image.Source}";
+        string? responseString = kumaResponse.Message;
+        if (string.IsNullOrEmpty(responseString) && kumaResponse.Image != null) 
+            responseString = $"{kumaResponse.Image.Referrer}\n{kumaResponse.Image.Description}\n{kumaResponse.Image.Url}\n{kumaResponse.Image.Source}";
 
         if (!string.IsNullOrEmpty(responseString))
         {
             ChatLog responseChatLog = new(
-                DateTime.UtcNow, 
-                kumaRequest.SourceSystem, 
-                responseString, 
+                kumaResponse.Timestamp, 
+                kumaResponse.SourceSystem, 
+                responseString,
                 null,
                 KumaKaiNiUsername, 
-                kumaRequest.ChannelId, 
+                kumaResponse.ChannelId, 
                 kumaRequest.ChannelIsPrivate);
             
             db.ChatLogs.Add(responseChatLog);

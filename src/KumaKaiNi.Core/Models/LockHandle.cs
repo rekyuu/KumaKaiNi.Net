@@ -12,7 +12,7 @@ public class LockHandle(string name) : IDisposable, IAsyncDisposable
     private const int DefaultTimeout = 30_000;
     
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-    private readonly RedisDistributedLock? _redisLock = Cache.GetRedisDistributedLock(name);
+    private readonly RedisDistributedLock? _redisLock = Redis.GetRedisDistributedLock(name);
     private RedisDistributedLockHandle? _redisLockHandle;
 
     /// <summary>

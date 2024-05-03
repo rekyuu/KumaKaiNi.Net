@@ -36,7 +36,7 @@ public class KumaClient
     /// Asynchronously interprets a request and determines if a response should be generated.
     /// </summary>
     /// <param name="kumaRequest">The request to process.</param>
-    public async Task SendRequest(KumaRequest kumaRequest)
+    public async Task ProcessRequest(KumaRequest kumaRequest)
     {
         try
         {
@@ -45,6 +45,7 @@ public class KumaClient
             
             KumaResponse? response = null;
             MethodInfo? method = null;
+            string lowerCaseMessage = kumaRequest.Message.ToLowerInvariant();
 
             // Message starts with a ! command of some kind
             if (kumaRequest is { Command: not null, IsCommand: true })
@@ -67,9 +68,10 @@ public class KumaClient
                 }
             }
             // Check if a phrase is mentioned in the message if it is not a command
-            else if (!string.IsNullOrEmpty(kumaRequest.Message) && _phrases.ContainsKey(kumaRequest.Message.ToLower()))
+            else if (!string.IsNullOrEmpty(lowerCaseMessage) && 
+                     _phrases.TryGetValue(lowerCaseMessage, out MethodInfo? value))
             {
-                method = _phrases[kumaRequest.Message.ToLower()];
+                method = value;
             }
 
             // If a Core command was found, run the corresponding method
@@ -123,6 +125,7 @@ public class KumaClient
                 
                 // Fire off the response
                 response.ChannelId = kumaRequest.ChannelId;
+                response.SourceSystem = kumaRequest.SourceSystem;
                 Responded?.Invoke(response);
             }
         }

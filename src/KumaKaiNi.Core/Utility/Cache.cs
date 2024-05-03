@@ -8,57 +8,11 @@ namespace KumaKaiNi.Core.Utility;
 
 public static class Cache
 {
-    private static readonly ConnectionMultiplexer? RedisConn;
-    private static bool RedisIsConnected => RedisConn is { IsConnected: true };
-
-    private static readonly ObjectCache MemoryCache;
+    private static readonly ObjectCache InMemoryCache;
 
     static Cache()
     {
-        MemoryCache = System.Runtime.Caching.MemoryCache.Default;
-
-        try
-        {
-            ConfigurationOptions redisConfig = new()
-            {
-                Password = KumaConfig.RedisPassword,
-                AbortOnConnectFail = true
-            };
-            redisConfig.EndPoints.Add(KumaConfig.RedisHost);
-            
-            RedisConn = ConnectionMultiplexer.Connect(redisConfig);
-        }
-        catch (Exception ex)
-        {
-            Logging.LogExceptionToDatabase(ex, "Unable to connect to Redis");
-        }
-    }
-
-    /// <summary>
-    /// Pings Redis.
-    /// </summary>
-    /// <returns><see langword="true" /> if successful, <see langword="false" /> otherwise.</returns>
-    public static async Task<bool> PingRedisAsync()
-    {
-        if (!RedisIsConnected) return false;
-
-        IDatabase? db = RedisConn?.GetDatabase();
-        if (db == null) return false;
-        
-        TimeSpan? result = await db.PingAsync();
-
-        return result != null;
-    }
-
-    /// <summary>
-    /// Gets a <see cref="RedisDistributedLock"/> using the Redis database if connected.
-    /// </summary>
-    /// <param name="name">The name of the lock.</param>
-    /// <returns>The requested <see cref="RedisDistributedLock"/> on success, <see langword="null"/> otherwise.</returns>
-    public static RedisDistributedLock? GetRedisDistributedLock(string name)
-    {
-        if (RedisConn == null || !RedisIsConnected) return null;
-        return new RedisDistributedLock(name, RedisConn.GetDatabase());
+        InMemoryCache = MemoryCache.Default;
     }
 
     /// <summary>
@@ -68,20 +22,12 @@ public static class Cache
     /// <returns>Array of the matching cache keys.</returns>
     public static string[] GetCachedKeys(string prefix)
     {
-        if (!RedisIsConnected)
-        {
-            return MemoryCache
-                .Select(x => x.Key)
-                .Where(x => x.StartsWith(prefix))
-                .ToArray();
-        }
-
-        EndPoint? endpoint = RedisConn?.GetEndPoints().First();
-        return RedisConn?
-            .GetServer(endpoint)
-            .Keys(pattern: $"{prefix}:*")
-            .Select(x => x.ToString())
-            .ToArray() ?? [];
+        if (Redis.IsConnected) return Redis.GetCachedKeys(prefix);
+        
+        return InMemoryCache
+            .Select(x => x.Key)
+            .Where(x => x.StartsWith(prefix))
+            .ToArray();
     }
 
     /// <summary>
@@ -95,24 +41,12 @@ public static class Cache
     {
         try
         {
-            if (!RedisIsConnected)
-            {
-                CacheItemPolicy policy = new();
-                if (expires != null) policy.AbsoluteExpiration = DateTimeOffset.UtcNow.Add(expires.Value);
+            if (Redis.IsConnected) return await Redis.SetAsync(key, value, expires);
+
+            CacheItemPolicy policy = new();
+            if (expires != null) policy.AbsoluteExpiration = DateTimeOffset.UtcNow.Add(expires.Value);
             
-                MemoryCache.Set(key, value, policy);
-
-                return true;
-            }
-
-            IDatabase? db = RedisConn?.GetDatabase();
-            if (db == null) return false;
-
-            string? valueToStore;
-            if (value is string valueString) valueToStore = valueString;
-            else valueToStore = JsonSerializer.Serialize(value);
-                
-            if (!string.IsNullOrEmpty(valueToStore)) await db.StringSetAsync(key, valueToStore, expires);
+            InMemoryCache.Set(key, value, policy);
 
             return true;
         }
@@ -132,12 +66,8 @@ public static class Cache
     {
         try
         {
-            if (!RedisIsConnected) return (string)MemoryCache.Get(key);
-
-            IDatabase? db = RedisConn?.GetDatabase();
-            if (db == null) return default;
-
-            return await db.StringGetAsync(key);
+            if (Redis.IsConnected) return await Redis.GetAsync(key);
+            return (string)InMemoryCache.Get(key);
         }
         catch (Exception ex)
         {
@@ -155,13 +85,8 @@ public static class Cache
     {
         try
         {
-            if (!RedisIsConnected) return (T)MemoryCache.Get(key);
-
-            IDatabase? db = RedisConn?.GetDatabase();
-            if (db == null) return default;
-
-            string? result = await db.StringGetAsync(key);
-            return !string.IsNullOrEmpty(result) ? JsonSerializer.Deserialize<T>(result) : default;
+            if (Redis.IsConnected) return await Redis.GetAsync<T>(key);
+            return (T)InMemoryCache.Get(key);
         }
         catch (Exception ex)
         {
@@ -179,16 +104,9 @@ public static class Cache
     {
         try
         {
-            if (!RedisIsConnected)
-            {
-                MemoryCache.Remove(key);
-                return true;
-            }
-
-            IDatabase? db = RedisConn?.GetDatabase();
-            if (db == null) return false;
-
-            await db.KeyDeleteAsync(key);
+            if (Redis.IsConnected) return await Redis.DeleteAsync(key);
+            
+            InMemoryCache.Remove(key);
             return true;
         }
         catch (Exception ex)

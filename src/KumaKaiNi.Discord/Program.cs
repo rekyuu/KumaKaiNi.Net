@@ -1,17 +1,20 @@
-﻿using System.Timers;
+﻿using System.Text.Json;
+using System.Timers;
 using Discord;
 using Discord.WebSocket;
-using KumaKaiNi.Core;
 using KumaKaiNi.Core.Models;
 using KumaKaiNi.Core.Utility;
 using Serilog;
+using StackExchange.Redis;
 using Timer = System.Timers.Timer;
 
 namespace KumaKaiNi.Discord;
 
 internal static class Program
 {
-    private static KumaClient? _kuma;
+    private static string ConsumerStreamName => Redis.GetStreamNameForSourceSystem(SourceSystem.Discord);
+    
+    private static RedisStreamConsumer? _streamConsumer;
     private static DiscordSocketClient? _discordClient;
     private static CancellationTokenSource? _cts;
     private static RequestOptions? _defaultDiscordRequestOptions;
@@ -40,10 +43,13 @@ internal static class Program
                 _cts.Cancel();
                 eventArgs.Cancel = true;
             };
+            
+            _streamConsumer = new RedisStreamConsumer(
+                ConsumerStreamName,
+                cancellationToken: _cts.Token);
 
-            _kuma = new KumaClient();
-            _kuma.Processing += OnKumaProcessing;
-            _kuma.Responded += OnKumaResponse;
+            _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
+            await _streamConsumer.StartAsync();
 
             DiscordSocketConfig discordConfig = new()
             {
@@ -158,11 +164,11 @@ internal static class Program
         await Cache.SetAsync(cacheKey, avatarPath);
     }
 
-    private static Task OnDiscordMessageReceived(SocketMessage message)
+    private static async Task OnDiscordMessageReceived(SocketMessage message)
     {
         // Ignore messages from webhooks and self
-        if (message.Author.IsWebhook) return Task.CompletedTask;
-        if (message.Author.Id == _discordClient?.CurrentUser.Id) return Task.CompletedTask;
+        if (message.Author.IsWebhook) return;
+        if (message.Author.Id == _discordClient?.CurrentUser.Id) return;
 
         // Determine if the channel is private or allows NSFW
         ulong channelId;
@@ -181,7 +187,7 @@ internal static class Program
                 isNsfw = true;
                 break;
             default:
-                return Task.CompletedTask;
+                return;
         }
         
         // Determine requester's user authority
@@ -208,54 +214,53 @@ internal static class Program
             isPrivate,
             isNsfw);
 
-        _ = _kuma?.SendRequest(kumaRequest);
-        
-        return Task.CompletedTask;
+        await Redis.AddRequestToStream(kumaRequest);
     }
 
-    private static async void OnKumaProcessing(long? channelId)
+    private static async void OnStreamEntriesReceived(StreamEntry[] streamEntries)
     {
         if (_discordClient == null) return;
-        if (channelId == null) return;
-
-        if (await _discordClient.GetChannelAsync((ulong)channelId, _defaultDiscordRequestOptions) 
-            is not ISocketMessageChannel channel) return;
-
-        await channel.TriggerTypingAsync(_defaultDiscordRequestOptions);
-    }
-
-    private static async void OnKumaResponse(KumaResponse kumaResponse)
-    {
-        if (_discordClient == null) return;
-        if (kumaResponse.ChannelId == null) return;
         
-        if (await _discordClient.GetChannelAsync((ulong)kumaResponse.ChannelId, _defaultDiscordRequestOptions) 
-            is not ISocketMessageChannel channel) return;
-
-        // Send an embedded image if one is attached
-        if (kumaResponse.Image != null)
+        foreach (StreamEntry streamEntry in streamEntries)
         {
-            EmbedBuilder embed = new()
+            foreach (NameValueEntry entry in streamEntry.Values)
             {
-                Color = new Color(0x00b6b6),
-                Title = kumaResponse.Image.Referrer,
-                Url = kumaResponse.Image.Source,
-                Description = kumaResponse.Image.Description,
-                ImageUrl = kumaResponse.Image.Url,
-                Timestamp = DateTime.UtcNow
-            };
+                if (entry.Value.IsNullOrEmpty) continue;
+        
+                KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
+                if (kumaResponse == null) continue;
+                
+                if (kumaResponse.ChannelId == null) return;
+        
+                if (await _discordClient.GetChannelAsync((ulong)kumaResponse.ChannelId, _defaultDiscordRequestOptions) 
+                    is not ISocketMessageChannel channel) return;
 
-            await channel.SendMessageAsync(
-                text: kumaResponse.Message, 
-                embed: embed.Build(), 
-                options: _defaultDiscordRequestOptions);
-        }
-        // Send a standard message
-        else if (!string.IsNullOrEmpty(kumaResponse.Message))
-        {
-            await channel.SendMessageAsync(
-                text: kumaResponse.Message, 
-                options: _defaultDiscordRequestOptions);
+                // Send an embedded image if one is attached
+                if (kumaResponse.Image != null)
+                {
+                    EmbedBuilder embed = new()
+                    {
+                        Color = new Color(0x00b6b6),
+                        Title = kumaResponse.Image.Referrer,
+                        Url = kumaResponse.Image.Source,
+                        Description = kumaResponse.Image.Description,
+                        ImageUrl = kumaResponse.Image.Url,
+                        Timestamp = DateTime.UtcNow
+                    };
+
+                    await channel.SendMessageAsync(
+                        text: kumaResponse.Message, 
+                        embed: embed.Build(), 
+                        options: _defaultDiscordRequestOptions);
+                }
+                // Send a standard message
+                else if (!string.IsNullOrEmpty(kumaResponse.Message))
+                {
+                    await channel.SendMessageAsync(
+                        text: kumaResponse.Message, 
+                        options: _defaultDiscordRequestOptions);
+                }
+            }
         }
     }
 }

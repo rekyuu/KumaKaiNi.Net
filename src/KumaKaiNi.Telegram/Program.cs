@@ -1,10 +1,11 @@
-﻿using KumaKaiNi.Core;
+﻿using System.Text.Json;
 using KumaKaiNi.Core.Database;
 using KumaKaiNi.Core.Database.Entities;
 using KumaKaiNi.Core.Models;
 using KumaKaiNi.Core.Utility;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using StackExchange.Redis;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -14,7 +15,9 @@ namespace KumaKaiNi.Telegram;
 
 internal static class Program
 {
-    private static KumaClient? _kuma;
+    private static string ConsumerStreamName => Redis.GetStreamNameForSourceSystem(SourceSystem.Telegram);
+    
+    private static RedisStreamConsumer? _streamConsumer;
     private static ITelegramBotClient? _telegramClient;
     private static CancellationTokenSource? _cts;
     private static string? _botUsername;
@@ -40,10 +43,13 @@ internal static class Program
                 _cts.Cancel();
                 eventArgs.Cancel = true;
             };
+            
+            _streamConsumer = new RedisStreamConsumer(
+                ConsumerStreamName,
+                cancellationToken: _cts.Token);
 
-            _kuma = new KumaClient();
-            _kuma.Processing += OnKumaProcessing;
-            _kuma.Responded += OnKumaResponse;
+            _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
+            await _streamConsumer.StartAsync();
 
             ReceiverOptions receiverOptions = new()
             {
@@ -151,7 +157,7 @@ internal static class Program
             isPrivate,
             true);
 
-        _ = _kuma?.SendRequest(kumaRequest);
+        await Redis.AddRequestToStream(kumaRequest);
     }
 
     private static Task HandleTelegramPollingErrorAsync(ITelegramBotClient client, Exception ex, CancellationToken ct)
@@ -168,39 +174,51 @@ internal static class Program
         _ = _telegramClient.SendChatActionAsync(chatId: channelId, chatAction: ChatAction.Typing);
     }
 
-    private static async void OnKumaResponse(KumaResponse kumaResponse)
+    private static async void OnStreamEntriesReceived(StreamEntry[] streamEntries)
     {
         if (_telegramClient == null) return;
-        if (kumaResponse.ChannelId == null) return;
         
-        // Send an image with caption if one is attached
-        if (kumaResponse.Image != null)
+        foreach (StreamEntry streamEntry in streamEntries)
         {
-            string caption = $"{kumaResponse.Image.Description}";
-            if (kumaResponse.Image.Referrer != "" && kumaResponse.Image.Source != "") caption += $"\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})";
+            foreach (NameValueEntry entry in streamEntry.Values)
+            {
+                if (entry.Value.IsNullOrEmpty) continue;
+        
+                KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
+                if (kumaResponse == null) continue;
+                
+                if (kumaResponse.ChannelId == null) return;
+        
+                // Send an image with caption if one is attached
+                if (kumaResponse.Image != null)
+                {
+                    string caption = $"{kumaResponse.Image.Description}";
+                    if (kumaResponse.Image.Referrer != "" && kumaResponse.Image.Source != "") caption += $"\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})";
 
-            // Try sending the image first, then a link if that fails. Usually fails when the image is too large
-            try
-            {
-                await _telegramClient.SendPhotoAsync(
-                    chatId: kumaResponse.ChannelId, 
-                    photo: InputFile.FromUri(kumaResponse.Image.Url), 
-                    caption: caption, 
-                    parseMode: ParseMode.Markdown);
-            }
-            catch
-            {
-                await _telegramClient.SendTextMessageAsync(
-                    chatId: kumaResponse.ChannelId, 
-                    text: $"Image was too large for telegram.\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})\n\n{kumaResponse.Image.Description}",
-                    parseMode: ParseMode.Markdown);
-            }
+                    // Try sending the image first, then a link if that fails. Usually fails when the image is too large
+                    try
+                    {
+                        await _telegramClient.SendPhotoAsync(
+                            chatId: kumaResponse.ChannelId, 
+                            photo: InputFile.FromUri(kumaResponse.Image.Url), 
+                            caption: caption, 
+                            parseMode: ParseMode.Markdown);
+                    }
+                    catch
+                    {
+                        await _telegramClient.SendTextMessageAsync(
+                            chatId: kumaResponse.ChannelId, 
+                            text: $"Image was too large for telegram.\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})\n\n{kumaResponse.Image.Description}",
+                            parseMode: ParseMode.Markdown);
+                    }
             
-        }
-        // Send a standard message
-        else if (!string.IsNullOrEmpty(kumaResponse.Message))
-        {
-            await _telegramClient.SendTextMessageAsync(chatId: kumaResponse.ChannelId, text: kumaResponse.Message);
+                }
+                // Send a standard message
+                else if (!string.IsNullOrEmpty(kumaResponse.Message))
+                {
+                    await _telegramClient.SendTextMessageAsync(chatId: kumaResponse.ChannelId, text: kumaResponse.Message);
+                }
+            }
         }
     }
 }

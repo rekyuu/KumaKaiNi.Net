@@ -100,7 +100,7 @@ public static class DanbooruCommands
         if (tags.Any(tag => blockedTags.Contains(tag))) return null;
 
         // Fetch recent returns from cache
-        string cacheKeyPrefix = $"danbooru:{Enum.GetName(sourceSystem)}:{channelId}";
+        string cacheKeyPrefix = $"danbooru:{Enum.GetName(sourceSystem)!.ToLowerInvariant()}:{channelId}";
         string? cacheKey = null;
         string[] cachedResults = Cache.GetCachedKeys(cacheKeyPrefix);
         
