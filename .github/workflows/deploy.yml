@@ -1,0 +1,37 @@
+name: Deploy
+
+on:
+  push:
+    tags: [ "*" ]
+
+jobs:
+  deploy-kumakaini-request-processor:
+    uses: rekyuu/KumaKaiNi.Net/.github/workflows/docker-build-and-push.yml@develop
+    with:
+      dotnet_project_name: KumaKaiNi.RequestProcessor
+      image_name: kumakaini-request-processor
+    secrets:
+      docker_registry: ${{ secrets.DOCKER_REGISTRY }}
+      docker_registry_username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+      docker_registry_password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+      
+  deploy-kumakaini-discord:
+    uses: rekyuu/KumaKaiNi.Net/.github/workflows/docker-build-and-push.yml@develop
+    with:
+      dotnet_project_name: KumaKaiNi.Client.Discord
+      image_name: kumakaini-discord
+    secrets:
+      docker_registry: ${{ secrets.DOCKER_REGISTRY }}
+      docker_registry_username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+      docker_registry_password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+      
+  deploy-kumakaini-telegram:
+    uses: rekyuu/KumaKaiNi.Net/.github/workflows/docker-build-and-push.yml@develop
+    with:
+      dotnet_project_name: KumaKaiNi.Client.Telegram
+      image_name: kumakaini-telegram
+    secrets:
+      docker_registry: ${{ secrets.DOCKER_REGISTRY }}
+      docker_registry_username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+      docker_registry_password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+      
