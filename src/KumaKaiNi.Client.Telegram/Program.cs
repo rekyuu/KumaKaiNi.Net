@@ -117,6 +117,7 @@ internal static class Program
             };
 
             await db.TelegramAllowList.AddAsync(allowList, ct);
+            await db.SaveChangesAsync(ct);
         }
 
         // If the chat isn't whitelisted yet, leave after 5 messages
@@ -137,10 +138,10 @@ internal static class Program
             }
 
             allowList.Warnings++;
+            await db.SaveChangesAsync(ct);
+            
             return;
         }
-
-        await db.SaveChangesAsync(ct);
         
         // Update request message so that slash commands start with ! instead
         string? requestMessage = message.Text;
