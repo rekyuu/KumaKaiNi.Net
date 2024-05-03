@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StackExchange.Redis;
 
-namespace KumaKaiNi.Consumer;
+namespace KumaKaiNi.RequestProcessor;
 
 public static class Program
 {
@@ -23,10 +23,11 @@ public static class Program
                 .MinimumLevel.Verbose()
                 .WriteTo.Console()
                 .CreateLogger();
-
-            await MigrateDatabase();
-        
+            
             _cts = new CancellationTokenSource();
+
+            await MigrateDatabase(_cts.Token);
+        
             Console.CancelKeyPress += (_, eventArgs) =>
             {
                 _cts.Cancel();
@@ -60,15 +61,15 @@ public static class Program
         }
     }
 
-    private static async Task MigrateDatabase()
+    private static async Task MigrateDatabase(CancellationToken cancellationToken)
     {
         await using KumaKaiNiDbContext db = new();
             
-        IEnumerable<string> migrations = await db.Database.GetPendingMigrationsAsync();
+        IEnumerable<string> migrations = await db.Database.GetPendingMigrationsAsync(cancellationToken);
         if (!migrations.Any()) return;
         
         Log.Information("Running database migrations");
-        await db.Database.MigrateAsync();
+        await db.Database.MigrateAsync(cancellationToken);
     }
 
     private static async void OnKumaResponse(KumaResponse kumaResponse)

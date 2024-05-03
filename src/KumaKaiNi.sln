@@ -5,13 +5,13 @@ VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Core", "KumaKaiNi.Core\KumaKaiNi.Core.csproj", "{4D8AABDB-49F6-4CDE-9CC0-9C33F9CB6160}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Terminal", "KumaKaiNi.Terminal\KumaKaiNi.Terminal.csproj", "{B7DFE62E-58B4-4F17-91BE-D16321CE0E8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Client.Terminal", "KumaKaiNi.Client.Terminal\KumaKaiNi.Client.Terminal.csproj", "{B7DFE62E-58B4-4F17-91BE-D16321CE0E8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Discord", "KumaKaiNi.Discord\KumaKaiNi.Discord.csproj", "{244691D9-A251-4F54-B4BF-7FE6F458FDCC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Client.Discord", "KumaKaiNi.Client.Discord\KumaKaiNi.Client.Discord.csproj", "{244691D9-A251-4F54-B4BF-7FE6F458FDCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Telegram", "KumaKaiNi.Telegram\KumaKaiNi.Telegram.csproj", "{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Client.Telegram", "KumaKaiNi.Client.Telegram\KumaKaiNi.Client.Telegram.csproj", "{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Consumer", "KumaKaiNi.Consumer\KumaKaiNi.Consumer.csproj", "{2AC265B5-CAA4-48F8-8989-408296556CA8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.RequestProcessor", "KumaKaiNi.RequestProcessor\KumaKaiNi.RequestProcessor.csproj", "{B83ABCDA-FB4A-446D-AB39-963192848E61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C81CDF0-F161-4BA4-9C12-F8603C2AC73B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2AC265B5-CAA4-48F8-8989-408296556CA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2AC265B5-CAA4-48F8-8989-408296556CA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2AC265B5-CAA4-48F8-8989-408296556CA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2AC265B5-CAA4-48F8-8989-408296556CA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B83ABCDA-FB4A-446D-AB39-963192848E61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B83ABCDA-FB4A-446D-AB39-963192848E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B83ABCDA-FB4A-446D-AB39-963192848E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B83ABCDA-FB4A-446D-AB39-963192848E61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

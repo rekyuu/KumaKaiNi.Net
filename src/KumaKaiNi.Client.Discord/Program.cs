@@ -98,13 +98,13 @@ internal static class Program
         _moonTimer.Elapsed += OnMoonTimerElapsed;
         _moonTimer.Start();
         
-        Log.Information("[KumaKaiNi.Discord] Started moon phase timer");
+        Log.Information("[KumaKaiNi.Client.Discord] Started moon phase timer");
 
         _festiveTimer = new Timer(24 * 60 * 60 * 1000);
         _festiveTimer.Elapsed += OnFestiveTimerElapsed;
         _festiveTimer.Start();
         
-        Log.Information("[KumaKaiNi.Discord] Started festive avatar timer");
+        Log.Information("[KumaKaiNi.Client.Discord] Started festive avatar timer");
         
         return Task.CompletedTask;
     }
@@ -117,7 +117,7 @@ internal static class Program
         
         if (guild == null) return;
 
-        Log.Information("[KumaKaiNi.Discord] Checking moon phase");
+        Log.Information("[KumaKaiNi.Client.Discord] Checking moon phase");
         
         // Determine what the current image should be
         int phase = Moon.GetMoonPhase(DateTime.UtcNow);
@@ -129,7 +129,7 @@ internal static class Program
         if (currentPhase == phasePath) return;
 
         // Update the image 
-        Log.Information("[KumaKaiNi.Discord] Updating moon phase: {CurrentMoonPhase}", phasePath);
+        Log.Information("[KumaKaiNi.Client.Discord] Updating moon phase: {CurrentMoonPhase}", phasePath);
 
         Image phaseImage = new(phasePath);
         await guild.ModifyAsync(
@@ -142,7 +142,7 @@ internal static class Program
     {
         if (_discordClient == null) return;
         
-        Log.Information("[KumaKaiNi.Discord] Checking avatar");
+        Log.Information("[KumaKaiNi.Client.Discord] Checking avatar");
         
         // Determine what the current avatar should be
         bool avatarShouldBeFestive = DateTime.UtcNow.Month >= 11;
@@ -155,7 +155,7 @@ internal static class Program
         if (currentAvatar == avatarPath) return;
         
         // Update the avatar
-        Log.Information("[KumaKaiNi.Discord] Updating avatar: {Avatar}", avatarPath);
+        Log.Information("[KumaKaiNi.Client.Discord] Updating avatar: {Avatar}", avatarPath);
         
         Image avatarImage = new(avatarPath);
         await _discordClient.CurrentUser.ModifyAsync(
