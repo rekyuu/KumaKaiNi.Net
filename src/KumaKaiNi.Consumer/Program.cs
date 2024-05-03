@@ -1,7 +1,9 @@
 ﻿using System.Text.Json;
 using KumaKaiNi.Core;
+using KumaKaiNi.Core.Database;
 using KumaKaiNi.Core.Models;
 using KumaKaiNi.Core.Utility;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StackExchange.Redis;
 
@@ -15,32 +17,58 @@ public static class Program
     
     private static async Task Main()
     {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Verbose()
-            .WriteTo.Console()
-            .CreateLogger();
-        
-        _cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (_, eventArgs) =>
+        try
         {
-            _cts.Cancel();
-            eventArgs.Cancel = true;
-            _streamConsumer?.Stop();
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.Console()
+                .CreateLogger();
 
+            await MigrateDatabase();
+        
+            _cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (_, eventArgs) =>
+            {
+                _cts.Cancel();
+                eventArgs.Cancel = true;
+                _streamConsumer?.Stop();
+
+                Environment.Exit(0);
+            };
+        
+            _kuma = new KumaClient();
+            _kuma.Responded += OnKumaResponse;
+        
+            _streamConsumer = new RedisStreamConsumer(
+                Redis.KumaConsumerStreamName,
+                cancellationToken: _cts.Token);
+
+            _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
+            await _streamConsumer.StartAsync();
+        
+            await Task.Delay(-1, _cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            Log.Information("Exiting");
             Environment.Exit(0);
-        };
-        
-        _kuma = new KumaClient();
-        _kuma.Responded += OnKumaResponse;
-        
-        _streamConsumer = new RedisStreamConsumer(
-            Redis.KumaConsumerStreamName,
-            cancellationToken: _cts.Token);
+        }
+        catch (Exception ex)
+        {
+            await Logging.LogExceptionToDatabaseAsync(ex, "An exception was thrown while starting");
+            Environment.Exit(1);
+        }
+    }
 
-        _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
-        await _streamConsumer.StartAsync();
+    private static async Task MigrateDatabase()
+    {
+        await using KumaKaiNiDbContext db = new();
+            
+        IEnumerable<string> migrations = await db.Database.GetPendingMigrationsAsync();
+        if (!migrations.Any()) return;
         
-        await Task.Delay(-1, _cts.Token);
+        Log.Information("Running database migrations");
+        await db.Database.MigrateAsync();
     }
 
     private static async void OnKumaResponse(KumaResponse kumaResponse)
