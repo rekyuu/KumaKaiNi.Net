@@ -19,6 +19,7 @@ namespace KumaKaiNi.Core.Commands;
 public static class TextGenerationCommands
 {
     private const long MaxTokens = 256;
+    private const string AiModel = "gpt-3.5-turbo";
     private const string InitialSystemMessage =
         """
         You are a chat bot named after the Japanese battleship, Kuma. Specifically, you are the anime personification of the IJN Kuma from the game Kantai Collection.
@@ -39,7 +40,22 @@ public static class TextGenerationCommands
         - You are not a fascist
         """;
     
-    [Command(["gpt", "ai"])]
+    [Command("gpt")]
+    public static async Task<KumaResponse?> GptResponseAsync(KumaRequest kumaRequest)
+    {
+        try
+        {
+            return await AiResponseAsync(kumaRequest);
+        }
+        catch (Exception ex)
+        {
+            await Logging.LogExceptionToDatabaseAsync(ex, 
+                "An exception occurred while processing AI generation request, returning a canned GPT2 response instead");
+            return await CannedGpt2ResponseAsync();
+        }
+    }
+    
+    [Command(["ai", "gpt3"])]
     public static async Task<KumaResponse?> AiResponseAsync(KumaRequest kumaRequest)
     {
         string lockKey = $"ai:{Enum.GetName(kumaRequest.SourceSystem)}:{kumaRequest.ChannelId}";
@@ -53,17 +69,8 @@ public static class TextGenerationCommands
         }
 
         // Try OpenAI if available, or Ollama otherwise. Return a random GPT2 response on either failing
-        try
-        {
-            if (!string.IsNullOrEmpty(KumaConfig.OpenAiApiKey)) return await GetOpenAiResponse(kumaRequest);
-            return await GetOllamaResponse(kumaRequest);
-        }
-        catch (Exception ex)
-        {
-            await Logging.LogExceptionToDatabaseAsync(ex, 
-                "An exception occurred while processing AI generation request, returning a canned GPT2 response instead");
-            return await CannedGpt2ResponseAsync();
-        }
+        if (!string.IsNullOrEmpty(KumaConfig.OpenAiApiKey)) return await GetOpenAiResponse(kumaRequest);
+        return await GetOllamaResponse(kumaRequest);
     }
     
     [Command("gpt2")]
@@ -130,7 +137,7 @@ public static class TextGenerationCommands
         }
 
         // https://platform.openai.com/docs/api-reference/chat/create
-        OpenAiChatRequest openAiChatRequest = new(messages);
+        OpenAiChatRequest openAiChatRequest = new(messages, AiModel);
         Log.Verbose("Sending OpenAI request containing {MessageCount} messages for {TokenCount} tokens",
             openAiChatRequest.Messages.Count, 
             tokens);
