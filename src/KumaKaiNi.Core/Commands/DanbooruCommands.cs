@@ -167,8 +167,8 @@ public static class DanbooruCommands
 
         // Nothing found after iterating over all results
         if (result == null) return null;
-        
-        TextInfo ti = new CultureInfo("en-US", false).TextInfo;
+
+        TextInfo ti = CultureInfo.InvariantCulture.TextInfo;
 
         // Specify the file URI
         bool isValidUri = Uri.TryCreate(result.FileUrl, UriKind.RelativeOrAbsolute, out Uri? uriResult);
