@@ -39,6 +39,8 @@ public static class TextGenerationCommands
         - Do not emote in asterisks
         - You are not a fascist
         """;
+
+    private static GptEncoding? _aiModelEncoding;
     
     [Command("gpt")]
     public static async Task<KumaResponse?> GptResponseAsync(KumaRequest kumaRequest)
@@ -129,11 +131,11 @@ public static class TextGenerationCommands
         if (messages.Last().Role == "assistant") return null;
 
         // Keep the outgoing tokens under the max limit
-        long tokens = GetTokenCount(messages);
+        long tokens = GetTokenCount(messages, AiModel);
         while (tokens > MaxTokens && messages.Count >= 1)
         {
             messages.RemoveAt(1);
-            tokens = GetTokenCount(messages);
+            tokens = GetTokenCount(messages, AiModel);
         }
 
         // https://platform.openai.com/docs/api-reference/chat/create
@@ -185,11 +187,11 @@ public static class TextGenerationCommands
         if (messages.Last().Role == "assistant") return null;
 
         // Probably not accurate for Ollama but it can be used as a gauge I guess
-        long tokens = GetTokenCount(messages);
+        long tokens = GetTokenCount(messages, AiModel);
         while (tokens > MaxTokens && messages.Count >= 1)
         {
             messages.RemoveAt(1);
-            tokens = GetTokenCount(messages);
+            tokens = GetTokenCount(messages, AiModel);
         }
 
         // https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion
@@ -286,12 +288,12 @@ public static class TextGenerationCommands
 
     private static long GetTokenCount(IEnumerable<OpenAiChatMessage> messages, string modelName = "gpt-4")
     {
-        GptEncoding? encoding = GptEncoding.GetEncodingForModel(modelName);
+        _aiModelEncoding ??= GptEncoding.GetEncodingForModel(modelName);
         long tokens = 0;
 
         foreach (OpenAiChatMessage message in messages)
         {
-            tokens += encoding.CountTokens(message.Content);
+            tokens += _aiModelEncoding.CountTokens(message.Content);
         }
 
         return tokens;

@@ -11,12 +11,12 @@ public class RedisStreamConsumer
     /// <summary>
     /// Delegate for when stream entries are received
     /// </summary>
-    public delegate void StreamEntriesReceivedEventHandler(StreamEntry[] streamEntries);
+    public delegate void StreamEntryReceivedEventHandler(NameValueEntry entry);
     
     /// <summary>
     /// Event handler for stream entries when they're received
     /// </summary>
-    public event StreamEntriesReceivedEventHandler? StreamEntriesReceived;
+    public event StreamEntryReceivedEventHandler? StreamEntryReceived;
     
     private const string GroupName = "consumers";
     
@@ -129,13 +129,20 @@ public class RedisStreamConsumer
                 1);
         
             if (streamEntries.Length == 0) return;
-            
-            StreamEntriesReceived?.Invoke(streamEntries);
 
-            await db.StreamAcknowledgeAsync(
-                _streamName, 
-                GroupName, 
-                streamEntries.Last().Id);
+            foreach (StreamEntry streamEntry in streamEntries)
+            {
+                foreach (NameValueEntry entry in streamEntry.Values)
+                {
+                    StreamEntryReceived?.Invoke(entry);
+                }
+                
+                await db.StreamAcknowledgeAsync(
+                    _streamName, 
+                    GroupName, 
+                    streamEntry.Id);
+            }
+
             
             Log.Verbose("Consumed {Count} stream records for stream {Stream}", 
                 streamEntries.Length,

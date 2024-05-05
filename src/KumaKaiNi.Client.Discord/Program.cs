@@ -49,7 +49,7 @@ internal static class Program
                 ConsumerStreamName,
                 cancellationToken: _cts.Token);
 
-            _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
+            _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
             await _streamConsumer.StartAsync();
 
             DiscordSocketConfig discordConfig = new()
@@ -222,50 +222,41 @@ internal static class Program
         await Redis.AddRequestToStream(kumaRequest);
     }
 
-    private static async void OnStreamEntriesReceived(StreamEntry[] streamEntries)
+    private static async void OnStreamEntryReceived(NameValueEntry entry)
     {
         if (_discordClient == null) return;
+        if (entry.Value.IsNullOrEmpty) return;
         
-        foreach (StreamEntry streamEntry in streamEntries)
+        KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
+        if (kumaResponse?.ChannelId == null) return;
+        
+        if (await _discordClient.GetChannelAsync((ulong)kumaResponse.ChannelId, _defaultDiscordRequestOptions) 
+            is not ISocketMessageChannel channel) return;
+
+        // Send an embedded image if one is attached
+        if (kumaResponse.Image != null)
         {
-            foreach (NameValueEntry entry in streamEntry.Values)
+            EmbedBuilder embed = new()
             {
-                if (entry.Value.IsNullOrEmpty) continue;
-        
-                KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
-                if (kumaResponse == null) continue;
-                
-                if (kumaResponse.ChannelId == null) return;
-        
-                if (await _discordClient.GetChannelAsync((ulong)kumaResponse.ChannelId, _defaultDiscordRequestOptions) 
-                    is not ISocketMessageChannel channel) return;
+                Color = new Color(0x00b6b6),
+                Title = kumaResponse.Image.Referrer,
+                Url = kumaResponse.Image.Source,
+                Description = kumaResponse.Image.Description,
+                ImageUrl = kumaResponse.Image.Url,
+                Timestamp = DateTime.UtcNow
+            };
 
-                // Send an embedded image if one is attached
-                if (kumaResponse.Image != null)
-                {
-                    EmbedBuilder embed = new()
-                    {
-                        Color = new Color(0x00b6b6),
-                        Title = kumaResponse.Image.Referrer,
-                        Url = kumaResponse.Image.Source,
-                        Description = kumaResponse.Image.Description,
-                        ImageUrl = kumaResponse.Image.Url,
-                        Timestamp = DateTime.UtcNow
-                    };
-
-                    await channel.SendMessageAsync(
-                        text: kumaResponse.Message, 
-                        embed: embed.Build(), 
-                        options: _defaultDiscordRequestOptions);
-                }
-                // Send a standard message
-                else if (!string.IsNullOrEmpty(kumaResponse.Message))
-                {
-                    await channel.SendMessageAsync(
-                        text: kumaResponse.Message, 
-                        options: _defaultDiscordRequestOptions);
-                }
-            }
+            await channel.SendMessageAsync(
+                text: kumaResponse.Message, 
+                embed: embed.Build(), 
+                options: _defaultDiscordRequestOptions);
+        }
+        // Send a standard message
+        else if (!string.IsNullOrEmpty(kumaResponse.Message))
+        {
+            await channel.SendMessageAsync(
+                text: kumaResponse.Message, 
+                options: _defaultDiscordRequestOptions);
         }
     }
 }

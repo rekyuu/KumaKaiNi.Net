@@ -40,7 +40,7 @@ internal static class Program
                 ConsumerStreamName,
                 cancellationToken: _cts.Token);
 
-            _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
+            _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
             await _streamConsumer.StartAsync();
         }
         else
@@ -77,22 +77,16 @@ internal static class Program
 
     private static void OnKumaResponse(KumaResponse kumaResponse)
     {
-        Log.Verbose("Got response: {Response}", kumaResponse);
+        Log.Information("Got response: {Response}", kumaResponse);
     }
 
-    private static void OnStreamEntriesReceived(StreamEntry[] streamEntries)
+    private static void OnStreamEntryReceived(NameValueEntry entry)
     {
-        foreach (StreamEntry streamEntry in streamEntries)
-        {
-            foreach (NameValueEntry entry in streamEntry.Values)
-            {
-                if (entry.Value.IsNullOrEmpty) continue;
+        if (entry.Value.IsNullOrEmpty) return;
         
-                KumaResponse? response = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
-                if (response == null) continue;
+        KumaResponse? response = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
+        if (response == null) return;
                 
-                OnKumaResponse(response);
-            }
-        }
+        OnKumaResponse(response);
     }
 }

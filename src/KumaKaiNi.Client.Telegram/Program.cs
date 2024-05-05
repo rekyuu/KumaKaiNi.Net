@@ -49,7 +49,7 @@ internal static class Program
                 ConsumerStreamName,
                 cancellationToken: _cts.Token);
 
-            _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
+            _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
             await _streamConsumer.StartAsync();
 
             ReceiverOptions receiverOptions = new()
@@ -179,51 +179,42 @@ internal static class Program
         _ = _telegramClient.SendChatActionAsync(chatId: channelId, chatAction: ChatAction.Typing);
     }
 
-    private static async void OnStreamEntriesReceived(StreamEntry[] streamEntries)
+    private static async void OnStreamEntryReceived(NameValueEntry entry)
     {
         if (_telegramClient == null) return;
+        if (entry.Value.IsNullOrEmpty) return;
         
-        foreach (StreamEntry streamEntry in streamEntries)
+        KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
+        if (kumaResponse?.ChannelId == null) return;
+        
+        // Send an image with caption if one is attached
+        if (kumaResponse.Image != null)
         {
-            foreach (NameValueEntry entry in streamEntry.Values)
-            {
-                if (entry.Value.IsNullOrEmpty) continue;
-        
-                KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
-                if (kumaResponse == null) continue;
-                
-                if (kumaResponse.ChannelId == null) return;
-        
-                // Send an image with caption if one is attached
-                if (kumaResponse.Image != null)
-                {
-                    string caption = $"{kumaResponse.Image.Description}";
-                    if (kumaResponse.Image.Referrer != "" && kumaResponse.Image.Source != "") caption += $"\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})";
+            string caption = $"{kumaResponse.Image.Description}";
+            if (kumaResponse.Image.Referrer != "" && kumaResponse.Image.Source != "") caption += $"\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})";
 
-                    // Try sending the image first, then a link if that fails. Usually fails when the image is too large
-                    try
-                    {
-                        await _telegramClient.SendPhotoAsync(
-                            chatId: kumaResponse.ChannelId, 
-                            photo: InputFile.FromUri(kumaResponse.Image.Url), 
-                            caption: caption, 
-                            parseMode: ParseMode.Markdown);
-                    }
-                    catch
-                    {
-                        await _telegramClient.SendTextMessageAsync(
-                            chatId: kumaResponse.ChannelId, 
-                            text: $"Image was too large for telegram.\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})\n\n{kumaResponse.Image.Description}",
-                            parseMode: ParseMode.Markdown);
-                    }
-            
-                }
-                // Send a standard message
-                else if (!string.IsNullOrEmpty(kumaResponse.Message))
-                {
-                    await _telegramClient.SendTextMessageAsync(chatId: kumaResponse.ChannelId, text: kumaResponse.Message);
-                }
+            // Try sending the image first, then a link if that fails. Usually fails when the image is too large
+            try
+            {
+                await _telegramClient.SendPhotoAsync(
+                    chatId: kumaResponse.ChannelId, 
+                    photo: InputFile.FromUri(kumaResponse.Image.Url), 
+                    caption: caption, 
+                    parseMode: ParseMode.Markdown);
             }
+            catch
+            {
+                await _telegramClient.SendTextMessageAsync(
+                    chatId: kumaResponse.ChannelId, 
+                    text: $"Image was too large for telegram.\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})\n\n{kumaResponse.Image.Description}",
+                    parseMode: ParseMode.Markdown);
+            }
+            
+        }
+        // Send a standard message
+        else if (!string.IsNullOrEmpty(kumaResponse.Message))
+        {
+            await _telegramClient.SendTextMessageAsync(chatId: kumaResponse.ChannelId, text: kumaResponse.Message);
         }
     }
 }

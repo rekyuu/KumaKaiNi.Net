@@ -44,7 +44,7 @@ public static class Program
                 Redis.KumaConsumerStreamName,
                 cancellationToken: _cts.Token);
 
-            _streamConsumer.StreamEntriesReceived += OnStreamEntriesReceived;
+            _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
             await _streamConsumer.StartAsync();
         
             await Task.Delay(-1, _cts.Token);
@@ -91,19 +91,13 @@ public static class Program
             useApproximateMaxLength: true);
     }
 
-    private static void OnStreamEntriesReceived(StreamEntry[] streamEntries)
+    private static void OnStreamEntryReceived(NameValueEntry entry)
     {
-        foreach (StreamEntry streamEntry in streamEntries)
-        {
-            foreach (NameValueEntry entry in streamEntry.Values)
-            {
-                if (entry.Value.IsNullOrEmpty) continue;
+        if (entry.Value.IsNullOrEmpty) return;
         
-                KumaRequest? response = JsonSerializer.Deserialize<KumaRequest>(entry.Value!);
-                if (response == null) continue;
+        KumaRequest? response = JsonSerializer.Deserialize<KumaRequest>(entry.Value!);
+        if (response == null) return;
                 
-                _ = _kuma?.ProcessRequest(response);
-            }
-        }
+        _ = _kuma?.ProcessRequest(response);
     }
 }
