@@ -7,7 +7,6 @@ public class BaseDbEntity
 {
     [Key]
     [Column("id")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     
     [Column("inserted_at", TypeName = "timestamp without time zone")]
