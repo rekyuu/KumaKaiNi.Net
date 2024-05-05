@@ -111,7 +111,7 @@ public static class DanbooruCommands
         UriBuilder uriBuilder = new("https://danbooru.donmai.us/posts.json");
         NameValueCollection query = HttpUtility.ParseQueryString(string.Empty);
         query.Add("limit", limit.ToString());
-        if (tags.Length > 0) query.Add("tags", string.Join("+", tags));
+        if (tags.Length > 0) query.Add("tags", string.Join(" ", tags));
 
         byte[] authToken = Encoding.ASCII.GetBytes($"{KumaConfig.DanbooruUser}:{KumaConfig.DanbooruApiKey}");
         string encodedToken = Convert.ToBase64String(authToken);
