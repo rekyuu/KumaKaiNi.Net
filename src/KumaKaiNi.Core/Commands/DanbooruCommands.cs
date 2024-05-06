@@ -32,10 +32,30 @@ public static class DanbooruCommands
         return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
     }
 
-    [Command(["lewd", "nsfw"], nsfw: true)]
+    [Command("lewd", nsfw: true)]
     public static async Task<KumaResponse> GetLewdDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] baseTags = ["-rating:g"];
+        string[] baseTags = ["rating:q"];
+        string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
+        ResponseImage? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+
+        return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
+    }
+
+    [Command("xxx", nsfw: true)]
+    public static async Task<KumaResponse> GetExplicitDanbooruAsync(KumaRequest kumaRequest)
+    {
+        string[] baseTags = ["rating:e"];
+        string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
+        ResponseImage? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+
+        return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
+    }
+
+    [Command("nsfw", nsfw: true)]
+    public static async Task<KumaResponse> GetNsfwDanbooruAsync(KumaRequest kumaRequest)
+    {
+        string[] baseTags = [Rng.PickRandom(["rating:q", "rating:e"])];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
         ResponseImage? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
