@@ -12,7 +12,7 @@ public class KumaClient
     /// <summary>
     /// Delegate for informing that a response is being created
     /// </summary>
-    public delegate void IsProcessingEventHandler(long? channelId);
+    public delegate void IsProcessingEventHandler(string? channelId);
     
     /// <summary>
     /// Event handler for informing that a response is being created
@@ -120,12 +120,14 @@ public class KumaClient
             
             if (response != null)
             {
+                // Update the response destination
+                response.ChannelId = kumaRequest.ChannelId;
+                response.SourceSystem = kumaRequest.SourceSystem;
+                
                 // Log the response
                 await Logging.LogResponseToDatabaseAsync(kumaRequest, response);
                 
                 // Fire off the response
-                response.ChannelId = kumaRequest.ChannelId;
-                response.SourceSystem = kumaRequest.SourceSystem;
                 Responded?.Invoke(response);
             }
         }

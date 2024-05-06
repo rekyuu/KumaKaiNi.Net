@@ -27,7 +27,7 @@ public class KumaRequest
     /// The message ID from the source system.
     /// </summary>
     [JsonPropertyName("message_id")]
-    public long MessageId { get; set; }
+    public string? MessageId { get; set; }
 
     /// <summary>
     /// The user's permission authority.
@@ -39,7 +39,7 @@ public class KumaRequest
     /// The channel ID from the source system.
     /// </summary>
     [JsonPropertyName("channel_id")]
-    public long? ChannelId { get; set; }
+    public string? ChannelId { get; set; }
 
     /// <summary>
     /// Indicates if the source channel was private, such as a direct message.
@@ -104,9 +104,9 @@ public class KumaRequest
         string username,
         string message,
         SourceSystem sourceSystem,
-        long messageId = 0,
+        string? messageId = null,
         UserAuthority userAuthority = UserAuthority.User,
-        long channelId = 0,
+        string? channelId = null,
         bool channelIsPrivate = false,
         bool channelIsNsfw = false)
     {

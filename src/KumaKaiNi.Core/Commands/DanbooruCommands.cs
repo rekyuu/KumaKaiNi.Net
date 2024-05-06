@@ -89,7 +89,7 @@ public static class DanbooruCommands
         return new KumaResponse($"{deleted} tags removed.");
     }
 
-    private static async Task<ResponseImage?> GetDanbooruImageAsync(string[] tags, SourceSystem sourceSystem, long? channelId)
+    private static async Task<ResponseImage?> GetDanbooruImageAsync(string[] tags, SourceSystem sourceSystem, string? channelId)
     {
         // Skip the request if it contains any banned tags
         await using KumaKaiNiDbContext db = new();

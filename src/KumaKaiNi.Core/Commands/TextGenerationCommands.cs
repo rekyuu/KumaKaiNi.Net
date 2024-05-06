@@ -1,10 +1,8 @@
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using KumaKaiNi.Core.Attributes;
 using KumaKaiNi.Core.Database;
 using KumaKaiNi.Core.Database.Entities;
@@ -42,12 +40,24 @@ public static class TextGenerationCommands
 
     private static GptEncoding? _aiModelEncoding;
     
-    [Command("gpt")]
+    [Command(["ai", "gpt", "gpt3"])]
     public static async Task<KumaResponse?> GptResponseAsync(KumaRequest kumaRequest)
     {
         try
         {
-            return await AiResponseAsync(kumaRequest);
+            string lockKey = $"ai:{Enum.GetName(kumaRequest.SourceSystem)}:{kumaRequest.ChannelId}";
+            await using LockHandle @lock = new(lockKey);
+
+            bool lockObtained = await @lock.TryAcquireAsync(0);
+            if (!lockObtained)
+            {
+                Log.Verbose("Lock already obtained for {LockKey}, skipping", lockKey);
+                return null;
+            }
+
+            // Try OpenAI if available, or Ollama otherwise. Return a random GPT2 response on either failing
+            if (!string.IsNullOrEmpty(KumaConfig.OpenAiApiKey)) return await GetOpenAiResponse(kumaRequest);
+            return await CannedGpt2ResponseAsync();
         }
         catch (Exception ex)
         {
@@ -55,24 +65,6 @@ public static class TextGenerationCommands
                 "An exception occurred while processing AI generation request, returning a canned GPT2 response instead");
             return await CannedGpt2ResponseAsync();
         }
-    }
-    
-    [Command(["ai", "gpt3"])]
-    public static async Task<KumaResponse?> AiResponseAsync(KumaRequest kumaRequest)
-    {
-        string lockKey = $"ai:{Enum.GetName(kumaRequest.SourceSystem)}:{kumaRequest.ChannelId}";
-        await using LockHandle @lock = new(lockKey);
-
-        bool lockObtained = await @lock.TryAcquireAsync(0);
-        if (!lockObtained)
-        {
-            Log.Verbose("Lock already obtained for {LockKey}, skipping", lockKey);
-            return null;
-        }
-
-        // Try OpenAI if available, or Ollama otherwise. Return a random GPT2 response on either failing
-        if (!string.IsNullOrEmpty(KumaConfig.OpenAiApiKey)) return await GetOpenAiResponse(kumaRequest);
-        return await GetOllamaResponse(kumaRequest);
     }
     
     [Command("gpt2")]
@@ -100,29 +92,6 @@ public static class TextGenerationCommands
         string content = await response.Content.ReadAsStringAsync();
 
         return !string.IsNullOrEmpty(content) ? new KumaResponse(content) : null;
-    }
-
-    // [Command("markov")]
-    public static async Task<KumaResponse> MarkovCommandAsync()
-    {
-        SourceSystem[] allowedSourceSystems = [SourceSystem.Discord, SourceSystem.Twitch];
-        long?[] allowedChannelIds = [0, 214268737887404042];
-        
-        await using KumaKaiNiDbContext db = new();
-        string[] logs = await db.ChatLogs
-            .Where(x => allowedSourceSystems.Contains(x.SourceSystem))
-            .Where(x => allowedChannelIds.Contains(x.ChannelId))
-            .Where(x => x.Username != "KumaKaiNi")
-            .Where(x => !EF.Functions.Like(x.Message, "!%"))
-            // TODO: there's an issue with the below regex that PSQL doesn't like and I currently don't care enough
-            // https://www.npgsql.org/efcore/mapping/translations.html
-            //.Where(x => !Regex.IsMatch(x.Message, @".*((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?).*"))
-            .Select(x => x.Message)
-            .Take(1000)
-            .ToArrayAsync();
-
-        string markovResponse = GetMarkovResponse(logs);
-        return new KumaResponse(markovResponse);
     }
 
     private static async Task<KumaResponse?> GetOpenAiResponse(KumaRequest kumaRequest)
@@ -178,52 +147,6 @@ public static class TextGenerationCommands
         if (!string.IsNullOrEmpty(message)) return new KumaResponse(message);
         
         Log.Error("OpenAI returned an empty response: {Content}", content);
-        return null;
-    }
-
-    private static async Task<KumaResponse?> GetOllamaResponse(KumaRequest kumaRequest)
-    {
-        List<OpenAiChatMessage> messages = await GetChatHistoryMessagesAsync(kumaRequest);
-        if (messages.Last().Role == "assistant") return null;
-
-        // Probably not accurate for Ollama but it can be used as a gauge I guess
-        long tokens = GetTokenCount(messages, AiModel);
-        while (tokens > MaxTokens && messages.Count >= 1)
-        {
-            messages.RemoveAt(1);
-            tokens = GetTokenCount(messages, AiModel);
-        }
-
-        // https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion
-        OllamaChatRequest ollamaRequest = new(messages);
-        Log.Verbose("Sending Ollama request containing {MessageCount} messages for {TokenCount} tokens",
-            ollamaRequest.Messages.Count, 
-            tokens);
-
-        HttpRequestMessage httpRequest = new(HttpMethod.Post, $"https://{KumaConfig.OllamaHost}/api/chat")
-        {
-            Content = JsonContent.Create(ollamaRequest)
-        };
-
-        Stopwatch stopwatch = new();
-        stopwatch.Start();
-        HttpResponseMessage httpResponse = await Rest.SendAsync(httpRequest);
-        string content = await httpResponse.Content.ReadAsStringAsync();
-        if (!httpResponse.IsSuccessStatusCode)
-        {
-            Log.Error("Ollama request did not return success: {StatusCode} {Content}", 
-                httpResponse.StatusCode, content);
-            return null;
-        }
-        stopwatch.Stop();
-        
-        Log.Verbose("Ollama request took {Elapsed} to complete", stopwatch.Elapsed);
-        OllamaChatResponse? ollamaResponse = JsonSerializer.Deserialize<OllamaChatResponse>(content);
-
-        string? message = ollamaResponse?.Message?.Content;
-        if (!string.IsNullOrEmpty(message)) return new KumaResponse(message);
-        
-        Log.Error("Ollama returned an empty response: {Content}", content);
         return null;
     }
 
@@ -297,58 +220,5 @@ public static class TextGenerationCommands
         }
 
         return tokens;
-    }
-
-    private static string GetMarkovResponse(string[] lines)
-    {
-        Dictionary<string, List<string>> wordDictionary = CreateWordDictionary(lines);
-        string startWord = Rng.PickRandom(wordDictionary.Keys.ToArray());
-
-        return GenerateMarkov(wordDictionary, startWord);
-    }
-
-    private static Dictionary<string, List<string>> CreateWordDictionary(string[] lines)
-    {
-        Dictionary<string, List<string>> wordDictionary = new();
-        string[] words = string.Join(" \n ", lines).Split(" ");
-
-        while (words.Count() > 1)
-        {
-            string word1 = CleanEmoteWord(words[0]);
-            string word2 = CleanEmoteWord(words[1]);
-            words = words[1..];
-
-            if (word1 != "\n")
-            {
-                List<string> wordValues = wordDictionary.GetValueOrDefault(word1, new List<string>());
-                wordValues.Add(word2);
-                wordDictionary[word1] = wordValues;
-            }
-        }
-
-        return wordDictionary;
-    }
-
-    private static string CleanEmoteWord(string word)
-    {
-        MatchCollection matches = Regex.Matches(word, @"<:(?<emote>.+):\d{18}>");
-        return matches.Count == 0 ? word : matches[0].Groups["emote"].Value;
-    }
-
-    private static string GenerateMarkov(Dictionary<string, List<string>> wordDictionary, string startWord)
-    {
-        StringBuilder sb = new(startWord);
-
-        string lastWord = startWord;
-        while (true)
-        {
-            string nextWord = Rng.PickRandom(wordDictionary[lastWord]);
-            if (nextWord == "\n") break;
-
-            sb.Append($" {nextWord}");
-            lastWord = nextWord;
-        }
-
-        return sb.ToString();
     }
 }

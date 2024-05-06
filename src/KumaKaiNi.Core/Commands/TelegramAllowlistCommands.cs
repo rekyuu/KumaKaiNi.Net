@@ -23,7 +23,7 @@ public static class TelegramAllowlistCommands
 
         if (allowList == null)
         {
-            allowList = new TelegramAllowList { ChannelId = request.ChannelId.Value };
+            allowList = new TelegramAllowList(request.ChannelId);
             await db.TelegramAllowList.AddAsync(allowList);
         }
 

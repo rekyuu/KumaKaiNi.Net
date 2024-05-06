@@ -3,10 +3,10 @@
 namespace KumaKaiNi.Core.Database.Entities;
 
 [Table("telegram_allowlists")]
-public class TelegramAllowList : BaseDbEntity
+public class TelegramAllowList(string channelId) : BaseDbEntity
 {
     [Column("channel_id")]
-    public long ChannelId { get; set; }
+    public string ChannelId { get; set; } = channelId;
 
     [Column("approved")]
     public bool Approved { get; set; } = false;

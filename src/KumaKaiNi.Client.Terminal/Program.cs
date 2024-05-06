@@ -63,7 +63,7 @@ internal static class Program
                 message,
                 SourceSystem.Terminal,
                 userAuthority: UserAuthority.User,
-                channelId: 5862,
+                channelId: "5862",
                 channelIsPrivate: true,
                 channelIsNsfw: true);
 

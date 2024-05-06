@@ -213,9 +213,9 @@ internal static class Program
             message.Author.Username,
             message.Content,
             SourceSystem.Discord,
-            (long)message.Id, // Casting ulong as long might cause issues at some point
+            message.Id.ToString(),
             authority,
-            (long)channelId,
+            channelId.ToString(),
             isPrivate,
             isNsfw);
 
@@ -229,8 +229,11 @@ internal static class Program
         
         KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
         if (kumaResponse?.ChannelId == null) return;
+
+        bool parsedChannelId = ulong.TryParse(kumaResponse.ChannelId, out ulong channelId);
+        if (!parsedChannelId) return;
         
-        if (await _discordClient.GetChannelAsync((ulong)kumaResponse.ChannelId, _defaultDiscordRequestOptions) 
+        if (await _discordClient.GetChannelAsync(channelId, _defaultDiscordRequestOptions) 
             is not ISocketMessageChannel channel) return;
 
         // Send an embedded image if one is attached

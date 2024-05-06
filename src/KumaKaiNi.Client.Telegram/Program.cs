@@ -104,17 +104,12 @@ internal static class Program
         // Determine if the chat is allowed
         await using KumaKaiNiDbContext db = new();
         TelegramAllowList? allowList = await db.TelegramAllowList
-            .Where(x => x.ChannelId == message.Chat.Id)
+            .Where(x => x.ChannelId == message.Chat.Id.ToString())
             .FirstOrDefaultAsync(ct);
 
         if (allowList == null)
         {
-            allowList = new TelegramAllowList
-            {
-                ChannelId = message.Chat.Id,
-                Approved = false,
-                Warnings = 0
-            };
+            allowList = new TelegramAllowList(message.Chat.Id.ToString());
 
             await db.TelegramAllowList.AddAsync(allowList, ct);
             await db.SaveChangesAsync(ct);
@@ -157,9 +152,9 @@ internal static class Program
             message.From?.FirstName + (string.IsNullOrEmpty(message.From?.LastName) ? "" : " " + message.From.LastName),
             requestMessage,
             SourceSystem.Telegram,
-            message.MessageId,
+            message.MessageId.ToString(),
             authority,
-            message.Chat.Id,
+            message.Chat.Id.ToString(),
             isPrivate,
             true);
 

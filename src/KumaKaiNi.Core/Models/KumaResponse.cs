@@ -27,7 +27,7 @@ public class KumaResponse
     /// The response destination channel ID.
     /// </summary>
     [JsonPropertyName("channel_id")]
-    public long? ChannelId { get; set; }
+    public string? ChannelId { get; set; }
 
     /// <summary>
     /// The date and time when the response was created.
