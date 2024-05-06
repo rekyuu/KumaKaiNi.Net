@@ -27,12 +27,15 @@ public static class KumaDiscordConfig
         DiscordToken = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
         string? discordModRoleId = Environment.GetEnvironmentVariable("DISCORD_MOD_ROLE_ID");
-        if (!string.IsNullOrEmpty(discordModRoleId)) DiscordModRoleId = ulong.Parse(discordModRoleId);
+        bool discordModRoleIdParsed = ulong.TryParse(discordModRoleId, out ulong discordModRoleIdResult);
+        if (discordModRoleIdParsed) DiscordModRoleId = discordModRoleIdResult;
 
         string? discordAdminId = Environment.GetEnvironmentVariable("DISCORD_ADMIN_ID");
-        if (!string.IsNullOrEmpty(discordAdminId)) DiscordAdminId = ulong.Parse(discordAdminId);
+        bool discordAdminIdParsed = ulong.TryParse(discordAdminId, out ulong discordAdminIdResult);
+        if (discordAdminIdParsed) DiscordModRoleId = discordAdminIdResult;
 
         string? discordMoonGuildId = Environment.GetEnvironmentVariable("DISCORD_MOON_GUILD_ID");
-        if (!string.IsNullOrEmpty(discordMoonGuildId)) DiscordMoonGuildId = ulong.Parse(discordMoonGuildId);
+        bool discordMoonGuildIdParsed = ulong.TryParse(discordMoonGuildId, out ulong discordMoonGuildIdResult);
+        if (discordMoonGuildIdParsed) DiscordModRoleId = discordMoonGuildIdResult;
     }
 }

@@ -17,6 +17,7 @@ public static class KumaTelegramConfig
         TelegramAccessToken = Environment.GetEnvironmentVariable("TELEGRAM_ACCESS_TOKEN");
 
         string? telegramAdminId = Environment.GetEnvironmentVariable("TELEGRAM_ADMIN_ID");
-        if (!string.IsNullOrEmpty(telegramAdminId)) TelegramAdminId = long.Parse(telegramAdminId);
+        bool telegramAdminIdParsed = long.TryParse(telegramAdminId, out long telegramAdminIdResult);
+        if (telegramAdminIdParsed) TelegramAdminId = telegramAdminIdResult;
     }
 }

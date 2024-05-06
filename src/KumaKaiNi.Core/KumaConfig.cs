@@ -105,7 +105,8 @@ public static class KumaConfig
         OpenAiModel = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4-turbo";
         
         string? openAiPromptTokenLimit = Environment.GetEnvironmentVariable("OPENAI_PROMPT_TOKEN_LIMIT");
-        if (!string.IsNullOrEmpty(openAiPromptTokenLimit)) OpenAiPromptTokenLimit = long.Parse(openAiPromptTokenLimit);
+        bool openAiPromptTokenLimitParsed = long.TryParse(openAiPromptTokenLimit, out long openAiPromptTokenLimitResult); 
+        if (openAiPromptTokenLimitParsed) OpenAiPromptTokenLimit = openAiPromptTokenLimitResult;
             
         PostgresHost = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost:5432";
         PostgresUsername = Environment.GetEnvironmentVariable("POSTGRES_USERNAME") ?? "postgres";
