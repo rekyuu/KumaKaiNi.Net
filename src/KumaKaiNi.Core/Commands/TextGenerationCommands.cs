@@ -16,8 +16,6 @@ namespace KumaKaiNi.Core.Commands;
 
 public static class TextGenerationCommands
 {
-    private const long MaxTokens = 256;
-    private const string AiModel = "gpt-3.5-turbo";
     private const string InitialSystemMessage =
         """
         You are a chat bot named after the Japanese battleship, Kuma. Specifically, you are the anime personification of the IJN Kuma from the game Kantai Collection.
@@ -100,15 +98,15 @@ public static class TextGenerationCommands
         if (messages.Last().Role == "assistant") return null;
 
         // Keep the outgoing tokens under the max limit
-        long tokens = GetTokenCount(messages, AiModel);
-        while (tokens > MaxTokens && messages.Count >= 1)
+        long tokens = GetTokenCount(messages, KumaConfig.OpenAiModel);
+        while (tokens > KumaConfig.OpenAiPromptTokenLimit && messages.Count >= 1)
         {
             messages.RemoveAt(1);
-            tokens = GetTokenCount(messages, AiModel);
+            tokens = GetTokenCount(messages, KumaConfig.OpenAiModel);
         }
 
         // https://platform.openai.com/docs/api-reference/chat/create
-        OpenAiChatRequest openAiChatRequest = new(messages, AiModel);
+        OpenAiChatRequest openAiChatRequest = new(messages, KumaConfig.OpenAiModel);
         Log.Verbose("Sending OpenAI request containing {MessageCount} messages for {TokenCount} tokens",
             openAiChatRequest.Messages.Count, 
             tokens);

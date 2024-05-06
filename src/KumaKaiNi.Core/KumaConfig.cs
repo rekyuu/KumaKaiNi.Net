@@ -45,11 +45,16 @@ public static class KumaConfig
     /// The API key for OpenAI.
     /// </summary>
     public static string? OpenAiApiKey { get; private set; }
-    
+
     /// <summary>
-    /// The domain and port for Ollama.
+    /// The model to use with OpenAI requests.
     /// </summary>
-    public static string? OllamaHost { get; private set; }
+    public static string OpenAiModel { get; private set; }
+
+    /// <summary>
+    /// The token limit for OpenAI prompt requests.
+    /// </summary>
+    public static long OpenAiPromptTokenLimit { get; private set; } = 256;
         
     /// <summary>
     /// The domain and port for PostgreSQL.
@@ -86,18 +91,27 @@ public static class KumaConfig
         if (!string.IsNullOrEmpty(product?.Product)) ApplicationName = product.Product;
         if (!string.IsNullOrEmpty(version?.InformationalVersion)) ApplicationVersion = version.InformationalVersion;
 
-        // Any null fallbacks are used for local testing
+        // Any null fallbacks should only be used for local testing
+        
         BuildCommit = Environment.GetEnvironmentVariable("COMMIT_SHA") ?? "unknown";
+        
         RedisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost:6379";
         RedisPassword = Environment.GetEnvironmentVariable("REDIS_PASSWORD") ?? "redis";
+        
         DanbooruUser = Environment.GetEnvironmentVariable("DANBOORU_USER");
         DanbooruApiKey = Environment.GetEnvironmentVariable("DANBOORU_API_KEY");
-        OllamaHost = Environment.GetEnvironmentVariable("OLLAMA_HOST") ?? "localhost:11434";
+        
         OpenAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        OpenAiModel = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4-turbo";
+        
+        string? openAiPromptTokenLimit = Environment.GetEnvironmentVariable("OPENAI_PROMPT_TOKEN_LIMIT");
+        if (!string.IsNullOrEmpty(openAiPromptTokenLimit)) OpenAiPromptTokenLimit = long.Parse(openAiPromptTokenLimit);
+            
         PostgresHost = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost:5432";
         PostgresUsername = Environment.GetEnvironmentVariable("POSTGRES_USERNAME") ?? "postgres";
         PostgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres";
         PostgresDatabase = Environment.GetEnvironmentVariable("POSTGRES_DATABASE") ?? "kumakaini";
+        
         LogLevel = Environment.GetEnvironmentVariable("LOG_LEVEL") ?? "INFO";
     }
 
