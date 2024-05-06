@@ -258,7 +258,8 @@ internal static class Program
         else if (!string.IsNullOrEmpty(kumaResponse.Message))
         {
             await channel.SendMessageAsync(
-                text: kumaResponse.Message, 
+                text: kumaResponse.Message,
+                flags: MessageFlags.SuppressEmbeds,
                 options: _defaultDiscordRequestOptions);
         }
     }

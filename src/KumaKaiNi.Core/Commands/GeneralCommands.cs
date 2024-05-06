@@ -10,6 +10,12 @@ public static class GeneralCommands
     private static readonly string[] HelloResponses = ["sup", "yo", "ay", "hi", "wassup"];
     private static readonly string[] Choices = ["np", "don't mention it", "anytime", "sure thing", "ye whateva"];
 
+    [Command("about")]
+    public static KumaResponse About()
+    {
+        return new KumaResponse($"KumaKaiNi `{KumaConfig.ApplicationVersion}`\nCommit `{KumaConfig.BuildCommit}`\nhttps://github.com/rekyuu/KumaKaiNi.Net");
+    }
+
     [Command(["kuma", "ping"])]
     public static KumaResponse Ping()
     {

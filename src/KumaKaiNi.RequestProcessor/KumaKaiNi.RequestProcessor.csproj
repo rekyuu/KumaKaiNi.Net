@@ -5,9 +5,16 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>KumaKaiNi.RequestProcessor</RootNamespace>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <InvariantGlobalization>true</InvariantGlobalization>
+        <Product>KumaKaiNi.ResponseHandler</Product>
+        <Version>0.0.0-alpha</Version>
+        <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+        <Authors>rekyuu</Authors>
+        <Description>Kuma!</Description>
+        <RepositoryUrl>https://github.com/rekyuu/KumaKaiNi.Net</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <RootNamespace>KumaKaiNi.Client.Discord</RootNamespace>
+        <InvariantGlobalization>false</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>

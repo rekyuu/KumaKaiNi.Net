@@ -209,7 +209,11 @@ internal static class Program
         // Send a standard message
         else if (!string.IsNullOrEmpty(kumaResponse.Message))
         {
-            await _telegramClient.SendTextMessageAsync(chatId: kumaResponse.ChannelId, text: kumaResponse.Message);
+            await _telegramClient.SendTextMessageAsync(
+                chatId: kumaResponse.ChannelId, 
+                text: kumaResponse.Message,
+                disableWebPagePreview: true,
+                parseMode: ParseMode.Markdown);
         }
     }
 }

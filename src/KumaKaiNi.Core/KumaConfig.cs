@@ -87,7 +87,7 @@ public static class KumaConfig
         if (!string.IsNullOrEmpty(version?.InformationalVersion)) ApplicationVersion = version.InformationalVersion;
 
         // Any null fallbacks are used for local testing
-        BuildCommit = Environment.GetEnvironmentVariable("COMMIT_SHA");
+        BuildCommit = Environment.GetEnvironmentVariable("COMMIT_SHA") ?? "unknown";
         RedisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost:6379";
         RedisPassword = Environment.GetEnvironmentVariable("REDIS_PASSWORD") ?? "redis";
         DanbooruUser = Environment.GetEnvironmentVariable("DANBOORU_USER");

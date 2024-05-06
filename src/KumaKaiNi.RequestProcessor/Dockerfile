@@ -14,6 +14,10 @@ WORKDIR "/src/KumaKaiNi.RequestProcessor"
 RUN dotnet publish "KumaKaiNi.RequestProcessor.csproj" -c Release -o /app/publish
 
 FROM base AS final
+
+ARG COMMIT_SHA=unknown
+ENV COMMIT_SHA=$COMMIT_SHA
+
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "KumaKaiNi.RequestProcessor.dll"]

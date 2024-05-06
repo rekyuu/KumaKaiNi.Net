@@ -49,7 +49,9 @@ jobs:
             src/${{ inputs.dotnet_project_name }}/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: BUILD_VERSION=${{ inputs.build_version }}
+          build-args: |
+            BUILD_VERSION=${{ inputs.build_version }}
+            COMMIT_SHA=${{ github.sha }}
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
