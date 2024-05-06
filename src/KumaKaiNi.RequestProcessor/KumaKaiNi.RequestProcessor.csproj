@@ -14,7 +14,7 @@
         <RepositoryUrl>https://github.com/rekyuu/KumaKaiNi.Net</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <RootNamespace>KumaKaiNi.Client.Discord</RootNamespace>
-        <InvariantGlobalization>false</InvariantGlobalization>
+        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>

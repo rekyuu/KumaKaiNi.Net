@@ -24,6 +24,8 @@ public static class Program
                 .WriteTo.Console()
                 .CreateLogger();
             
+            Log.Information($"Starting {KumaConfig.ApplicationName} {KumaConfig.ApplicationVersion}");
+            
             _cts = new CancellationTokenSource();
 
             await MigrateDatabase(_cts.Token);

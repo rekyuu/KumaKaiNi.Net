@@ -31,6 +31,8 @@ internal static class Program
                 .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
                 .WriteTo.Console()
                 .CreateLogger();
+            
+            Log.Information($"Starting {KumaConfig.ApplicationName} {KumaConfig.ApplicationVersion}");
 
             if (string.IsNullOrEmpty(KumaDiscordConfig.DiscordToken))
             {

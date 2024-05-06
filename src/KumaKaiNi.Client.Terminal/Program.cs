@@ -21,6 +21,8 @@ internal static class Program
             .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
             .WriteTo.Console()
             .CreateLogger();
+            
+        Log.Information($"Starting {KumaConfig.ApplicationName} {KumaConfig.ApplicationVersion}");
 
         bool useRedisStreams = args.Contains("--streams");
         
