@@ -3,6 +3,7 @@ using System;
 using KumaKaiNi.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KumaKaiNi.Core.Migrations
 {
     [DbContext(typeof(KumaKaiNiDbContext))]
-    partial class KumaKaiNiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240506012856_AddGuidId")]
+    partial class AddGuidId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,15 +29,22 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.ChatLog", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("OldId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OldId"));
 
                     b.Property<long?>("ChannelId")
                         .HasColumnType("bigint")
                         .HasColumnName("channel_id");
+
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("next_id")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
                         .HasColumnType("timestamp without time zone")
@@ -71,23 +81,30 @@ namespace KumaKaiNi.Core.Migrations
                         .HasColumnType("text")
                         .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("OldId");
 
                     b.ToTable("chat_logs");
                 });
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.CustomCommand", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("OldId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OldId"));
 
                     b.Property<string>("Command")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("command");
+
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("next_id")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
                         .HasColumnType("timestamp without time zone")
@@ -102,7 +119,7 @@ namespace KumaKaiNi.Core.Migrations
                         .HasColumnType("text")
                         .HasColumnName("response");
 
-                    b.HasKey("Id");
+                    b.HasKey("OldId");
 
                     b.HasIndex("Command")
                         .IsUnique();
@@ -112,10 +129,17 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.DanbooruBlockList", b =>
                 {
+                    b.Property<int>("OldId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OldId"));
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -131,17 +155,24 @@ namespace KumaKaiNi.Core.Migrations
                         .HasColumnType("text")
                         .HasColumnName("tag");
 
-                    b.HasKey("Id");
+                    b.HasKey("OldId");
 
                     b.ToTable("danbooru_blocklists");
                 });
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.ErrorLog", b =>
                 {
+                    b.Property<int>("OldId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OldId"));
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -168,17 +199,24 @@ namespace KumaKaiNi.Core.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("timestamp");
 
-                    b.HasKey("Id");
+                    b.HasKey("OldId");
 
                     b.ToTable("error_logs");
                 });
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.GptResponse", b =>
                 {
+                    b.Property<int>("OldId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OldId"));
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -198,17 +236,24 @@ namespace KumaKaiNi.Core.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("returned");
 
-                    b.HasKey("Id");
+                    b.HasKey("OldId");
 
                     b.ToTable("gpt_responses");
                 });
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.Quote", b =>
                 {
+                    b.Property<int>("OldId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OldId"));
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -231,18 +276,19 @@ namespace KumaKaiNi.Core.Migrations
                         .HasColumnType("text")
                         .HasColumnName("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("OldId");
 
                     b.ToTable("quotes");
                 });
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.TelegramAllowList", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("OldId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OldId"));
 
                     b.Property<bool>("Approved")
                         .HasColumnType("boolean")
@@ -251,6 +297,12 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<long>("ChannelId")
                         .HasColumnType("bigint")
                         .HasColumnName("channel_id");
+
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("next_id")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
                         .HasColumnType("timestamp without time zone")
@@ -264,7 +316,7 @@ namespace KumaKaiNi.Core.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("warnings");
 
-                    b.HasKey("Id");
+                    b.HasKey("OldId");
 
                     b.ToTable("telegram_allowlists");
                 });

@@ -3,6 +3,7 @@ using System;
 using KumaKaiNi.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KumaKaiNi.Core.Migrations
 {
     [DbContext(typeof(KumaKaiNiDbContext))]
-    partial class KumaKaiNiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240506012046_AddQuoteIdSequence")]
+    partial class AddQuoteIdSequence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,11 +29,12 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.ChatLog", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<long?>("ChannelId")
                         .HasColumnType("bigint")
@@ -78,11 +82,12 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.CustomCommand", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Command")
                         .IsRequired()
@@ -112,11 +117,12 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.DanbooruBlockList", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("InsertedAt")
                         .HasColumnType("timestamp without time zone")
@@ -138,11 +144,12 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.ErrorLog", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("InsertedAt")
                         .HasColumnType("timestamp without time zone")
@@ -175,11 +182,12 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.GptResponse", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("InsertedAt")
                         .HasColumnType("timestamp without time zone")
@@ -205,11 +213,12 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.Quote", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("InsertedAt")
                         .HasColumnType("timestamp without time zone")
@@ -238,11 +247,12 @@ namespace KumaKaiNi.Core.Migrations
 
             modelBuilder.Entity("KumaKaiNi.Core.Database.Entities.TelegramAllowList", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Approved")
                         .HasColumnType("boolean")

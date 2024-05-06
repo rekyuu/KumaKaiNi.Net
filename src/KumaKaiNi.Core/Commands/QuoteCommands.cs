@@ -19,7 +19,7 @@ public static class QuoteCommands
             case 0:
             {
                 Quote? quote = await GetQuote();
-                return quote != null ? new KumaResponse($"[{quote.Id}] {quote.Text}") : null;
+                return quote != null ? new KumaResponse($"[{quote.QuoteId}] {quote.Text}") : null;
             }
             // Get a specific quote by ID
             case 1:
@@ -28,7 +28,7 @@ public static class QuoteCommands
                 if (!parsed) return new KumaResponse(ErrorResponse);
 
                 Quote? quote = await GetQuote(quoteId);
-                return quote != null ? new KumaResponse($"[{quote.Id}] {quote.Text}") : null;
+                return quote != null ? new KumaResponse($"[{quote.QuoteId}] {quote.Text}") : null;
             }
             case > 1:
             {
@@ -87,7 +87,7 @@ public static class QuoteCommands
         else
         {
             quote = await db.Quotes
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.QuoteId == id);
         }
 
         return quote;

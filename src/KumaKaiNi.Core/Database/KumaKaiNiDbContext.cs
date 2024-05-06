@@ -36,12 +36,39 @@ public class KumaKaiNiDbContext : DbContext
     {
         modelBuilder.Entity<ChatLog>(entity =>
         {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
             entity.Property(e => e.SourceSystem).HasConversion<string>();
         });
         
         modelBuilder.Entity<CustomCommand>(entity =>
         {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
             entity.HasIndex(e => e.Command).IsUnique();
+        });
+        
+        modelBuilder.Entity<DanbooruBlockList>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+        });
+        
+        modelBuilder.Entity<ErrorLog>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+        });
+        
+        modelBuilder.Entity<GptResponse>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+        });
+        
+        modelBuilder.Entity<Quote>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+        }).HasSequence<long>("quote_id");
+        
+        modelBuilder.Entity<TelegramAllowList>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
         });
     }
 

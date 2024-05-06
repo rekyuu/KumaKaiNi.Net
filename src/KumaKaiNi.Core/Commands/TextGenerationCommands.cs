@@ -240,7 +240,7 @@ public static class TextGenerationCommands
             .Where(x => x.SourceSystem == kumaRequest.SourceSystem)
             .Where(x => x.ChannelId == kumaRequest.ChannelId)
             .Where(x => x.Timestamp >= DateTime.UtcNow.AddDays(-1))
-            .OrderBy(x => x.Id)
+            .OrderBy(x => x.Timestamp)
             .ToArrayAsync();
 
         bool commandResponse = false;

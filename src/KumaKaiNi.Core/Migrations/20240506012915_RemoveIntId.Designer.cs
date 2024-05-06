@@ -3,6 +3,7 @@ using System;
 using KumaKaiNi.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KumaKaiNi.Core.Migrations
 {
     [DbContext(typeof(KumaKaiNiDbContext))]
-    partial class KumaKaiNiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240506012915_RemoveIntId")]
+    partial class RemoveIntId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,7 +32,7 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<long?>("ChannelId")
@@ -81,7 +84,7 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<string>("Command")
@@ -115,7 +118,7 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -141,7 +144,7 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -178,7 +181,7 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -208,7 +211,7 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("InsertedAt")
@@ -241,7 +244,7 @@ namespace KumaKaiNi.Core.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
+                        .HasColumnName("next_id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<bool>("Approved")
