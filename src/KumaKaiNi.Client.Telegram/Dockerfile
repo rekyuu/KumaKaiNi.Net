@@ -14,6 +14,10 @@ WORKDIR "/src/KumaKaiNi.Client.Telegram"
 RUN dotnet publish "KumaKaiNi.Client.Telegram.csproj" -c Release -o /app/publish
 
 FROM base AS final
+
+ARG COMMIT_SHA=unknown
+ENV COMMIT_SHA=$COMMIT_SHA
+
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "KumaKaiNi.Client.Telegram.dll"]
