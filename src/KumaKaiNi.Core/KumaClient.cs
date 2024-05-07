@@ -77,10 +77,10 @@ public class KumaClient
             // If a Core command was found, run the corresponding method
             if (method != null)
             {
-                CommandAttribute? commandAttribute = method.GetCustomAttribute<CommandAttribute>();
-                if (commandAttribute != null)
+                BaseResponseAttribute? responseAttribute = method.GetCustomAttribute<BaseResponseAttribute>();
+                if (responseAttribute != null)
                 {
-                    int requiredAuthorityLevel = (int)commandAttribute.UserAuthority;
+                    int requiredAuthorityLevel = (int)responseAttribute.UserAuthority;
                     int userAuthorityLevel = (int)kumaRequest.UserAuthority;
 
                     if (userAuthorityLevel < requiredAuthorityLevel)
@@ -89,7 +89,7 @@ public class KumaClient
                             kumaRequest.Username,
                             method.Name);
                     }
-                    else if (commandAttribute.Nsfw && !kumaRequest.ChannelIsNsfw)
+                    else if (responseAttribute.Nsfw && !kumaRequest.ChannelIsNsfw)
                     {
                         Log.Information("{Method} is not allowed to run in non-NSFW channel",
                             method.Name);
