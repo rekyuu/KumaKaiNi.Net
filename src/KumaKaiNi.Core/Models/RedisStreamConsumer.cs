@@ -120,13 +120,12 @@ public class RedisStreamConsumer
             IDatabase? db = Redis.Database;
             if (db == null) return;
 
-            // TODO: maybe consume more than 1 at once?
+            // Pull all messages that came in the last cadence
             StreamEntry[] streamEntries = await db.StreamReadGroupAsync(
                 _streamName,
                 GroupName,
                 _consumerName,
-                ">",
-                1);
+                ">");
         
             if (streamEntries.Length == 0) return;
 
@@ -142,7 +141,6 @@ public class RedisStreamConsumer
                     GroupName, 
                     streamEntry.Id);
             }
-
             
             Log.Verbose("Consumed {Count} stream records for stream {Stream}", 
                 streamEntries.Length,
