@@ -9,13 +9,17 @@ namespace KumaKaiNi.Core.Utility;
 
 public static class Redis
 {
-    public const string KumaConsumerStreamName = "kuma:requests";
-    
-    public const int StreamMaxLength = 1024;
-    
     public static bool IsConnected => RedisConn is { IsConnected: true };
 
     public static IDatabase? Database =>  RedisConn?.GetDatabase();
+    
+    public const int MaxStreamLength = 1024;
+    public const string KumaRequestHandlerStreamName = "kuma:requests";
+    
+    private const string KumaDiscordStreamName = "kuma:discord:responses";
+    private const string KumaTelegramStreamName = "kuma:telegram:responses";
+    private const string KumaTerminalStreamName = "kuma:terminal:responses";
+    private const string KumaTwitchStreamName = "kuma:twitch:responses";
     
     private static readonly ConnectionMultiplexer? RedisConn;
 
@@ -62,27 +66,89 @@ public static class Redis
     /// <returns>The stream name for the provided source system.</returns>
     public static string GetStreamNameForSourceSystem(SourceSystem sourceSystem)
     {
-        return $"kuma:{Enum.GetName(sourceSystem)!.ToLowerInvariant()}:responses";
+        return sourceSystem switch
+        {
+            SourceSystem.Discord => KumaDiscordStreamName,
+            SourceSystem.Telegram => KumaTelegramStreamName,
+            SourceSystem.Terminal => KumaTerminalStreamName,
+            SourceSystem.Twitch => KumaTwitchStreamName,
+            _ => throw new ArgumentOutOfRangeException(nameof(sourceSystem), sourceSystem, null)
+        };
     }
 
     /// <summary>
     /// Adds a request to the Redis consumer stream for processing.
     /// </summary>
     /// <param name="kumaRequest">The request to send.</param>
-    public static async Task AddRequestToStream(KumaRequest kumaRequest)
+    public static async Task AddRequestToStreamAsync(KumaRequest kumaRequest)
     {
         IDatabase? db = Database;
         if (db == null) return;
         
         string serializedRequest = JsonSerializer.Serialize(kumaRequest);
 
-        Log.Verbose("Sending request to {StreamName}", KumaConsumerStreamName);
+        Log.Verbose("Sending request to {StreamName}", KumaRequestHandlerStreamName);
         
         await db.StreamAddAsync(
-            KumaConsumerStreamName,
+            KumaRequestHandlerStreamName,
             [new NameValueEntry("request", serializedRequest)],
-            maxLength: StreamMaxLength,
+            maxLength: MaxStreamLength,
             useApproximateMaxLength: true);
+    }
+
+    /// <summary>
+    /// Sends a message to the admin via Telegram.
+    /// </summary>
+    /// <param name="message">The message to send.</param>
+    public static async Task SendNotificationToAdminAsync(string message)
+    {
+        IDatabase? db = Database;
+        if (db == null) return;
+        if (KumaConfig.TelegramAdminId == null) return;
+
+        KumaResponse kumaResponse = new(message)
+        {
+            SourceSystem = SourceSystem.Telegram,
+            ChannelId = KumaConfig.TelegramAdminId.ToString()
+        };
+        
+        string serializedRequest = JsonSerializer.Serialize(kumaResponse);
+
+        await db.StreamAddAsync(
+            KumaTelegramStreamName,
+            [new NameValueEntry("response", serializedRequest)],
+            maxLength: MaxStreamLength,
+            useApproximateMaxLength: true);
+    }
+
+    public static void SendNotificationToAdmin(string message)
+    {
+        IDatabase? db = Database;
+        if (db == null) return;
+        if (KumaConfig.TelegramAdminId == null) return;
+
+        KumaResponse kumaResponse = new(message)
+        {
+            SourceSystem = SourceSystem.Telegram,
+            ChannelId = KumaConfig.TelegramAdminId.ToString()
+        };
+        
+        string serializedRequest = JsonSerializer.Serialize(kumaResponse);
+
+        db.StreamAdd(
+            KumaTelegramStreamName,
+            [new NameValueEntry("response", serializedRequest)],
+            maxLength: MaxStreamLength,
+            useApproximateMaxLength: true);
+    }
+
+    /// <summary>
+    /// Sends a deployment notification to the admin via Telegram.
+    /// </summary>
+    public static async Task SendDeploymentNotificationToAdmin()
+    {
+        string message = $"{KumaConfig.ApplicationName} `{KumaConfig.ApplicationVersion}` deployed\n\nCommit `{KumaConfig.BuildCommit}`\nHost `{Environment.MachineName}`";
+        await SendNotificationToAdminAsync(message);
     }
 
     internal static RedisDistributedLock? GetRedisDistributedLock(string name)

@@ -75,6 +75,11 @@ public static class KumaConfig
     /// The PostgreSQL database to connect to.
     /// </summary>
     public static string PostgresDatabase { get; private set; }
+    
+    /// <summary>
+    /// The user ID of the administrator.
+    /// </summary>
+    public static long? TelegramAdminId { get; private set; }
 
     /// <summary>
     /// The log level of the application. Set by the LOG_LEVEL environment variable.
@@ -112,6 +117,10 @@ public static class KumaConfig
         PostgresUsername = Environment.GetEnvironmentVariable("POSTGRES_USERNAME") ?? "postgres";
         PostgresPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres";
         PostgresDatabase = Environment.GetEnvironmentVariable("POSTGRES_DATABASE") ?? "kumakaini";
+
+        string? telegramAdminId = Environment.GetEnvironmentVariable("TELEGRAM_ADMIN_ID");
+        bool telegramAdminIdParsed = long.TryParse(telegramAdminId, out long telegramAdminIdResult);
+        if (telegramAdminIdParsed) TelegramAdminId = telegramAdminIdResult;
         
         LogLevel = Environment.GetEnvironmentVariable("LOG_LEVEL") ?? "INFO";
     }
@@ -137,6 +146,7 @@ public static class KumaConfig
             case "FATAL":
                 loggingLevelSwitch.MinimumLevel = LogEventLevel.Fatal;
                 break;
+            // ReSharper disable once RedundantCaseLabel
             case "INFO":
             default:
                 loggingLevelSwitch.MinimumLevel = LogEventLevel.Information;

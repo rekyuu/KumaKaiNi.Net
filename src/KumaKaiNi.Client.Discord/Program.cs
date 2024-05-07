@@ -13,8 +13,6 @@ namespace KumaKaiNi.Client.Discord;
 
 internal static class Program
 {
-    private static string ConsumerStreamName => Redis.GetStreamNameForSourceSystem(SourceSystem.Discord);
-    
     private static RedisStreamConsumer? _streamConsumer;
     private static DiscordSocketClient? _discordClient;
     private static CancellationTokenSource? _cts;
@@ -32,7 +30,10 @@ internal static class Program
                 .WriteTo.Console()
                 .CreateLogger();
             
-            Log.Information($"Starting {KumaConfig.ApplicationName} {KumaConfig.ApplicationVersion}");
+            Log.Information("Starting {ApplicationName} {ApplicationVersion} on {MachineName}", 
+                KumaConfig.ApplicationName, 
+                KumaConfig.ApplicationVersion, 
+                Environment.MachineName);
 
             if (string.IsNullOrEmpty(KumaDiscordConfig.DiscordToken))
             {
@@ -48,7 +49,7 @@ internal static class Program
             };
 
             _streamConsumer = new RedisStreamConsumer(
-                ConsumerStreamName,
+                Redis.GetStreamNameForSourceSystem(SourceSystem.Discord),
                 cancellationToken: _cts.Token);
 
             _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
@@ -70,17 +71,19 @@ internal static class Program
             await _discordClient.LoginAsync(TokenType.Bot, KumaDiscordConfig.DiscordToken);
             await _discordClient.StartAsync();
 
-            Log.Information("[KumaKaiNi.Client.Discord] Listening for updates");
+            Log.Information("Listening for updates");
+            await Redis.SendDeploymentNotificationToAdmin();
+            
             await Task.Delay(-1, _cts.Token);
         }
         catch (TaskCanceledException)
         {
-            Log.Information("[KumaKaiNi.Client.Discord] Exiting");
+            Log.Information("Exiting");
             Environment.Exit(0);
         }
         catch (Exception ex)
         {
-            await Logging.LogExceptionToDatabaseAsync(ex, "[KumaKaiNi.Client.Discord] An exception was thrown while starting");
+            await Logging.LogExceptionToDatabaseAsync(ex, "An exception was thrown while starting");
             Environment.Exit(1);
         }
         finally
@@ -91,27 +94,27 @@ internal static class Program
 
     private static Task OnDiscordLog(LogMessage message)
     {
-        if (message.Exception != null) Log.Error("[Discord.Net] {Message}", message);
-        else Log.Information("[Discord.Net] {Message}", message);
+        if (message.Exception != null) Log.Error("{Message}", message);
+        else Log.Information("{Message}", message);
         
         return Task.CompletedTask;
     }
 
     private static Task OnDiscordReady()
     {
-        Log.Information("[Discord.Net] Discord is ready");
+        Log.Information("Discord is ready");
 
         _moonTimer = new Timer(60 * 60 * 1000);
         _moonTimer.Elapsed += OnMoonTimerElapsed;
         _moonTimer.Start();
         
-        Log.Information("[KumaKaiNi.Client.Discord] Started moon phase timer");
+        Log.Information("Started moon phase timer");
 
         _festiveTimer = new Timer(24 * 60 * 60 * 1000);
         _festiveTimer.Elapsed += OnFestiveTimerElapsed;
         _festiveTimer.Start();
         
-        Log.Information("[KumaKaiNi.Client.Discord] Started festive avatar timer");
+        Log.Information("Started festive avatar timer");
         
         return Task.CompletedTask;
     }
@@ -124,7 +127,7 @@ internal static class Program
         
         if (guild == null) return;
 
-        Log.Information("[KumaKaiNi.Client.Discord] Checking moon phase");
+        Log.Information("Checking moon phase");
         
         // Determine what the current image should be
         int phase = Moon.GetMoonPhase(DateTime.UtcNow);
@@ -136,7 +139,7 @@ internal static class Program
         if (currentPhase == phasePath) return;
 
         // Update the image 
-        Log.Information("[KumaKaiNi.Client.Discord] Updating moon phase: {CurrentMoonPhase}", phasePath);
+        Log.Information("Updating moon phase: {CurrentMoonPhase}", phasePath);
 
         Image phaseImage = new(phasePath);
         await guild.ModifyAsync(
@@ -149,7 +152,7 @@ internal static class Program
     {
         if (_discordClient == null) return;
         
-        Log.Information("[KumaKaiNi.Client.Discord] Checking avatar");
+        Log.Information("Checking avatar");
         
         // Determine what the current avatar should be
         bool avatarShouldBeFestive = DateTime.UtcNow.Month >= 11;
@@ -162,7 +165,7 @@ internal static class Program
         if (currentAvatar == avatarPath) return;
         
         // Update the avatar
-        Log.Information("[KumaKaiNi.Client.Discord] Updating avatar: {Avatar}", avatarPath);
+        Log.Information("Updating avatar: {Avatar}", avatarPath);
         
         Image avatarImage = new(avatarPath);
         await _discordClient.CurrentUser.ModifyAsync(
@@ -221,7 +224,7 @@ internal static class Program
             isPrivate,
             isNsfw);
 
-        await Redis.AddRequestToStream(kumaRequest);
+        await Redis.AddRequestToStreamAsync(kumaRequest);
     }
 
     private static async void OnStreamEntryReceived(NameValueEntry entry)

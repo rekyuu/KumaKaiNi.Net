@@ -16,8 +16,6 @@ namespace KumaKaiNi.Client.Telegram;
 
 internal static class Program
 {
-    private static string ConsumerStreamName => Redis.GetStreamNameForSourceSystem(SourceSystem.Telegram);
-    
     private static RedisStreamConsumer? _streamConsumer;
     private static ITelegramBotClient? _telegramClient;
     private static CancellationTokenSource? _cts;
@@ -32,7 +30,10 @@ internal static class Program
                 .WriteTo.Console()
                 .CreateLogger();
             
-            Log.Information($"Starting {KumaConfig.ApplicationName} {KumaConfig.ApplicationVersion}");
+            Log.Information("Starting {ApplicationName} {ApplicationVersion} on {MachineName}", 
+                KumaConfig.ApplicationName, 
+                KumaConfig.ApplicationVersion, 
+                Environment.MachineName);
 
             if (string.IsNullOrEmpty(KumaTelegramConfig.TelegramAccessToken))
             {
@@ -48,7 +49,7 @@ internal static class Program
             };
             
             _streamConsumer = new RedisStreamConsumer(
-                ConsumerStreamName,
+                Redis.GetStreamNameForSourceSystem(SourceSystem.Telegram),
                 cancellationToken: _cts.Token);
 
             _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
@@ -62,25 +63,27 @@ internal static class Program
             _telegramClient = new TelegramBotClient(KumaTelegramConfig.TelegramAccessToken);
             User me = await _telegramClient.GetMeAsync();
             _botUsername = me.Username;
-            Log.Information("[KumaKaiNi.Client.Telegram] Logged in as @{Username}", _botUsername);
+            Log.Information("Logged in as @{Username}", _botUsername);
 
             _telegramClient.StartReceiving(
                 updateHandler: HandleTelegramUpdateAsync,
                 pollingErrorHandler: HandleTelegramPollingErrorAsync,
                 receiverOptions: receiverOptions,
                 cancellationToken: _cts.Token);
-
-            Log.Information("[KumaKaiNi.Client.Telegram] Listening for updates");
+            
+            Log.Information("Listening for updates");
+            await Redis.SendDeploymentNotificationToAdmin();
+            
             await Task.Delay(-1, _cts.Token);
         }
         catch (TaskCanceledException)
         {
-            Log.Information("[KumaKaiNi.Client.Telegram] Exiting");
+            Log.Information("Exiting");
             Environment.Exit(0);
         }
         catch (Exception ex)
         {
-            await Logging.LogExceptionToDatabaseAsync(ex, "[KumaKaiNi.Client.Telegram] An exception was thrown while starting");
+            await Logging.LogExceptionToDatabaseAsync(ex, "An exception was thrown while starting");
             Environment.Exit(1);
         }
         finally
@@ -91,83 +94,91 @@ internal static class Program
 
     private static async Task HandleTelegramUpdateAsync(ITelegramBotClient telegramClient, Update update, CancellationToken ct)
     {
-        // Skip update if no message exists or messages from self
-        if (update.Message is not { } message) return;
-        if (message.From?.Id == telegramClient.BotId) return;
-
-        // Determine user authority and if the chat is a private chat
-        bool isAdmin = message.From?.Id == KumaTelegramConfig.TelegramAdminId;
-        bool isPrivate = message.Chat.Id == message.From?.Id;
-        UserAuthority authority = isAdmin ? UserAuthority.Administrator : UserAuthority.User;
-
-        // Skip if it's a private chat that isn't from the administrator
-        if (!isAdmin && isPrivate) return;
-
-        // Determine if the chat is allowed
-        await using KumaKaiNiDbContext db = new();
-        TelegramAllowList? allowList = await db.TelegramAllowList
-            .Where(x => x.ChannelId == message.Chat.Id.ToString())
-            .FirstOrDefaultAsync(ct);
-
-        if (allowList == null)
+        try
         {
-            allowList = new TelegramAllowList(message.Chat.Id.ToString());
+            // Skip update if no message exists or messages from self
+            if (update.Message is not { } message) return;
+            if (message.From?.Id == telegramClient.BotId) return;
 
-            await db.TelegramAllowList.AddAsync(allowList, ct);
-            await db.SaveChangesAsync(ct);
-        }
+            // Determine user authority and if the chat is a private chat
+            bool isAdmin = message.From?.Id == KumaConfig.TelegramAdminId;
+            bool isPrivate = message.Chat.Id == message.From?.Id;
+            UserAuthority authority = isAdmin ? UserAuthority.Administrator : UserAuthority.User;
 
-        // If the chat isn't whitelisted yet, leave after 5 messages
-        if (!allowList.Approved && !isAdmin)
-        {
-            if (allowList.Warnings >= 5)
+            // Skip if it's a private chat that isn't from the administrator
+            if (!isAdmin && isPrivate) return;
+
+            // Determine if the chat is allowed
+            await using KumaKaiNiDbContext db = new();
+            TelegramAllowList? allowList = await db.TelegramAllowList
+                .Where(x => x.ChannelId == message.Chat.Id.ToString())
+                .FirstOrDefaultAsync(ct);
+
+            if (allowList == null)
             {
-                try
+                allowList = new TelegramAllowList(message.Chat.Id.ToString());
+
+                await db.TelegramAllowList.AddAsync(allowList, ct);
+                await db.SaveChangesAsync(ct);
+            }
+
+            // If the chat isn't whitelisted yet, leave after 5 messages
+            if (!allowList.Approved && !isAdmin)
+            {
+                if (allowList.Warnings >= 5)
                 {
-                    await telegramClient.LeaveChatAsync(message.Chat.Id, cancellationToken: ct);
+                    try
+                    {
+                        await telegramClient.LeaveChatAsync(message.Chat.Id, cancellationToken: ct);
+                    }
+                    catch (Exception ex)
+                    {
+                        await Logging.LogExceptionToDatabaseAsync(ex, "[KumaKaiNi.Client.Telegram] Exception was thrown while trying to leave chat {ChatId}", message.Chat.Id);
+                    }
+                    
+                    return;
                 }
-                catch (Exception ex)
-                {
-                    await Logging.LogExceptionToDatabaseAsync(ex, "[KumaKaiNi.Client.Telegram] Exception was thrown while trying to leave chat {ChatId}", message.Chat.Id);
-                }
+
+                allowList.Warnings++;
+                await db.SaveChangesAsync(ct);
                 
                 return;
             }
-
-            allowList.Warnings++;
-            await db.SaveChangesAsync(ct);
             
-            return;
+            // Update request message so that slash commands start with ! instead
+            string? requestMessage = message.Text;
+            if (!string.IsNullOrEmpty(requestMessage))
+            {
+                if (requestMessage[0] == '/') requestMessage = '!' + requestMessage[1..];
+                requestMessage = requestMessage.Replace($"@{_botUsername}", "");
+            }
+            else return;
+
+            // Send the request
+            KumaRequest kumaRequest = new(
+                message.From?.FirstName + (string.IsNullOrEmpty(message.From?.LastName) ? "" : " " + message.From.LastName),
+                requestMessage,
+                SourceSystem.Telegram,
+                message.MessageId.ToString(),
+                authority,
+                message.Chat.Id.ToString(),
+                isPrivate,
+                true);
+
+            await Redis.AddRequestToStreamAsync(kumaRequest);
         }
-        
-        // Update request message so that slash commands start with ! instead
-        string? requestMessage = message.Text;
-        if (!string.IsNullOrEmpty(requestMessage))
+        catch (Exception ex)
         {
-            if (requestMessage[0] == '/') requestMessage = '!' + requestMessage[1..];
-            requestMessage = requestMessage.Replace($"@{_botUsername}", "");
+            await Logging.LogExceptionToDatabaseAsync(ex, "Failed to process update: {UpdateType}", update.Type);
         }
-        else return;
-
-        // Send the request
-        KumaRequest kumaRequest = new(
-            message.From?.FirstName + (string.IsNullOrEmpty(message.From?.LastName) ? "" : " " + message.From.LastName),
-            requestMessage,
-            SourceSystem.Telegram,
-            message.MessageId.ToString(),
-            authority,
-            message.Chat.Id.ToString(),
-            isPrivate,
-            true);
-
-        await Redis.AddRequestToStream(kumaRequest);
     }
 
     private static async Task HandleTelegramPollingErrorAsync(ITelegramBotClient client, Exception ex, CancellationToken ct)
     {
-        await Logging.LogExceptionToDatabaseAsync(ex, "[Telegram.Bot] An exception was thrown while polling Telegram");
+        await Logging.LogExceptionToDatabaseAsync(ex, "An exception was thrown while polling Telegram");
     }
 
+    // ReSharper disable once UnusedMember.Local
     private static void OnKumaProcessing(long? channelId)
     {
         if (_telegramClient == null) return;

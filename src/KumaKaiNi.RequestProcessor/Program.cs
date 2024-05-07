@@ -24,7 +24,10 @@ public static class Program
                 .WriteTo.Console()
                 .CreateLogger();
             
-            Log.Information($"Starting {KumaConfig.ApplicationName} {KumaConfig.ApplicationVersion}");
+            Log.Information("Starting {ApplicationName} {ApplicationVersion} on {MachineName}", 
+                KumaConfig.ApplicationName, 
+                KumaConfig.ApplicationVersion, 
+                Environment.MachineName);
             
             _cts = new CancellationTokenSource();
 
@@ -43,11 +46,14 @@ public static class Program
             _kuma.Responded += OnKumaResponse;
         
             _streamConsumer = new RedisStreamConsumer(
-                Redis.KumaConsumerStreamName,
+                Redis.KumaRequestHandlerStreamName,
                 cancellationToken: _cts.Token);
 
             _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
             await _streamConsumer.StartAsync();
+
+            Log.Information("[Listening for updates");
+            await Redis.SendDeploymentNotificationToAdmin();
         
             await Task.Delay(-1, _cts.Token);
         }
@@ -80,16 +86,16 @@ public static class Program
 
     private static async void OnKumaResponse(KumaResponse kumaResponse)
     {
-        string destinationStream = Redis.GetStreamNameForSourceSystem(kumaResponse.SourceSystem);
-        string serializedRequest = JsonSerializer.Serialize(kumaResponse);
-                
         IDatabase? db = Redis.Database;
         if (db == null) return;
+        
+        string destinationStream = Redis.GetStreamNameForSourceSystem(kumaResponse.SourceSystem);
+        string serializedRequest = JsonSerializer.Serialize(kumaResponse);
 
         await db.StreamAddAsync(
             destinationStream,
             [new NameValueEntry("response", serializedRequest)],
-            maxLength: Redis.StreamMaxLength,
+            maxLength: Redis.MaxStreamLength,
             useApproximateMaxLength: true);
     }
 

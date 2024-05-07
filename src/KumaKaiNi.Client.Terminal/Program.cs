@@ -9,8 +9,6 @@ namespace KumaKaiNi.Client.Terminal;
 
 internal static class Program
 {
-    private static string ConsumerStreamName => Redis.GetStreamNameForSourceSystem(SourceSystem.Terminal);
-    
     private static KumaClient? _kuma;
     private static RedisStreamConsumer? _streamConsumer;
     private static CancellationTokenSource? _cts;
@@ -21,8 +19,11 @@ internal static class Program
             .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
             .WriteTo.Console()
             .CreateLogger();
-            
-        Log.Information($"Starting {KumaConfig.ApplicationName} {KumaConfig.ApplicationVersion}");
+        
+        Log.Information("Starting {ApplicationName} {ApplicationVersion} on {MachineName}", 
+            KumaConfig.ApplicationName, 
+            KumaConfig.ApplicationVersion, 
+            Environment.MachineName);
 
         bool useRedisStreams = args.Contains("--streams");
         
@@ -39,7 +40,7 @@ internal static class Program
         if (useRedisStreams)
         {
             _streamConsumer = new RedisStreamConsumer(
-                ConsumerStreamName,
+                Redis.GetStreamNameForSourceSystem(SourceSystem.Terminal),
                 cancellationToken: _cts.Token);
 
             _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
@@ -69,7 +70,7 @@ internal static class Program
                 channelIsPrivate: true,
                 channelIsNsfw: true);
 
-            _ = useRedisStreams ? Redis.AddRequestToStream(kumaRequest) : _kuma?.ProcessRequest(kumaRequest);
+            _ = useRedisStreams ? Redis.AddRequestToStreamAsync(kumaRequest) : _kuma?.ProcessRequest(kumaRequest);
         }
 
         await Log.CloseAndFlushAsync();

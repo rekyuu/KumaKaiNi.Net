@@ -1,7 +1,10 @@
+using System.Text;
 using KumaKaiNi.Core.Database;
 using KumaKaiNi.Core.Database.Entities;
 using KumaKaiNi.Core.Models;
 using Serilog;
+using Serilog.Events;
+using Serilog.Parsing;
 
 namespace KumaKaiNi.Core.Utility;
 
@@ -74,12 +77,29 @@ public static class Logging
     public static void LogExceptionToDatabase(Exception ex, string messageTemplate, params object?[]? propertyValues)
     {
         Log.Error(ex, messageTemplate, propertyValues);
-        
-        ErrorLog errorLog = new(ex);
 
-        using KumaKaiNiDbContext db = new();
-        db.ErrorLogs.Add(errorLog);
-        db.SaveChanges();
+        try
+        {
+            ErrorLog errorLog = new(ex);
+
+            using KumaKaiNiDbContext db = new();
+            db.ErrorLogs.Add(errorLog);
+            db.SaveChanges();
+        }
+        catch (Exception logEx)
+        {
+            Log.Error(logEx, "Failed to log exception to database");
+        }
+
+        try
+        {
+            string message = FormatErrorMessageForTelegram(ex, messageTemplate, propertyValues);
+            Redis.SendNotificationToAdmin(message);
+        }
+        catch (Exception notificationEx)
+        {
+            Log.Error(notificationEx, "Failed to send admin notification");
+        }
     }
 
     /// <summary>
@@ -91,12 +111,53 @@ public static class Logging
     public static async Task LogExceptionToDatabaseAsync(Exception ex, string messageTemplate, params object?[]? propertyValues)
     {
         Log.Error(ex, messageTemplate, propertyValues);
-        
-        ErrorLog errorLog = new(ex);
 
-        await using KumaKaiNiDbContext db = new();
-        await db.ErrorLogs.AddAsync(errorLog);
-        await db.SaveChangesAsync();
+        try
+        {
+            ErrorLog errorLog = new(ex);
+
+            await using KumaKaiNiDbContext db = new();
+            await db.ErrorLogs.AddAsync(errorLog);
+            await db.SaveChangesAsync();
+        }
+        catch (Exception logEx)
+        {
+            Log.Error(logEx, "Failed to log exception to database");
+        }
+
+        try
+        {
+            string message = FormatErrorMessageForTelegram(ex, messageTemplate, propertyValues);
+            await Redis.SendNotificationToAdminAsync(message);
+        }
+        catch (Exception notificationEx)
+        {
+            Log.Error(notificationEx, "Failed to send admin notification");
+        }
+    }
+
+    private static string FormatErrorMessageForTelegram(Exception ex, string messageTemplate, params object?[]? propertyValues)
+    {
+        if (propertyValues == null) return messageTemplate;
+        
+        MessageTemplateParser parser = new();
+        MessageTemplate template = parser.Parse(messageTemplate);
+        StringBuilder builder = new();
+            
+        int i = 0;
+        foreach (MessageTemplateToken token in template.Tokens)
+        {
+            if (token is TextToken) builder.Append(token);
+            else builder.Append("{" + i++ + "}");
+        }
+            
+        string formatTemplate = builder.ToString();
+        string formattedString = string.Format(formatTemplate, propertyValues);
+        string message = $"`{KumaConfig.ApplicationName}`\n\n{formattedString}\n\n`{ex}`";
+
+        if (message.Length > 4096) message = message[..(4096 - 4)] + "...`";
+
+        return message;
     }
 
     private static void LogMessage(SourceSystem sourceSystem, string username, string? message)

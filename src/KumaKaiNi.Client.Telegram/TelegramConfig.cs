@@ -6,18 +6,9 @@ public static class KumaTelegramConfig
     /// The Telegram bot access token.
     /// </summary>
     public static string? TelegramAccessToken { get; private set; }
-    
-    /// <summary>
-    /// The user ID of the administrator.
-    /// </summary>
-    public static long? TelegramAdminId { get; private set; }
 
     static KumaTelegramConfig()
     {
         TelegramAccessToken = Environment.GetEnvironmentVariable("TELEGRAM_ACCESS_TOKEN");
-
-        string? telegramAdminId = Environment.GetEnvironmentVariable("TELEGRAM_ADMIN_ID");
-        bool telegramAdminIdParsed = long.TryParse(telegramAdminId, out long telegramAdminIdResult);
-        if (telegramAdminIdParsed) TelegramAdminId = telegramAdminIdResult;
     }
 }
