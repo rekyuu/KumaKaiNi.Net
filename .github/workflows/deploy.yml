@@ -1,0 +1,28 @@
+name: Deploy
+
+on:
+  push:
+    tags: [ "*" ]
+
+jobs:
+  deploy-kumakaini-request-processor:
+    uses: ./.github/workflows/docker-build-and-push.yml
+    with:
+      build_version: ${{ github.ref_name }}
+      dotnet_project_name: KumaKaiNi.RequestProcessor
+      image_name: kumakaini-request-processor
+      
+  deploy-kumakaini-discord:
+    uses: ./.github/workflows/docker-build-and-push.yml
+    with:
+      build_version: ${{ github.ref_name }}
+      dotnet_project_name: KumaKaiNi.Client.Discord
+      image_name: kumakaini-discord
+      
+  deploy-kumakaini-telegram:
+    uses: ./.github/workflows/docker-build-and-push.yml
+    with:
+      build_version: ${{ github.ref_name }}
+      dotnet_project_name: KumaKaiNi.Client.Telegram
+      image_name: kumakaini-telegram
+      

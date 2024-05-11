@@ -1,20 +1,23 @@
-﻿using System;
+using KumaKaiNi.Core.Models;
 
-namespace KumaKaiNi.Core
+namespace KumaKaiNi.Core.Attributes;
+
+/// <summary>
+/// Used to specify any word or phrase within a message.
+/// </summary>
+public class PhraseAttribute : BaseResponseAttribute
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class PhraseAttribute : Attribute
-    {
-        public readonly string[] Phrases;
+    /// <summary>
+    /// Used to specify any word or phrase within a message.
+    /// </summary>
+    /// <inheritdoc />
+    public PhraseAttribute(string value, UserAuthority userAuthority = UserAuthority.User, bool nsfw = false) 
+        : base(value, userAuthority, nsfw) { }
 
-        public PhraseAttribute(string command)
-        {
-            Phrases = new string[] { command };
-        }
-
-        public PhraseAttribute(string[] commands)
-        {
-            Phrases = commands;
-        }
-    }
+    /// <summary>
+    /// Used to specify any words or phrases within a message.
+    /// </summary>
+    /// <inheritdoc />
+    public PhraseAttribute(string[] values, UserAuthority userAuthority = UserAuthority.User, bool nsfw = false)
+        : base(values, userAuthority, nsfw) { }
 }
