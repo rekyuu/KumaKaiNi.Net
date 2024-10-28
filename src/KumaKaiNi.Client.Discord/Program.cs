@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Timers;
+using System.Web;
 using Discord;
 using Discord.WebSocket;
 using KumaKaiNi.Core;
@@ -13,6 +14,8 @@ namespace KumaKaiNi.Client.Discord;
 
 internal static class Program
 {
+    private static readonly string[] SupportedVideoFileTypes = [ "mp4", "webm" ];
+
     private static RedisStreamConsumer? _streamConsumer;
     private static DiscordSocketClient? _discordClient;
     private static CancellationTokenSource? _cts;
@@ -242,21 +245,31 @@ internal static class Program
             is not ISocketMessageChannel channel) return;
 
         // Send an embedded image if one is attached
-        if (kumaResponse.Image != null)
+        if (kumaResponse.Media != null)
         {
             EmbedBuilder embed = new()
             {
                 Color = new Color(0x00b6b6),
-                Title = kumaResponse.Image.Referrer,
-                Url = kumaResponse.Image.Source,
-                Description = kumaResponse.Image.Description,
-                ImageUrl = kumaResponse.Image.Url,
+                Title = kumaResponse.Media.Referrer,
+                Url = kumaResponse.Media.Source,
+                Description = kumaResponse.Media.Description,
+                ImageUrl = kumaResponse.Media.Url,
                 Timestamp = DateTime.UtcNow
             };
 
             await channel.SendMessageAsync(
                 text: kumaResponse.Message, 
                 embed: embed.Build(), 
+                options: _defaultDiscordRequestOptions);
+
+            if (!SupportedVideoFileTypes.Any(x => kumaResponse.Media.Url.EndsWith(x))) return;
+
+            string encodedVideoUrl = HttpUtility.UrlEncode(kumaResponse.Media.Url);
+            string encodedPreviewUrl = HttpUtility.UrlEncode(kumaResponse.Media.Preview);
+
+            // TODO: should figure out how AV1 stuff works and implement it myself
+            await channel.SendMessageAsync(
+                text: $"[Video](https://autocompressor.net/av1?v={encodedVideoUrl}&i={encodedPreviewUrl})",
                 options: _defaultDiscordRequestOptions);
         }
         // Send a standard message

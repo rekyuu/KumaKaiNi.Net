@@ -16,6 +16,8 @@ namespace KumaKaiNi.Client.Telegram;
 
 internal static class Program
 {
+    private static readonly string[] SupportedVideoFileTypes = [ "mp4" ];
+
     private static RedisStreamConsumer? _streamConsumer;
     private static ITelegramBotClient? _telegramClient;
     private static CancellationTokenSource? _cts;
@@ -196,25 +198,37 @@ internal static class Program
         if (kumaResponse?.ChannelId == null) return;
         
         // Send an image with caption if one is attached
-        if (kumaResponse.Image != null)
+        if (kumaResponse.Media != null)
         {
-            string caption = $"{kumaResponse.Image.Description}";
-            if (kumaResponse.Image.Referrer != "" && kumaResponse.Image.Source != "") caption += $"\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})";
+            string caption = $"{kumaResponse.Media.Description}";
+            if (kumaResponse.Media.Referrer != "" && kumaResponse.Media.Source != "") caption += $"\n\n[{kumaResponse.Media.Referrer}]({kumaResponse.Media.Source})";
 
-            // Try sending the image first, then a link if that fails. Usually fails when the image is too large
+            // Try sending the media first, then a link if that fails. Usually fails when the image is too large
             try
             {
-                await _telegramClient.SendPhotoAsync(
-                    chatId: kumaResponse.ChannelId, 
-                    photo: InputFile.FromUri(kumaResponse.Image.Url), 
-                    caption: caption, 
-                    parseMode: ParseMode.Markdown);
+                if (SupportedVideoFileTypes.Any(x => kumaResponse.Media.Url.EndsWith(x)))
+                {
+                    await _telegramClient.SendVideoAsync(
+                        chatId: kumaResponse.ChannelId,
+                        video: InputFile.FromUri(kumaResponse.Media.Url),
+                        caption: caption,
+                        parseMode: ParseMode.Markdown);
+                }
+                else
+                {
+                    await _telegramClient.SendPhotoAsync(
+                        chatId: kumaResponse.ChannelId,
+                        photo: InputFile.FromUri(kumaResponse.Media.Url),
+                        caption: caption,
+                        parseMode: ParseMode.Markdown);
+                }
             }
             catch
             {
-                await _telegramClient.SendTextMessageAsync(
-                    chatId: kumaResponse.ChannelId, 
-                    text: $"Image was too large for telegram.\n\n[{kumaResponse.Image.Referrer}]({kumaResponse.Image.Source})\n\n{kumaResponse.Image.Description}",
+                await _telegramClient.SendPhotoAsync(
+                    chatId: kumaResponse.ChannelId,
+                    photo: InputFile.FromUri(kumaResponse.Media.Preview),
+                    caption: $"Media was too large for Telegram.\n\n{caption}",
                     parseMode: ParseMode.Markdown);
             }
             
