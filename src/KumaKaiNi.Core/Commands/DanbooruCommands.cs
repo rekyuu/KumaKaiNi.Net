@@ -10,6 +10,7 @@ using KumaKaiNi.Core.Database.Entities;
 using KumaKaiNi.Core.Models;
 using KumaKaiNi.Core.Utility;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace KumaKaiNi.Core.Commands;
 
@@ -149,7 +150,11 @@ public static class DanbooruCommands
             request.Headers.Authorization = authHeader;
             
             HttpResponseMessage response = await Rest.SendAsync(request);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+            {
+                Log.Error("Response from Danbooru did not indicate success: {Response}", response);
+                return null;
+            }
             
             string content = await response.Content.ReadAsStringAsync();
             List<DanbooruResult>? results = JsonSerializer.Deserialize<List<DanbooruResult>>(content);

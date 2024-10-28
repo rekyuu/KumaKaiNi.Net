@@ -13,6 +13,8 @@ namespace KumaKaiNi.Client.Discord;
 
 internal static class Program
 {
+    private static readonly string[] VideoFileTypes = [ "mp4", "webm" ];
+
     private static RedisStreamConsumer? _streamConsumer;
     private static DiscordSocketClient? _discordClient;
     private static CancellationTokenSource? _cts;
@@ -257,6 +259,12 @@ internal static class Program
             await channel.SendMessageAsync(
                 text: kumaResponse.Message, 
                 embed: embed.Build(), 
+                options: _defaultDiscordRequestOptions);
+
+            if (!VideoFileTypes.Any(x => kumaResponse.Image.Url.EndsWith(x))) return;
+
+            await channel.SendMessageAsync(
+                text: $"[Video]({kumaResponse.Image.Url})",
                 options: _defaultDiscordRequestOptions);
         }
         // Send a standard message
