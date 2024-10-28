@@ -19,8 +19,8 @@ public static class DanbooruCommands
     [Command("dan", nsfw: true)]
     public static async Task<KumaResponse> GetDanbooruAsync(KumaRequest kumaRequest)
     {
-        ResponseImage? image = await GetDanbooruImageAsync(kumaRequest.CommandArgs, kumaRequest.SourceSystem, kumaRequest.ChannelId);
-        return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
+        ResponseMedia? image = await GetDanbooruImageAsync(kumaRequest.CommandArgs, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
     }
 
     [Command(["safe", "sfw"])]
@@ -28,9 +28,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = ["rating:g"];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseImage? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
+        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
     }
 
     [Command("lewd", nsfw: true)]
@@ -38,9 +38,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = ["rating:q"];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseImage? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
+        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
     }
 
     [Command("xxx", nsfw: true)]
@@ -48,9 +48,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = ["rating:e"];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseImage? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
+        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
     }
 
     [Command("nsfw", nsfw: true)]
@@ -58,9 +58,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = [Rng.PickRandom(["rating:q", "rating:e"])];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseImage? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Image = image } : new KumaResponse("Nothing found!");
+        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
     }
     
     [Command("danban", UserAuthority.Administrator)]
@@ -110,7 +110,7 @@ public static class DanbooruCommands
         return new KumaResponse($"{deleted} tags removed.");
     }
 
-    private static async Task<ResponseImage?> GetDanbooruImageAsync(string[] tags, SourceSystem sourceSystem, string? channelId)
+    private static async Task<ResponseMedia?> GetDanbooruImageAsync(string[] tags, SourceSystem sourceSystem, string? channelId)
     {
         // Skip the request if it contains any banned tags
         await using KumaKaiNiDbContext db = new();
@@ -173,6 +173,7 @@ public static class DanbooruCommands
                 if (cachedResults.Contains(cacheKey)) continue;
                 if (string.IsNullOrEmpty(nextResult.FileUrl)) continue;
                 if (nextResult.TagString == null) continue;
+                if (nextResult.IsDeleted == true) continue;
 
                 // If the image has any banned tags, don't return it
                 string[] resultTags = nextResult.TagString.Split(" ");
@@ -195,10 +196,9 @@ public static class DanbooruCommands
 
         TextInfo ti = CultureInfo.InvariantCulture.TextInfo;
 
-        // Specify the file URI
-        bool isValidUri = Uri.TryCreate(result.FileUrl, UriKind.RelativeOrAbsolute, out Uri? uriResult);
-        bool isValidUriScheme = uriResult?.Scheme == Uri.UriSchemeHttp || uriResult?.Scheme == Uri.UriSchemeHttps;
-        string fileUrl = (isValidUri && isValidUriScheme) ? result.FileUrl! : $"https://danbooru.donmai.us{result.FileUrl}";
+        // Specify the file URIs
+        string fileUrl = ParseDanbooruFileUrl(result.FileUrl);
+        string previewUrl = ParseDanbooruFileUrl(result.PreviewFileUrl);
 
         // Create the string for the characters
         string[]? characterTags = result.TagStringCharacter?.Split(" ");
@@ -237,22 +237,31 @@ public static class DanbooruCommands
         else if (copyrightString != "") descriptionString = $"Unknown - {copyrightString}";
         else descriptionString = "Original";
 
-        if (!string.IsNullOrEmpty(artistString)) descriptionString += $"\nDrawn by {artistString}";
+        if (!string.IsNullOrEmpty(artistString)) descriptionString += $"\nCreated by {artistString}";
 
         // Store the result in cache
         if (!string.IsNullOrEmpty(cacheKey))
         {
             await Cache.SetAsync(
-                cacheKey, 
-                DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), 
+                cacheKey,
+                DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
                 TimeSpan.FromDays(1));
         }
 
-        return new ResponseImage(
-            fileUrl, 
+        return new ResponseMedia(
+            fileUrl,
+            previewUrl,
             $"https://danbooru.donmai.us/posts/{result.Id}", 
             descriptionString,
             "danbooru.donmai.us");
 
+    }
+
+    private static string ParseDanbooruFileUrl(string? fileUrl)
+    {
+        bool isValidUri = Uri.TryCreate(fileUrl, UriKind.RelativeOrAbsolute, out Uri? uriResult);
+        bool isValidUriScheme = uriResult?.Scheme == Uri.UriSchemeHttp || uriResult?.Scheme == Uri.UriSchemeHttps;
+
+        return (isValidUri && isValidUriScheme) ? fileUrl! : $"https://danbooru.donmai.us{fileUrl}";
     }
 }

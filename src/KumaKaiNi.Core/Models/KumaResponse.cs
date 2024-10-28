@@ -14,7 +14,7 @@ public class KumaResponse
     /// The response image.
     /// </summary>
     [JsonPropertyName("image")]
-    public ResponseImage? Image  { get; set; }
+    public ResponseMedia? Media  { get; set; }
 
     /// <summary>
     /// The system the message request came from.
@@ -52,27 +52,27 @@ public class KumaResponse
     /// <summary>
     /// Object used for responding to requests.
     /// </summary>
-    /// <param name="image">The response image.</param>
-    public KumaResponse(ResponseImage image)
+    /// <param name="media">The response media.</param>
+    public KumaResponse(ResponseMedia media)
     {
         Message = "";
-        Image = image;
+        Media = media;
     }
 
     /// <summary>
     /// Object used for responding to requests.
     /// </summary>
     /// <param name="message">The response message.</param>
-    /// <param name="image">The response image.</param>
-    public KumaResponse(string? message, ResponseImage image)
+    /// <param name="media">The response media.</param>
+    public KumaResponse(string? message, ResponseMedia media)
     {
         Message = message;
-        Image = image;
+        Media = media;
     }
 
     public override string? ToString()
     {
-        if (string.IsNullOrEmpty(Message) && Image != null) return Image.Source;
+        if (string.IsNullOrEmpty(Message) && Media != null) return Media.Source;
         return Message;
     }
 }

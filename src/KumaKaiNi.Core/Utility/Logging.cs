@@ -47,8 +47,8 @@ public static class Logging
         await using KumaKaiNiDbContext db = new();
 
         string? responseString = kumaResponse.Message;
-        if (string.IsNullOrEmpty(responseString) && kumaResponse.Image != null) 
-            responseString = $"{kumaResponse.Image.Referrer}\n{kumaResponse.Image.Description}\n{kumaResponse.Image.Url}\n{kumaResponse.Image.Source}";
+        if (string.IsNullOrEmpty(responseString) && kumaResponse.Media != null) 
+            responseString = $"{kumaResponse.Media.Referrer}\n{kumaResponse.Media.Description}\n{kumaResponse.Media.Url}\n{kumaResponse.Media.Source}";
 
         if (!string.IsNullOrEmpty(responseString))
         {
