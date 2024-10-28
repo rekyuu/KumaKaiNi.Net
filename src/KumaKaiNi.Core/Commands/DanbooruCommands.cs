@@ -19,8 +19,8 @@ public static class DanbooruCommands
     [Command("dan", nsfw: true)]
     public static async Task<KumaResponse> GetDanbooruAsync(KumaRequest kumaRequest)
     {
-        ResponseMedia? image = await GetDanbooruImageAsync(kumaRequest.CommandArgs, kumaRequest.SourceSystem, kumaRequest.ChannelId);
-        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
+        ResponseMedia? media = await GetDanbooruImageAsync(kumaRequest.CommandArgs, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
 
     [Command(["safe", "sfw"])]
@@ -28,9 +28,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = ["rating:g"];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
+        return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
 
     [Command("lewd", nsfw: true)]
@@ -38,9 +38,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = ["rating:q"];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
+        return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
 
     [Command("xxx", nsfw: true)]
@@ -48,9 +48,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = ["rating:e"];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
+        return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
 
     [Command("nsfw", nsfw: true)]
@@ -58,9 +58,9 @@ public static class DanbooruCommands
     {
         string[] baseTags = [Rng.PickRandom(["rating:q", "rating:e"])];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? image = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
-        return image?.Url != null ? new KumaResponse { Media = image } : new KumaResponse("Nothing found!");
+        return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
     
     [Command("danban", UserAuthority.Administrator)]
