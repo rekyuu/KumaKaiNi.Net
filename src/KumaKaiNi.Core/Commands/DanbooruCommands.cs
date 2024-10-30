@@ -26,7 +26,10 @@ public static class DanbooruCommands
     [Command(["safe", "sfw"])]
     public static async Task<KumaResponse> GetSafeDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] baseTags = ["rating:g"];
+        string tagToUse = "rating:g";
+        if (Rng.OneTo(4)) tagToUse = "rating:s";
+
+        string[] baseTags = [tagToUse];
         string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
         ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
@@ -231,6 +234,16 @@ public static class DanbooruCommands
         string[]? artist = result.TagStringArtist?.Split("_");
         if (artist != null) artistString = string.Join(" ", artist);
 
+        // Create the string for the rating
+        string ratingString = result.Rating switch
+        {
+            "g" => "General",
+            "s" => "Sensitive",
+            "q" => "Questionable",
+            "e" => "Explicit",
+            _ => "???"
+        };
+
         // Create the full description string
         string descriptionString;
         if (characterString != "" && copyrightString != "") descriptionString = $"{characterString} - {copyrightString}";
@@ -238,6 +251,7 @@ public static class DanbooruCommands
         else descriptionString = "Original";
 
         if (!string.IsNullOrEmpty(artistString)) descriptionString += $"\nCreated by {artistString}";
+        descriptionString += $"\nRating: {ratingString}";
 
         // Store the result in cache
         if (!string.IsNullOrEmpty(cacheKey))
