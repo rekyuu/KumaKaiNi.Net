@@ -6,6 +6,8 @@ namespace KumaKaiNi.Core.Database;
 
 public class KumaKaiNiDbContext : DbContext
 {
+    public virtual DbSet<AdminConfig> AdminConfigs { get; set; }
+
     public virtual DbSet<CustomCommand> CustomCommands { get; set; }
 
     public virtual DbSet<DanbooruBlockList> DanbooruBlockList { get; set; }
@@ -34,6 +36,11 @@ public class KumaKaiNiDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AdminConfig>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+        });
+
         modelBuilder.Entity<ChatLog>(entity =>
         {
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
