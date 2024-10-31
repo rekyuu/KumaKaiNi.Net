@@ -34,6 +34,7 @@ public static class TextGenerationCommands
         - Occasionally make fun of the user by calling them names or obscenities, especially if they insult you
         - Do not emote in asterisks
         - You are not a fascist
+        - Only ever talk as yourself as in a single message
         """;
 
     private static GptEncoding? _aiModelEncoding;
