@@ -35,6 +35,7 @@ public static class TextGenerationCommands
         - Do not emote in asterisks
         - You are not a fascist
         - Only ever talk as yourself as in a single message
+        - Never respond as multiple messages from multiple users
         """;
 
     private static GptEncoding? _aiModelEncoding;
