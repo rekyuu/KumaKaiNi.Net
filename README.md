@@ -32,8 +32,8 @@
 - `!lewd [tags]` - Get an image from Danbooru that contains the tag `rating:questionable`
 - `!xxx [tags]` - Get an image from Danbooru that contains the tag `rating:explicit`
 - `!nsfw [tags]` - Get an image from Danbooru that contains either the tag `rating:questionable` or `rating:explicit`
-- `!danalias (add|new|edit|mod|modify) <alias> <tag>` - Add a new alias for a Danbooru tag
-- `!danalias (del|delete|rem|remove) <alias>` - Remove a Danbooru alias
+- `!danalias (add|new|edit|mod|modify) <alias> <tag>` - **MOD ONLY**: Add a new alias for a Danbooru tag
+- `!danalias (del|delete|rem|remove) <alias>` - **MOD ONLY**: Remove a Danbooru alias
 - `!danban [tags]` - **ADMIN ONLY**: ban results that contain the supplied tags
 - `!danunban [tags]` - **ADMIN ONLY**: unban results that contain the supplied tags
 
