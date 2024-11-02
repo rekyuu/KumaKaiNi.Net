@@ -18,10 +18,10 @@ public class ErrorLog : BaseDbEntity
     public string? StackTrace { get; set; }
 
     [Column("application_name")]
-    public string ApplicationName { get; set; } = KumaConfig.ApplicationName;
+    public string ApplicationName { get; set; } = KumaRuntimeConfig.ApplicationName;
 
     [Column("application_version")]
-    public string ApplicationVersion { get; set; } = KumaConfig.ApplicationVersion;
+    public string ApplicationVersion { get; set; } = KumaRuntimeConfig.ApplicationVersion;
     
     public ErrorLog() { }
         

@@ -11,11 +11,11 @@ public static class Rest
     {
         Client = new HttpClient();
 
-        string userAgentName = KumaConfig.ApplicationName
+        string userAgentName = KumaRuntimeConfig.ApplicationName
             .Replace(" ", "")
             .Replace("-", "");
         
-        Client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(userAgentName, KumaConfig.ApplicationVersion));
+        Client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(userAgentName, KumaRuntimeConfig.ApplicationVersion));
         Client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({RuntimeInformation.OSDescription}: {RuntimeInformation.OSArchitecture})"));
         Client.Timeout = TimeSpan.FromMinutes(5);
     }

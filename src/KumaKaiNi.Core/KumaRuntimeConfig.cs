@@ -1,10 +1,13 @@
 using System.Reflection;
+using KumaKaiNi.Core.Database;
+using KumaKaiNi.Core.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
 using Serilog.Events;
 
 namespace KumaKaiNi.Core;
 
-public static class KumaConfig
+public static class KumaRuntimeConfig
 {
     /// <summary>
     /// Name of the application, set by the project's Product tag.
@@ -45,16 +48,6 @@ public static class KumaConfig
     /// The API key for OpenAI.
     /// </summary>
     public static string? OpenAiApiKey { get; private set; }
-
-    /// <summary>
-    /// The model to use with OpenAI requests.
-    /// </summary>
-    public static string OpenAiModel { get; private set; }
-
-    /// <summary>
-    /// The token limit for OpenAI prompt requests.
-    /// </summary>
-    public static long OpenAiPromptTokenLimit { get; private set; } = 256;
         
     /// <summary>
     /// The domain and port for PostgreSQL.
@@ -86,7 +79,7 @@ public static class KumaConfig
     /// </summary>
     public static string LogLevel { get; private set; }
 
-    static KumaConfig()
+    static KumaRuntimeConfig()
     {
         Assembly? assembly = Assembly.GetEntryAssembly();
 
@@ -107,11 +100,6 @@ public static class KumaConfig
         DanbooruApiKey = Environment.GetEnvironmentVariable("DANBOORU_API_KEY");
         
         OpenAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        OpenAiModel = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4-turbo";
-        
-        string? openAiPromptTokenLimit = Environment.GetEnvironmentVariable("OPENAI_PROMPT_TOKEN_LIMIT");
-        bool openAiPromptTokenLimitParsed = long.TryParse(openAiPromptTokenLimit, out long openAiPromptTokenLimitResult); 
-        if (openAiPromptTokenLimitParsed) OpenAiPromptTokenLimit = openAiPromptTokenLimitResult;
             
         PostgresHost = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost:5432";
         PostgresUsername = Environment.GetEnvironmentVariable("POSTGRES_USERNAME") ?? "postgres";
@@ -154,5 +142,19 @@ public static class KumaConfig
         }
 
         return loggingLevelSwitch;
+    }
+
+    public static async Task<AdminConfig> GetConfigFromDatabaseAsync()
+    {
+        await using KumaKaiNiDbContext db = new();
+
+        AdminConfig? config = await db.AdminConfigs.FirstOrDefaultAsync();
+        if (config != null) return config;
+
+        config = new AdminConfig();
+        await db.AdminConfigs.AddAsync(config);
+        await db.SaveChangesAsync();
+
+        return config;
     }
 }
