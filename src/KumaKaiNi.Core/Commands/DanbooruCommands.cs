@@ -29,10 +29,7 @@ public static class DanbooruCommands
     [Command(["safe", "sfw"])]
     public static async Task<KumaResponse> GetSafeDanbooruAsync(KumaRequest kumaRequest)
     {
-        string ratingToUse = "rating:g";
-        if (Rng.OneTo(4)) ratingToUse = "rating:s";
-
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ratingToUse);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:g or rating:s");
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
@@ -59,7 +56,7 @@ public static class DanbooruCommands
     [Command("nsfw", nsfw: true)]
     public static async Task<KumaResponse> GetNsfwDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, Rng.PickRandom(["rating:q", "rating:e"]));
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:q or rating:e");
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
