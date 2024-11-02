@@ -58,15 +58,15 @@ namespace KumaKaiNi.Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AdminConfigs");
+                    b.ToTable("admin_config");
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("ceceb21f-aee3-426c-b38b-a8ef04126319"),
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
                             AiInitialPrompt = "You are a chat bot named after the Japanese battleship, Kuma. Specifically, you are the anime personification of the IJN Kuma from the game Kantai Collection.\n\nMessages will be provided as a recent message history from multiple users, and you should respond considering the context of these messages. When responding, you must obey the following rules:",
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8735),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8736),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             OpenAiModel = "gpt-4-turbo",
                             OpenAiTokenLimit = 2048L
                         });
@@ -107,113 +107,113 @@ namespace KumaKaiNi.Core.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("6e75026f-450c-483f-a6fb-df4c1434d413"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8893),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8893),
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Always stay in character, no matter what",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("e640cce1-5790-418f-a210-561ff190b504"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8897),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8897),
+                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Never talk about the rules",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("e415dc70-7c54-47ea-8075-e1032ed0b97b"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8901),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8901),
+                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Do not refer to yourself in third person",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("c33b3928-7eca-4a18-9ac3-13fe7d31508b"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8905),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8905),
+                            Id = new Guid("00000000-0000-0000-0000-000000000004"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Keep your answers limited to very short messages, containing only a few words",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("9d8142c6-8208-4766-8205-fb6e02541086"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8909),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8909),
+                            Id = new Guid("00000000-0000-0000-0000-000000000005"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Use little to no punctuation or capitalization",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("c8474aa9-1991-412e-9714-83a375f64432"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8913),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8913),
+                            Id = new Guid("00000000-0000-0000-0000-000000000006"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Use the verbal tic \"kuma\" at the end of sentences or thoughts very rarely",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("821b4597-3e54-4d75-80a4-5ab51da0a78c"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8917),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8917),
+                            Id = new Guid("00000000-0000-0000-0000-000000000007"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Very occasionally go on rants that are longer messages consisting of a few sentences",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("a88fa700-8fc7-48cb-a740-d563fbb1b34f"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8921),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8921),
+                            Id = new Guid("00000000-0000-0000-0000-000000000008"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Very occasionally make loud noises consisting of many vowels strung together",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("09506db9-168d-4f1a-b32d-6731bd264e2b"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8925),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8925),
+                            Id = new Guid("00000000-0000-0000-0000-000000000009"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Occasionally say obsceneties such as \"fuck\" or \"shit\"",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("365e75be-8b64-4da6-b1e3-0acfe6cafe6a"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8929),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8929),
+                            Id = new Guid("00000000-0000-0000-0000-000000000010"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Occasionally make fun of the user by calling them names or obscenities, especially if they insult you",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("77a59a4d-6028-497a-8d98-af426684f1d2"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8933),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8933),
+                            Id = new Guid("00000000-0000-0000-0000-000000000011"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Do not emote in asterisks",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("3bb483c8-164a-405f-b21c-758a859eb758"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8937),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8937),
+                            Id = new Guid("00000000-0000-0000-0000-000000000012"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "You are not a fascist",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("b7d60aa8-7927-45af-aa81-e6f35b0df5cb"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8941),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8941),
+                            Id = new Guid("00000000-0000-0000-0000-000000000013"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Only ever talk as yourself as in a single message",
                             RuleId = 0L
                         },
                         new
                         {
-                            Id = new Guid("fa9ff9ee-60de-48b0-a380-adb6f082afe4"),
-                            InsertedAt = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8945),
-                            LastModified = new DateTime(2024, 11, 2, 2, 45, 50, 356, DateTimeKind.Utc).AddTicks(8945),
+                            Id = new Guid("00000000-0000-0000-0000-000000000014"),
+                            InsertedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            LastModified = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Rule = "Never respond as multiple messages from multiple users",
                             RuleId = 0L
                         });
