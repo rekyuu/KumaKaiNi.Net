@@ -81,6 +81,7 @@ public class KumaKaiNiDbContext : DbContext
         modelBuilder.Entity<DanbooruAlias>(entity =>
         {
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+            entity.HasIndex(e => e.Alias).IsUnique();
         });
         
         modelBuilder.Entity<DanbooruBlockList>(entity =>

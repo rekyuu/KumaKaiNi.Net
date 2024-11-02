@@ -16,22 +16,24 @@ namespace KumaKaiNi.Core.Commands;
 
 public static class DanbooruCommands
 {
+    private const string? AliasErrorResponse = "Usage: !danalias [add|edit|del] <alias> <tag>";
+
     [Command("dan", nsfw: true)]
     public static async Task<KumaResponse> GetDanbooruAsync(KumaRequest kumaRequest)
     {
-        ResponseMedia? media = await GetDanbooruImageAsync(kumaRequest.CommandArgs, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs);
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
 
     [Command(["safe", "sfw"])]
     public static async Task<KumaResponse> GetSafeDanbooruAsync(KumaRequest kumaRequest)
     {
-        string tagToUse = "rating:g";
-        if (Rng.OneTo(4)) tagToUse = "rating:s";
+        string ratingToUse = "rating:g";
+        if (Rng.OneTo(4)) ratingToUse = "rating:s";
 
-        string[] baseTags = [tagToUse];
-        string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ratingToUse);
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
@@ -39,9 +41,8 @@ public static class DanbooruCommands
     [Command("lewd", nsfw: true)]
     public static async Task<KumaResponse> GetLewdDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] baseTags = ["rating:q"];
-        string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:q");
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
@@ -49,9 +50,8 @@ public static class DanbooruCommands
     [Command("xxx", nsfw: true)]
     public static async Task<KumaResponse> GetExplicitDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] baseTags = ["rating:e"];
-        string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:e");
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
@@ -59,11 +59,42 @@ public static class DanbooruCommands
     [Command("nsfw", nsfw: true)]
     public static async Task<KumaResponse> GetNsfwDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] baseTags = [Rng.PickRandom(["rating:q", "rating:e"])];
-        string[] requestTags = baseTags.Concat(kumaRequest.CommandArgs).ToArray();
-        ResponseMedia? media = await GetDanbooruImageAsync(requestTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, Rng.PickRandom(["rating:q", "rating:e"]));
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
+    }
+
+    [Command("danalias", UserAuthority.Moderator)]
+    public static async Task<KumaResponse> DanbooruAlias(KumaRequest kumaRequest)
+    {
+        if (kumaRequest.CommandArgs.Length == 0) return new KumaResponse(AliasErrorResponse);
+
+        string alias = kumaRequest.CommandArgs[1];
+        string? response;
+
+        switch (kumaRequest.CommandArgs[0])
+        {
+            case "add":
+            case "new":
+            case "edit":
+            case "mod":
+            case "modify":
+                if (kumaRequest.CommandArgs.Length < 3) return new KumaResponse(AliasErrorResponse);
+
+                response = await AddOrEditAliasAsync(kumaRequest.CommandArgs[1], kumaRequest.CommandArgs[2]);
+                return new KumaResponse(response);
+            case "del":
+            case "delete":
+            case "rem":
+            case "remove":
+                if (kumaRequest.CommandArgs.Length < 2) return new KumaResponse(AliasErrorResponse);
+
+                response = await RemoveAliasAsync(alias);
+                return new KumaResponse(response);
+            default:
+                return new KumaResponse(AliasErrorResponse);
+        }
     }
     
     [Command("danban", UserAuthority.Administrator)]
@@ -277,5 +308,85 @@ public static class DanbooruCommands
         bool isValidUriScheme = uriResult?.Scheme == Uri.UriSchemeHttp || uriResult?.Scheme == Uri.UriSchemeHttps;
 
         return (isValidUri && isValidUriScheme) ? fileUrl! : $"https://danbooru.donmai.us{fileUrl}";
+    }
+
+    private static async Task<string> AddOrEditAliasAsync(string alias, string tag)
+    {
+        // Get any matching aliases
+        await using KumaKaiNiDbContext db = new();
+        List<DanbooruAlias> aliases = await db.DanbooruAliases
+            .Where(x => x.Alias == alias)
+            .ToListAsync();
+
+        string result;
+        switch (aliases.Count)
+        {
+            // Update the alias
+            case 1:
+                aliases.First().Tag = tag;
+                result = $"Alias `{alias}` updated.";
+
+                break;
+            // Throw if there's somehow more than one alias
+            case > 1:
+                throw new Exception($"There are multiple aliases of the same name: {alias}");
+            // Alias doesn't exist yet, create it
+            default:
+                DanbooruAlias newAlias = new(alias, tag);
+
+                await db.DanbooruAliases.AddAsync(newAlias);
+                result = $"Alias `{alias}` added.";
+
+                break;
+        }
+
+        await db.SaveChangesAsync();
+        return result;
+    }
+
+    private static async Task<string?> RemoveAliasAsync(string alias)
+    {
+        await using KumaKaiNiDbContext db = new();
+        List<DanbooruAlias> aliases = await db.DanbooruAliases
+            .Where(x => x.Alias == alias)
+            .ToListAsync();
+
+        if (aliases.Count == 0) return null;
+
+        foreach (DanbooruAlias a in aliases) db.DanbooruAliases.Remove(a);
+
+        await db.SaveChangesAsync();
+        return $"Alias `{alias}` removed.";
+    }
+
+    private static async Task<string[]> ParseDanbooruTags(IEnumerable<string> tags, string? rating = null)
+    {
+        List<string> parsedTags = [];
+
+        bool ratingAdded = false;
+        if (rating != null)
+        {
+            parsedTags.Add(rating);
+            ratingAdded = true;
+        }
+
+        await using KumaKaiNiDbContext db = new();
+        foreach (string tag in tags)
+        {
+            if (tag.StartsWith("rating"))
+            {
+                if (ratingAdded) continue;
+
+                parsedTags.Add(tag);
+                ratingAdded = true;
+
+                continue;
+            }
+
+            DanbooruAlias? alias = await db.DanbooruAliases.FirstOrDefaultAsync(x => x.Alias == tag);
+            parsedTags.Add(alias == null ? tag : alias.Tag);
+        }
+
+        return parsedTags.Distinct().ToArray();
     }
 }
