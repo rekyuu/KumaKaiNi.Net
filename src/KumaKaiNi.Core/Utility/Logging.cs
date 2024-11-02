@@ -153,7 +153,7 @@ public static class Logging
             
         string formatTemplate = builder.ToString();
         string formattedString = string.Format(formatTemplate, propertyValues);
-        string message = $"`{KumaConfig.ApplicationName}`\n\n{formattedString}\n\n`{ex}`";
+        string message = $"`{KumaRuntimeConfig.ApplicationName}`\n\n{formattedString}\n\n`{ex}`";
 
         if (message.Length > 4096) message = message[..(4096 - 4)] + "...`";
 

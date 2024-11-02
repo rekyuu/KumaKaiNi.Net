@@ -29,10 +29,10 @@ public static class Redis
         {
             ConfigurationOptions redisConfig = new()
             {
-                Password = KumaConfig.RedisPassword,
+                Password = KumaRuntimeConfig.RedisPassword,
                 AbortOnConnectFail = false
             };
-            redisConfig.EndPoints.Add(KumaConfig.RedisHost);
+            redisConfig.EndPoints.Add(KumaRuntimeConfig.RedisHost);
             
             RedisConn = ConnectionMultiplexer.Connect(redisConfig);
         }
@@ -104,12 +104,12 @@ public static class Redis
     {
         IDatabase? db = Database;
         if (db == null) return;
-        if (KumaConfig.TelegramAdminId == null) return;
+        if (KumaRuntimeConfig.TelegramAdminId == null) return;
 
         KumaResponse kumaResponse = new(message)
         {
             SourceSystem = SourceSystem.Telegram,
-            ChannelId = KumaConfig.TelegramAdminId.ToString()
+            ChannelId = KumaRuntimeConfig.TelegramAdminId.ToString()
         };
         
         string serializedRequest = JsonSerializer.Serialize(kumaResponse);
@@ -125,12 +125,12 @@ public static class Redis
     {
         IDatabase? db = Database;
         if (db == null) return;
-        if (KumaConfig.TelegramAdminId == null) return;
+        if (KumaRuntimeConfig.TelegramAdminId == null) return;
 
         KumaResponse kumaResponse = new(message)
         {
             SourceSystem = SourceSystem.Telegram,
-            ChannelId = KumaConfig.TelegramAdminId.ToString()
+            ChannelId = KumaRuntimeConfig.TelegramAdminId.ToString()
         };
         
         string serializedRequest = JsonSerializer.Serialize(kumaResponse);
@@ -147,7 +147,7 @@ public static class Redis
     /// </summary>
     public static async Task SendDeploymentNotificationToAdmin()
     {
-        string message = $"{KumaConfig.ApplicationName} `{KumaConfig.ApplicationVersion}` deployed\n\nCommit `{KumaConfig.BuildCommit}`\nHost `{Environment.MachineName}`";
+        string message = $"{KumaRuntimeConfig.ApplicationName} `{KumaRuntimeConfig.ApplicationVersion}` deployed\n\nCommit `{KumaRuntimeConfig.BuildCommit}`\nHost `{Environment.MachineName}`";
         await SendNotificationToAdminAsync(message);
     }
 

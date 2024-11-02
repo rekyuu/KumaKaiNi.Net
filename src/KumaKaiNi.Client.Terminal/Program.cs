@@ -9,6 +9,10 @@ namespace KumaKaiNi.Client.Terminal;
 
 internal static class Program
 {
+    private static UserAuthority _authority = UserAuthority.Administrator;
+    private static bool _isPrivate = true;
+    private static bool _isNsfw = true;
+
     private static KumaClient? _kuma;
     private static RedisStreamConsumer? _streamConsumer;
     private static CancellationTokenSource? _cts;
@@ -16,13 +20,13 @@ internal static class Program
     private static async Task<int> Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
+            .MinimumLevel.ControlledBy(KumaRuntimeConfig.GetLogLevel())
             .WriteTo.Console()
             .CreateLogger();
         
         Log.Information("Starting {ApplicationName} {ApplicationVersion} on {MachineName}", 
-            KumaConfig.ApplicationName, 
-            KumaConfig.ApplicationVersion, 
+            KumaRuntimeConfig.ApplicationName, 
+            KumaRuntimeConfig.ApplicationVersion, 
             Environment.MachineName);
 
         bool useRedisStreams = args.Contains("--streams");
@@ -55,20 +59,53 @@ internal static class Program
         while (true)
         {
             if (_cts.IsCancellationRequested) break;
-            
+
             string? message = Console.ReadLine();
 
             if (string.IsNullOrEmpty(message)) continue;
-            if (message == "exit") Environment.Exit(0);
+            switch (message)
+            {
+                case "exit":
+                    Environment.Exit(0);
+                    break;
+                case "makeAdmin":
+                    _authority = UserAuthority.Administrator;
+                    Log.Information("UserAuthority set to Administrator");
+                    continue;
+                case "makeMod":
+                    _authority = UserAuthority.Moderator;
+                    Log.Information("UserAuthority set to Moderator");
+                    continue;
+                case "makeUser":
+                    _authority = UserAuthority.User;
+                    Log.Information("UserAuthority set to User");
+                    continue;
+                case "makePrivate":
+                    _isPrivate = true;
+                    Log.Information("Chat visibility set to private");
+                    continue;
+                case "makePublic":
+                    _isPrivate = false;
+                    Log.Information("Chat visibility set to public");
+                    continue;
+                case "makeNsfw":
+                    _isNsfw = true;
+                    Log.Information("Chat set to NSFW");
+                    continue;
+                case "makeSfw":
+                    _isNsfw = false;
+                    Log.Information("Chat set to SFW");
+                    continue;
+            }
 
             KumaRequest kumaRequest = new(
                 "rekyuu",
                 message,
                 SourceSystem.Terminal,
-                userAuthority: UserAuthority.User,
+                userAuthority: _authority,
                 channelId: "5862",
-                channelIsPrivate: true,
-                channelIsNsfw: true);
+                channelIsPrivate: _isPrivate,
+                channelIsNsfw: _isNsfw);
 
             _ = useRedisStreams ? Redis.AddRequestToStreamAsync(kumaRequest) : _kuma?.ProcessRequest(kumaRequest);
         }
