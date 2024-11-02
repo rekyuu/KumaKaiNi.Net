@@ -7,7 +7,7 @@ public class BaseDbEntity
 {
     [Key]
     [Column("id")]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; }
     
     [Column("inserted_at", TypeName = "timestamp without time zone")]
     public DateTime InsertedAt { get; set; } = DateTime.UtcNow;
