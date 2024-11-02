@@ -40,6 +40,8 @@ public static class QuoteCommands
                     // Add a new quote
                     case "add":
                     case "new":
+                        if (kumaRequest.UserAuthority == UserAuthority.User) return null;
+
                         string quoteText = string.Join(" ", kumaRequest.CommandArgs[1..]);
                         Quote newQuote = new(quoteText);
                         await db.Quotes.AddAsync(newQuote);
@@ -51,6 +53,8 @@ public static class QuoteCommands
                     case "delete":
                     case "rem":
                     case "remove":
+                        if (kumaRequest.UserAuthority == UserAuthority.User) return null;
+
                         bool parsed = long.TryParse(kumaRequest.CommandArgs[1], out long quoteId);
                         if (!parsed) return new KumaResponse(ErrorResponse);
 
