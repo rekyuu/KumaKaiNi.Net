@@ -12,6 +12,8 @@ public class KumaKaiNiDbContext : DbContext
 
     public virtual DbSet<CustomCommand> CustomCommands { get; set; }
 
+    public virtual DbSet<DanbooruAlias> DanbooruAliases { get; set; }
+
     public virtual DbSet<DanbooruBlockList> DanbooruBlockList { get; set; }
 
     public virtual DbSet<ErrorLog> ErrorLogs { get; set; }
@@ -74,6 +76,11 @@ public class KumaKaiNiDbContext : DbContext
         {
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
             entity.HasIndex(e => e.Command).IsUnique();
+        });
+
+        modelBuilder.Entity<DanbooruAlias>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
         });
         
         modelBuilder.Entity<DanbooruBlockList>(entity =>
