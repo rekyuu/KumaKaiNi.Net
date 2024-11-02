@@ -20,13 +20,13 @@ public static class Program
         try
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.ControlledBy(KumaConfig.GetLogLevel())
+                .MinimumLevel.ControlledBy(KumaRuntimeConfig.GetLogLevel())
                 .WriteTo.Console()
                 .CreateLogger();
             
             Log.Information("Starting {ApplicationName} {ApplicationVersion} on {MachineName}", 
-                KumaConfig.ApplicationName, 
-                KumaConfig.ApplicationVersion, 
+                KumaRuntimeConfig.ApplicationName, 
+                KumaRuntimeConfig.ApplicationVersion, 
                 Environment.MachineName);
             
             _cts = new CancellationTokenSource();

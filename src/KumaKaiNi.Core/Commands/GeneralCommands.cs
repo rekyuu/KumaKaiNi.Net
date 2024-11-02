@@ -13,7 +13,7 @@ public static class GeneralCommands
     [Command("about")]
     public static KumaResponse About()
     {
-        return new KumaResponse($"KumaKaiNi `{KumaConfig.ApplicationVersion}`\nCommit `{KumaConfig.BuildCommit}`\nhttps://github.com/rekyuu/KumaKaiNi.Net");
+        return new KumaResponse($"KumaKaiNi `{KumaRuntimeConfig.ApplicationVersion}`\nCommit `{KumaRuntimeConfig.BuildCommit}`\nhttps://github.com/rekyuu/KumaKaiNi.Net");
     }
 
     [Command(["kuma", "ping"])]

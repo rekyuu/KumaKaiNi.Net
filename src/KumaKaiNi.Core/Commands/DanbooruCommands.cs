@@ -137,7 +137,7 @@ public static class DanbooruCommands
         query.Add("limit", limit.ToString());
         if (tags.Length > 0) query.Add("tags", string.Join(" ", tags));
 
-        byte[] authToken = Encoding.ASCII.GetBytes($"{KumaConfig.DanbooruUser}:{KumaConfig.DanbooruApiKey}");
+        byte[] authToken = Encoding.ASCII.GetBytes($"{KumaRuntimeConfig.DanbooruUser}:{KumaRuntimeConfig.DanbooruApiKey}");
         string encodedToken = Convert.ToBase64String(authToken);
         AuthenticationHeaderValue authHeader = new("Basic", encodedToken);
         
