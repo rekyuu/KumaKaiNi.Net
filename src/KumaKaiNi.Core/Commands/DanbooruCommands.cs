@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
@@ -29,7 +30,7 @@ public static class DanbooruCommands
     [Command(["safe", "sfw"])]
     public static async Task<KumaResponse> GetSafeDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:g or rating:s");
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:g", "~rating:s"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
@@ -38,7 +39,7 @@ public static class DanbooruCommands
     [Command("lewd", nsfw: true)]
     public static async Task<KumaResponse> GetLewdDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:q");
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:q"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
@@ -47,7 +48,7 @@ public static class DanbooruCommands
     [Command("xxx", nsfw: true)]
     public static async Task<KumaResponse> GetExplicitDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:e");
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:e"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
@@ -56,7 +57,7 @@ public static class DanbooruCommands
     [Command("nsfw", nsfw: true)]
     public static async Task<KumaResponse> GetNsfwDanbooruAsync(KumaRequest kumaRequest)
     {
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, "rating:q or rating:e");
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:q", "~rating:e"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
@@ -356,33 +357,39 @@ public static class DanbooruCommands
         return $"Alias `{alias}` removed.";
     }
 
-    private static async Task<string[]> ParseDanbooruTags(IEnumerable<string> tags, string? rating = null)
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    private static async Task<string[]> ParseDanbooruTags(IEnumerable<string> tags, string[]? rating = null)
     {
+        Log.Verbose("Parsing tags with rating {Rating}: {Tags}", rating, tags);
+
         List<string> parsedTags = [];
 
         bool ratingAdded = false;
         if (rating != null)
         {
-            parsedTags.Add(rating);
+            parsedTags.AddRange(rating);
             ratingAdded = true;
         }
 
         await using KumaKaiNiDbContext db = new();
         foreach (string tag in tags)
         {
-            if (tag.StartsWith("rating"))
+            if (tag.Contains("rating"))
             {
                 if (ratingAdded) continue;
 
                 parsedTags.Add(tag);
-                ratingAdded = true;
-
                 continue;
             }
+
+            DanbooruBlockList? blockList = await db.DanbooruBlockList.FirstOrDefaultAsync(x => x.Tag == tag);
+            if (blockList != null) continue;
 
             DanbooruAlias? alias = await db.DanbooruAliases.FirstOrDefaultAsync(x => x.Alias == tag);
             parsedTags.Add(alias == null ? tag : alias.Tag);
         }
+
+        Log.Verbose("Parsed tags as {ParsedTags}", parsedTags);
 
         return parsedTags.Distinct().ToArray();
     }
