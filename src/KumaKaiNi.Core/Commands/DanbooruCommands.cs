@@ -95,7 +95,7 @@ public static class DanbooruCommands
         }
     }
     
-    [Command("danban", UserAuthority.Administrator)]
+    [Command("danban", UserAuthority.Moderator)]
     public static async Task<KumaResponse> BlockTagsAsync(KumaRequest kumaRequest)
     {
         await using KumaKaiNiDbContext db = new();
@@ -119,7 +119,7 @@ public static class DanbooruCommands
         return new KumaResponse($"{inserted} tags added.");
     }
 
-    [Command("danunban", UserAuthority.Administrator)]
+    [Command("danunban", UserAuthority.Moderator)]
     public static async Task<KumaResponse> AllowTagsAsync(KumaRequest kumaRequest)
     {
         await using KumaKaiNiDbContext db = new();
