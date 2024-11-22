@@ -23,7 +23,7 @@ public static class DanbooruCommands
     public static async Task<KumaResponse> GetDanbooruAsync(KumaRequest kumaRequest)
     {
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs);
-        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
 
@@ -31,7 +31,7 @@ public static class DanbooruCommands
     public static async Task<KumaResponse> GetSafeDanbooruAsync(KumaRequest kumaRequest)
     {
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:g", "~rating:s"]);
-        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
@@ -40,7 +40,7 @@ public static class DanbooruCommands
     public static async Task<KumaResponse> GetLewdDanbooruAsync(KumaRequest kumaRequest)
     {
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:q"]);
-        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
@@ -49,7 +49,7 @@ public static class DanbooruCommands
     public static async Task<KumaResponse> GetExplicitDanbooruAsync(KumaRequest kumaRequest)
     {
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:e"]);
-        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
@@ -58,7 +58,7 @@ public static class DanbooruCommands
     public static async Task<KumaResponse> GetNsfwDanbooruAsync(KumaRequest kumaRequest)
     {
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:q", "~rating:e"]);
-        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
     }
@@ -142,15 +142,66 @@ public static class DanbooruCommands
         return new KumaResponse($"{deleted} tags removed.");
     }
 
-    private static async Task<ResponseMedia?> GetDanbooruImageAsync(string[] tags, SourceSystem sourceSystem, string? channelId)
+    [Command("dannsfwtag", UserAuthority.Administrator)]
+    public static async Task<KumaResponse> NsfwTagsAsync(KumaRequest kumaRequest)
+    {
+        await using KumaKaiNiDbContext db = new();
+        string[] nsfwTags = await db.DanbooruNsfwTag
+            .Select(x => x.Tag)
+            .ToArrayAsync();
+
+        int inserted = 0;
+        foreach (string tag in kumaRequest.CommandArgs)
+        {
+            if (nsfwTags.Contains(tag)) continue;
+
+            DanbooruNsfwTag newTag = new(tag);
+            await db.DanbooruNsfwTag.AddAsync(newTag);
+            inserted++;
+        }
+
+        if (inserted == 0) return new KumaResponse("Nothing to add.");
+
+        await db.SaveChangesAsync();
+        return new KumaResponse($"{inserted} tags added.");
+    }
+
+    [Command("dansfwtag", UserAuthority.Administrator)]
+    public static async Task<KumaResponse> SfwTagsAsync(KumaRequest kumaRequest)
+    {
+        await using KumaKaiNiDbContext db = new();
+
+        int deleted = 0;
+        foreach (string tag in kumaRequest.CommandArgs)
+        {
+            DanbooruNsfwTag? nsfwTag = await db.DanbooruNsfwTag
+                .FirstOrDefaultAsync(x => x.Tag == tag);
+
+            if (nsfwTag == null) continue;
+
+            db.DanbooruNsfwTag.Remove(nsfwTag);
+            deleted++;
+        }
+
+        if (deleted == 0) return new KumaResponse("Nothing to remove.");
+
+        await db.SaveChangesAsync();
+        return new KumaResponse($"{deleted} tags removed.");
+    }
+
+    private static async Task<ResponseMedia?> GetDanbooruImageAsync(string[] tags, SourceSystem sourceSystem, string? channelId, bool channelIsNsfw = false)
     {
         // Skip the request if it contains any banned tags
         await using KumaKaiNiDbContext db = new();
         string[] blockedTags = await db.DanbooruBlockList
             .Select(x => x.Tag)
             .ToArrayAsync();
+        string[] nsfwTags = await db.DanbooruNsfwTag
+            .Select(x => x.Tag)
+            .ToArrayAsync();
 
         if (tags.Any(tag => blockedTags.Contains(tag))) return null;
+        if (tags.Any(tag => nsfwTags.Contains(tag)) && !channelIsNsfw) return null;
 
         // Fetch recent returns from cache
         string cacheKeyPrefix = $"danbooru:{Enum.GetName(sourceSystem)!.ToLowerInvariant()}:{channelId}";
@@ -210,6 +261,7 @@ public static class DanbooruCommands
                 // If the image has any banned tags, don't return it
                 string[] resultTags = nextResult.TagString.Split(" ");
                 if (blockedTags.Any(tag => resultTags.Contains(tag))) continue;
+                if (nsfwTags.Any(tag => resultTags.Contains(tag)) && !channelIsNsfw) continue;
 
                 result = nextResult;
                 
@@ -288,7 +340,7 @@ public static class DanbooruCommands
             await Cache.SetAsync(
                 cacheKey,
                 DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
-                TimeSpan.FromDays(1));
+                TimeSpan.FromDays(30));
         }
 
         return new ResponseMedia(

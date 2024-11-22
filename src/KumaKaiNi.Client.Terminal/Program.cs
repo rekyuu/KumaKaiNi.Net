@@ -10,7 +10,7 @@ namespace KumaKaiNi.Client.Terminal;
 internal static class Program
 {
     private static UserAuthority _authority = UserAuthority.Administrator;
-    private static bool _isPrivate = true;
+    private static bool _isPrivate = false;
     private static bool _isNsfw = true;
 
     private static KumaClient? _kuma;
