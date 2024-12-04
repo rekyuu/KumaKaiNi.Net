@@ -1,7 +1,7 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine AS base
+﻿FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 ARG BUILD_VERSION=0.0.0-alpha
 ENV BUILD_VERSION=$BUILD_VERSION

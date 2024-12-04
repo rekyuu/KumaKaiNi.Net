@@ -2,7 +2,6 @@
 using System.Timers;
 using System.Web;
 using Discord;
-using Discord.Net;
 using Discord.WebSocket;
 using KumaKaiNi.Core;
 using KumaKaiNi.Core.Models;
@@ -245,52 +244,41 @@ internal static class Program
         if (await _discordClient.GetChannelAsync(channelId, _defaultDiscordRequestOptions) 
             is not ISocketMessageChannel channel) return;
 
-        try
+        // Send an embedded image if one is attached
+        if (kumaResponse.Media != null)
         {
-            // Send an embedded image if one is attached
-            if (kumaResponse.Media != null)
+            EmbedBuilder embed = new()
             {
-                EmbedBuilder embed = new()
-                {
-                    Color = new Color(0x00b6b6),
-                    Title = kumaResponse.Media.Referrer,
-                    Url = kumaResponse.Media.Source,
-                    Description = kumaResponse.Media.Description,
-                    ImageUrl = kumaResponse.Media.Url,
-                    Timestamp = DateTime.UtcNow
-                };
+                Color = new Color(0x00b6b6),
+                Title = kumaResponse.Media.Referrer,
+                Url = kumaResponse.Media.Source,
+                Description = kumaResponse.Media.Description,
+                ImageUrl = kumaResponse.Media.Url,
+                Timestamp = DateTime.UtcNow
+            };
 
-                await channel.SendMessageAsync(
-                    text: kumaResponse.Message,
-                    embed: embed.Build(),
-                    options: _defaultDiscordRequestOptions);
+            await channel.SendMessageAsync(
+                text: kumaResponse.Message, 
+                embed: embed.Build(), 
+                options: _defaultDiscordRequestOptions);
 
-                if (!SupportedVideoFileTypes.Any(x => kumaResponse.Media.Url.EndsWith(x))) return;
+            if (!SupportedVideoFileTypes.Any(x => kumaResponse.Media.Url.EndsWith(x))) return;
 
-                string encodedVideoUrl = HttpUtility.UrlEncode(kumaResponse.Media.Url);
-                string encodedPreviewUrl = HttpUtility.UrlEncode(kumaResponse.Media.Preview);
+            string encodedVideoUrl = HttpUtility.UrlEncode(kumaResponse.Media.Url);
+            string encodedPreviewUrl = HttpUtility.UrlEncode(kumaResponse.Media.Preview);
 
-                // TODO: should figure out how AV1 stuff works and implement it myself
-                await channel.SendMessageAsync(
-                    text: $"[Video](https://autocompressor.net/av1?v={encodedVideoUrl}&i={encodedPreviewUrl})",
-                    options: _defaultDiscordRequestOptions);
-            }
-            // Send a standard message
-            else if (!string.IsNullOrEmpty(kumaResponse.Message))
-            {
-                await channel.SendMessageAsync(
-                    text: kumaResponse.Message,
-                    flags: MessageFlags.SuppressEmbeds,
-                    options: _defaultDiscordRequestOptions);
-            }
+            // TODO: should figure out how AV1 stuff works and implement it myself
+            await channel.SendMessageAsync(
+                text: $"[Video](https://autocompressor.net/av1?v={encodedVideoUrl}&i={encodedPreviewUrl})",
+                options: _defaultDiscordRequestOptions);
         }
-        catch (HttpException ex)
+        // Send a standard message
+        else if (!string.IsNullOrEmpty(kumaResponse.Message))
         {
-            Log.Warning(ex, "An exception was thrown while sending a message to Discord, likely permissions issues");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An exception was thrown while sending a message to Discord");
+            await channel.SendMessageAsync(
+                text: kumaResponse.Message,
+                flags: MessageFlags.SuppressEmbeds,
+                options: _defaultDiscordRequestOptions);
         }
     }
 }
