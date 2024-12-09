@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StackExchange.Redis;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -196,51 +197,64 @@ internal static class Program
         
         KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
         if (kumaResponse?.ChannelId == null) return;
-        
-        // Send an image with caption if one is attached
-        if (kumaResponse.Media != null)
-        {
-            string caption = $"{kumaResponse.Media.Description}";
-            if (kumaResponse.Media.Referrer != "" && kumaResponse.Media.Source != "") caption += $"\n\n[{kumaResponse.Media.Referrer}]({kumaResponse.Media.Source})";
 
-            // Try sending the media first, then a link if that fails. Usually fails when the image is too large
-            try
+        try
+        {
+            // Send an image with caption if one is attached
+            if (kumaResponse.Media != null)
             {
-                if (SupportedVideoFileTypes.Any(x => kumaResponse.Media.Url.EndsWith(x)))
+                string caption = $"{kumaResponse.Media.Description}";
+                if (kumaResponse.Media.Referrer != "" && kumaResponse.Media.Source != "")
+                    caption += $"\n\n[{kumaResponse.Media.Referrer}]({kumaResponse.Media.Source})";
+
+                // Try sending the media first, then a link if that fails. Usually fails when the image is too large
+                try
                 {
-                    await _telegramClient.SendVideoAsync(
-                        chatId: kumaResponse.ChannelId,
-                        video: InputFile.FromUri(kumaResponse.Media.Url),
-                        caption: caption,
-                        parseMode: ParseMode.Markdown);
+                    if (SupportedVideoFileTypes.Any(x => kumaResponse.Media.Url.EndsWith(x)))
+                    {
+                        await _telegramClient.SendVideoAsync(
+                            chatId: kumaResponse.ChannelId,
+                            video: InputFile.FromUri(kumaResponse.Media.Url),
+                            caption: caption,
+                            parseMode: ParseMode.Markdown);
+                    }
+                    else
+                    {
+                        await _telegramClient.SendPhotoAsync(
+                            chatId: kumaResponse.ChannelId,
+                            photo: InputFile.FromUri(kumaResponse.Media.Url),
+                            caption: caption,
+                            parseMode: ParseMode.Markdown);
+                    }
                 }
-                else
+                catch (ApiRequestException ex)
                 {
+                    Log.Warning(ex, "Unable to send video or image, sending a thumbnail");
+
                     await _telegramClient.SendPhotoAsync(
                         chatId: kumaResponse.ChannelId,
-                        photo: InputFile.FromUri(kumaResponse.Media.Url),
-                        caption: caption,
+                        photo: InputFile.FromUri(kumaResponse.Media.Preview),
+                        caption: $"Media was too large for Telegram.\n\n{caption}",
                         parseMode: ParseMode.Markdown);
                 }
             }
-            catch
+            // Send a standard message
+            else if (!string.IsNullOrEmpty(kumaResponse.Message))
             {
-                await _telegramClient.SendPhotoAsync(
+                await _telegramClient.SendTextMessageAsync(
                     chatId: kumaResponse.ChannelId,
-                    photo: InputFile.FromUri(kumaResponse.Media.Preview),
-                    caption: $"Media was too large for Telegram.\n\n{caption}",
+                    text: kumaResponse.Message,
+                    disableWebPagePreview: true,
                     parseMode: ParseMode.Markdown);
             }
-            
         }
-        // Send a standard message
-        else if (!string.IsNullOrEmpty(kumaResponse.Message))
+        catch (RequestException ex)
         {
-            await _telegramClient.SendTextMessageAsync(
-                chatId: kumaResponse.ChannelId, 
-                text: kumaResponse.Message,
-                disableWebPagePreview: true,
-                parseMode: ParseMode.Markdown);
+            Log.Warning(ex, "An exception was thrown while trying to send a Telegram message, possible Telegram is experiencing issues");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An exception was thrown while trying to send a Telegram message");
         }
     }
 }
