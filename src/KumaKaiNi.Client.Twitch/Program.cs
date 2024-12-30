@@ -85,6 +85,7 @@ internal static class Program
             _twitchClient.OnConnected += OnTwitchConnected;
             _twitchClient.OnLog += OnTwitchLog;
             _twitchClient.OnJoinedChannel += OnTwitchJoinedChannel;
+            _twitchClient.OnLeftChannel += OnTwitchLeftChannel;
             _twitchClient.OnMessageReceived += OnTwitchMessageReceived;
             _twitchClient.OnWhisperReceived += OnTwitchWhisperReceived;
 
@@ -104,7 +105,9 @@ internal static class Program
         }
         catch (TaskCanceledException)
         {
+            LeaveAndDisconnectTwitchClient();
             Log.Information("Exiting");
+
             Environment.Exit(0);
         }
         catch (Exception ex)
@@ -121,11 +124,22 @@ internal static class Program
     private static void OnTwitchConnected(object? sender, OnConnectedArgs e)
     {
         Log.Information("Connected to {Channel}", e.AutoJoinChannel);
+        _twitchClient?.JoinChannel(KumaTwitchConfig.TwitchUsername);
     }
 
     private static void OnTwitchLog(object? sender, OnLogArgs e)
     {
         Log.Information("[Twitch] {Data}", e.Data);
+    }
+
+    private static void OnTwitchJoinedChannel(object? sender, OnJoinedChannelArgs e)
+    {
+        Log.Information("Joined {Channel}", e.Channel);
+    }
+
+    private static void OnTwitchLeftChannel(object? sender, OnLeftChannelArgs e)
+    {
+        Log.Information("Left {Channel}", e.Channel);
     }
 
     private static async void OnTwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
@@ -148,11 +162,6 @@ internal static class Program
     private static void OnTwitchWhisperReceived(object? sender, OnWhisperReceivedArgs e)
     {
         // Ignore for now
-    }
-
-    private static void OnTwitchJoinedChannel(object? sender, OnJoinedChannelArgs e)
-    {
-        Log.Information("Joined {Channel}", e.Channel);
     }
 
     private static void OnTwitchError(object? sender, OnErrorEventArgs e)
@@ -238,5 +247,23 @@ internal static class Program
             if (_twitchClient.JoinedChannels.Count == 0)
                 throw new Exception($"The Twitch client is not joined to {KumaTwitchConfig.TwitchChannel}");
         }
+    }
+
+    private static void LeaveAndDisconnectTwitchClient()
+    {
+        if (_twitchClient == null) return;
+
+        // Always leave the default channel
+        _twitchClient.LeaveChannel(KumaTwitchConfig.TwitchChannel);
+
+        // Leave other channels if any
+        foreach (JoinedChannel? channel in _twitchClient.JoinedChannels)
+        {
+            if (channel == null) continue;
+            _twitchClient.LeaveChannel(channel);
+        }
+
+        // Disconnect
+        _twitchClient.Disconnect();
     }
 }
