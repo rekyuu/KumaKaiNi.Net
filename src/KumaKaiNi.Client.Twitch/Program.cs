@@ -124,7 +124,6 @@ internal static class Program
     private static void OnTwitchConnected(object? sender, OnConnectedArgs e)
     {
         Log.Information("Connected to {Channel}", e.AutoJoinChannel);
-        _twitchClient?.JoinChannel(KumaTwitchConfig.TwitchUsername);
     }
 
     private static void OnTwitchLog(object? sender, OnLogArgs e)
