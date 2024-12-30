@@ -30,6 +30,8 @@ public static class DanbooruCommands
     [Command(["safe", "sfw"])]
     public static async Task<KumaResponse> GetSafeDanbooruAsync(KumaRequest kumaRequest)
     {
+        if (kumaRequest.SourceSystem == SourceSystem.Twitch) return new KumaResponse();
+
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:g", "~rating:s"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
