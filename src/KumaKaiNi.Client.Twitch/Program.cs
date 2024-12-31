@@ -10,7 +10,7 @@ using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Events;
-using TwitchLib.Communication.Models;
+using OnConnectedEventArgs = TwitchLib.Client.Events.OnConnectedEventArgs;
 
 namespace KumaKaiNi.Client.Twitch;
 
@@ -71,20 +71,11 @@ internal static class Program
             // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#implicit-grant-flow
             // https://dev.twitch.tv/docs/authentication/scopes/#irc-chat-scopes
             _twitchCredentials = new ConnectionCredentials(KumaTwitchConfig.TwitchUsername, KumaTwitchConfig.TwitchAccessToken);
-            ClientOptions clientOptions = new()
-            {
-                MessagesAllowedInPeriod = 750,
-                ThrottlingPeriod = TimeSpan.FromSeconds(30)
-            };
-            WebSocketClient wsClient = new(clientOptions);
-            _twitchClient = new TwitchClient(wsClient)
-            {
-                AutoReListenOnException = true
-            };
+            WebSocketClient wsClient = new();
+            _twitchClient = new TwitchClient(wsClient);
             _twitchClient.Initialize(_twitchCredentials, KumaTwitchConfig.TwitchChannel);
 
             _twitchClient.OnConnected += OnTwitchConnected;
-            _twitchClient.OnLog += OnTwitchLog;
             _twitchClient.OnJoinedChannel += OnTwitchJoinedChannel;
             _twitchClient.OnLeftChannel += OnTwitchLeftChannel;
             _twitchClient.OnMessageReceived += OnTwitchMessageReceived;
@@ -99,14 +90,14 @@ internal static class Program
             _twitchClient.OnNoPermissionError += OnTwitchNoPermissionError;
             _twitchClient.OnRateLimit += OnTwitchRateLimit;
 
-            _twitchClient.Connect();
+            await _twitchClient.ConnectAsync();
             await Redis.SendDeploymentNotificationToAdmin();
 
             await Task.Delay(-1, _cts.Token);
         }
         catch (TaskCanceledException)
         {
-            LeaveAndDisconnectTwitchClient();
+            await LeaveAndDisconnectTwitchClient();
             Log.Information("Exiting");
 
             Environment.Exit(0);
@@ -122,31 +113,29 @@ internal static class Program
         }
     }
 
-    private static void OnTwitchConnected(object? sender, OnConnectedArgs e)
+    private static Task OnTwitchConnected(object? sender, OnConnectedEventArgs e)
     {
-        Log.Information("Connected to {Channel}", e.AutoJoinChannel);
+        Log.Information("Connected as {Username}", e.BotUsername);
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchLog(object? sender, OnLogArgs e)
-    {
-        Log.Information("[Twitch] {Data}", e.Data);
-    }
-
-    private static void OnTwitchJoinedChannel(object? sender, OnJoinedChannelArgs e)
+    private static Task OnTwitchJoinedChannel(object? sender, OnJoinedChannelArgs e)
     {
         Log.Information("Joined {Channel}", e.Channel);
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchLeftChannel(object? sender, OnLeftChannelArgs e)
+    private static Task OnTwitchLeftChannel(object? sender, OnLeftChannelArgs e)
     {
         Log.Information("Left {Channel}", e.Channel);
+        return Task.CompletedTask;
     }
 
-    private static async void OnTwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
+    private static async Task OnTwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
     {
         UserAuthority authority = UserAuthority.User;
         if (e.ChatMessage.IsBroadcaster) authority = UserAuthority.Administrator;
-        if (e.ChatMessage.IsModerator) authority = UserAuthority.Moderator;
+        if (e.ChatMessage.UserType == UserType.Moderator) authority = UserAuthority.Moderator;
 
         KumaRequest kumaRequest = new(
             e.ChatMessage.Username,
@@ -159,72 +148,84 @@ internal static class Program
         await Redis.AddRequestToStreamAsync(kumaRequest);
     }
 
-    private static void OnTwitchWhisperReceived(object? sender, OnWhisperReceivedArgs e)
+    private static Task OnTwitchWhisperReceived(object? sender, OnWhisperReceivedArgs e)
     {
         // Ignore for now
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchError(object? sender, OnErrorEventArgs e)
+    private static Task OnTwitchError(object? sender, OnErrorEventArgs e)
     {
         Log.Error(e.Exception, "A Twitch error occurred");
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchIncorrectLogin(object? sender, OnIncorrectLoginArgs e)
+    private static Task OnTwitchIncorrectLogin(object? sender, OnIncorrectLoginArgs e)
     {
         Log.Error(e.Exception, "Incorrect Twitch login");
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchConnectionError(object? sender, OnConnectionErrorArgs e)
+    private static Task OnTwitchConnectionError(object? sender, OnConnectionErrorArgs e)
     {
         Log.Error("Twitch connection error: {Message}", e.Error.Message);
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchDisconnected(object? sender, OnDisconnectedEventArgs e)
+    private static Task OnTwitchDisconnected(object? sender, OnDisconnectedArgs e)
     {
-        Log.Error("Twitch disconnected");
         // TODO: might need to add reconnect logic here but idk what that looks like yet
+        Log.Error("Twitch disconnected");
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchReconnected(object? sender, OnReconnectedEventArgs e)
+    private static Task OnTwitchReconnected(object? sender, OnConnectedEventArgs e)
     {
         Log.Information("Twitch reconnected");
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchFailureToReceiveJoinConfirmation(object? sender, OnFailureToReceiveJoinConfirmationArgs e)
+    private static Task OnTwitchFailureToReceiveJoinConfirmation(object? sender, OnFailureToReceiveJoinConfirmationArgs e)
     {
         Log.Error("Failed to receive join confirmation for {Channel}: {Details}",
             e.Exception.Channel, e.Exception.Details);
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchNoPermissionError(object? sender, EventArgs e)
+    private static Task OnTwitchNoPermissionError(object? sender, NoticeEventArgs e)
     {
         Log.Error("Twitch no permissions error has occurred");
+        return Task.CompletedTask;
     }
 
-    private static void OnTwitchRateLimit(object? sender, OnRateLimitArgs e)
+    private static Task OnTwitchRateLimit(object? sender, NoticeEventArgs e)
     {
         Log.Error("Twitch rate limit has been enforced");
+        return Task.CompletedTask;
     }
 
-    private static void OnStreamEntryReceived(NameValueEntry entry)
+    private static async void OnStreamEntryReceived(NameValueEntry entry)
     {
         if (_twitchClient == null) return;
-        ValidateTwitchClient();
+        await ValidateTwitchClient();
 
         if (entry.Value.IsNullOrEmpty) return;
 
         KumaResponse? kumaResponse = JsonSerializer.Deserialize<KumaResponse>(entry.Value!);
         if (kumaResponse?.ChannelId == null) return;
+        if (string.IsNullOrEmpty(kumaResponse.Message)) return;
 
-        _twitchClient.SendMessage(kumaResponse.ChannelId, kumaResponse.Message);
+        await _twitchClient.SendMessageAsync(kumaResponse.ChannelId, kumaResponse.Message);
     }
 
-    private static void ValidateTwitchClient()
+    private static async Task ValidateTwitchClient()
     {
         if (_twitchClient == null) return;
 
         if (!_twitchClient.IsInitialized)
         {
+            if (_twitchCredentials == null) throw new Exception("Twitch credentials is null");
+
             Log.Warning("Attempting to reinitialize the Twitch client");
             _twitchClient.Initialize(_twitchCredentials, KumaTwitchConfig.TwitchChannel);
 
@@ -234,36 +235,38 @@ internal static class Program
         if (!_twitchClient.IsConnected)
         {
             Log.Warning("Attempting to reconnect the Twitch client");
-            _twitchClient.Reconnect();
+            await _twitchClient.ReconnectAsync();
 
             if (!_twitchClient.IsConnected) throw new Exception("The Twitch client is not connected");
         }
 
         if (_twitchClient.JoinedChannels.Count == 0)
         {
+            if (string.IsNullOrEmpty(KumaTwitchConfig.TwitchChannel)) throw new Exception("Twitch channel is null");
+
             Log.Warning("Attempting to rejoin the Twitch client to {Channel}", KumaTwitchConfig.TwitchChannel);
-            _twitchClient.JoinChannel(KumaTwitchConfig.TwitchChannel);
+            await _twitchClient.JoinChannelAsync(KumaTwitchConfig.TwitchChannel);
 
             if (_twitchClient.JoinedChannels.Count == 0)
                 throw new Exception($"The Twitch client is not joined to {KumaTwitchConfig.TwitchChannel}");
         }
     }
 
-    private static void LeaveAndDisconnectTwitchClient()
+    private static async Task LeaveAndDisconnectTwitchClient()
     {
         if (_twitchClient == null) return;
 
         // Always leave the default channel
-        _twitchClient.LeaveChannel(KumaTwitchConfig.TwitchChannel);
+        if (!string.IsNullOrEmpty(KumaTwitchConfig.TwitchChannel))
+            await _twitchClient.LeaveChannelAsync(KumaTwitchConfig.TwitchChannel);
 
         // Leave other channels if any
-        foreach (JoinedChannel? channel in _twitchClient.JoinedChannels)
+        foreach (JoinedChannel channel in _twitchClient.JoinedChannels)
         {
-            if (channel == null) continue;
-            _twitchClient.LeaveChannel(channel);
+            await _twitchClient.LeaveChannelAsync(channel);
         }
 
         // Disconnect
-        _twitchClient.Disconnect();
+        await _twitchClient.DisconnectAsync();
     }
 }

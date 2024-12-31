@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="TwitchLib" Version="3.5.3" />
+      <PackageReference Include="TwitchLib.Client" Version="4.0.0-preview-5ef35d539836f8bcd29bd836a23b9e853020acfa" />
     </ItemGroup>
 
     <ItemGroup>
