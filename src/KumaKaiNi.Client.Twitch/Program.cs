@@ -75,8 +75,8 @@ internal static class Program
                 MessagesAllowedInPeriod = 750,
                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
             };
-            TcpClient wsClient = new(clientOptions);
-            _twitchClient = new TwitchClient(wsClient)
+            TcpClient tcpClient = new(clientOptions);
+            _twitchClient = new TwitchClient(tcpClient)
             {
                 AutoReListenOnException = true
             };
