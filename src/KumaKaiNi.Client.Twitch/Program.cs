@@ -5,6 +5,7 @@ using KumaKaiNi.Core.Utility;
 using Serilog;
 using StackExchange.Redis;
 using TwitchLib.Client;
+using TwitchLib.Client.Enums;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
@@ -75,8 +76,8 @@ internal static class Program
                 MessagesAllowedInPeriod = 750,
                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
             };
-            WebSocketClient wsClient = new(clientOptions);
-            _twitchClient = new TwitchClient(wsClient)
+            TcpClient tcpClient = new(clientOptions);
+            _twitchClient = new TwitchClient(tcpClient, ClientProtocol.TCP)
             {
                 AutoReListenOnException = true
             };
