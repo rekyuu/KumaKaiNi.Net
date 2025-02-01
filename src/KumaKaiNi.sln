@@ -15,6 +15,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.RequestProcessor"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Client.Twitch", "KumaKaiNi.Client.Twitch\KumaKaiNi.Client.Twitch.csproj", "{6DB67625-0E9F-4F1D-AA52-F040BA09DA99}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eng", "Eng", "{52B2C292-C3E5-4E83-B9CE-FB75B64CFCB5}"
+	ProjectSection(SolutionItems) = preProject
+		..\docker-compose.yml = ..\docker-compose.yml
+		..\flake.nix = ..\flake.nix
+		..\example.env = ..\example.env
+		..\README.md = ..\README.md
+		..\.env = ..\.env
+		..\.gitignore = ..\.gitignore
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
