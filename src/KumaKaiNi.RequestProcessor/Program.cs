@@ -52,7 +52,7 @@ public static class Program
             _streamConsumer.StreamEntryReceived += OnStreamEntryReceived;
             await _streamConsumer.StartAsync();
 
-            Log.Information("[Listening for updates");
+            Log.Information("Listening for updates");
             await Redis.SendDeploymentNotificationToAdmin();
         
             await Task.Delay(-1, _cts.Token);

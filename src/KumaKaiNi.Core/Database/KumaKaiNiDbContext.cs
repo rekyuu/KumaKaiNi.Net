@@ -18,6 +18,8 @@ public class KumaKaiNiDbContext : DbContext
 
     public virtual DbSet<DanbooruNsfwTag> DanbooruNsfwTag { get; set; }
 
+    public virtual DbSet<DiscordAllowedDanbooruChannel> DiscordAllowedDanbooruChannels { get; set; }
+
     public virtual DbSet<ErrorLog> ErrorLogs { get; set; }
 
     public virtual DbSet<GptResponse> GptResponses { get; set; }
@@ -94,6 +96,12 @@ public class KumaKaiNiDbContext : DbContext
         modelBuilder.Entity<DanbooruNsfwTag>(entity =>
         {
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+        });
+
+        modelBuilder.Entity<DiscordAllowedDanbooruChannel>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+            entity.HasIndex(e => e.ChannelId).IsUnique();
         });
         
         modelBuilder.Entity<ErrorLog>(entity =>

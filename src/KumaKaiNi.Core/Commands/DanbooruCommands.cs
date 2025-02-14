@@ -22,6 +22,8 @@ public static class DanbooruCommands
     [Command("dan", nsfw: true)]
     public static async Task<KumaResponse> GetDanbooruAsync(KumaRequest kumaRequest)
     {
+        if (!await IsDanbooruAllowedAsync(kumaRequest)) return new KumaResponse();
+        
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
@@ -30,7 +32,7 @@ public static class DanbooruCommands
     [Command(["safe", "sfw"])]
     public static async Task<KumaResponse> GetSafeDanbooruAsync(KumaRequest kumaRequest)
     {
-        if (kumaRequest.SourceSystem == SourceSystem.Twitch) return new KumaResponse();
+        if (!await IsDanbooruAllowedAsync(kumaRequest)) return new KumaResponse();
 
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:g", "~rating:s"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
@@ -41,6 +43,8 @@ public static class DanbooruCommands
     [Command("lewd", nsfw: true)]
     public static async Task<KumaResponse> GetLewdDanbooruAsync(KumaRequest kumaRequest)
     {
+        if (!await IsDanbooruAllowedAsync(kumaRequest)) return new KumaResponse();
+        
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:q"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
@@ -50,6 +54,8 @@ public static class DanbooruCommands
     [Command("xxx", nsfw: true)]
     public static async Task<KumaResponse> GetExplicitDanbooruAsync(KumaRequest kumaRequest)
     {
+        if (!await IsDanbooruAllowedAsync(kumaRequest)) return new KumaResponse();
+
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:e"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
@@ -59,6 +65,8 @@ public static class DanbooruCommands
     [Command("nsfw", nsfw: true)]
     public static async Task<KumaResponse> GetNsfwDanbooruAsync(KumaRequest kumaRequest)
     {
+        if (!await IsDanbooruAllowedAsync(kumaRequest)) return new KumaResponse();
+
         string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:q", "~rating:e"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
@@ -189,6 +197,48 @@ public static class DanbooruCommands
 
         await db.SaveChangesAsync();
         return new KumaResponse($"{deleted} tags removed.");
+    }
+
+    [Command("danchannel", UserAuthority.Administrator)]
+    public static async Task<KumaResponse> DanChannelToggle(KumaRequest kumaRequest)
+    {
+        if (kumaRequest.SourceSystem != SourceSystem.Discord) return new KumaResponse();
+        if (string.IsNullOrEmpty(kumaRequest.ChannelId)) return new KumaResponse();
+        
+        await using KumaKaiNiDbContext db = new();
+        DiscordAllowedDanbooruChannel? allowedChannel = await db.DiscordAllowedDanbooruChannels
+            .FirstOrDefaultAsync(x => x.ChannelId == kumaRequest.ChannelId);
+
+        KumaResponse response;
+        
+        if (allowedChannel == null)
+        {
+            DiscordAllowedDanbooruChannel newChannel = new(kumaRequest.ChannelId);
+            await db.DiscordAllowedDanbooruChannels.AddAsync(newChannel);
+            
+            response = new KumaResponse("Channel enabled for Danbooru.");
+        }
+        else
+        {
+            db.DiscordAllowedDanbooruChannels.Remove(allowedChannel);
+            response = new KumaResponse("Channel disabled for Danbooru.");
+        }
+
+        await db.SaveChangesAsync();
+
+        return response;
+    }
+
+    private static async Task<bool> IsDanbooruAllowedAsync(KumaRequest kumaRequest)
+    {
+        if (kumaRequest.SourceSystem == SourceSystem.Twitch) return false;
+        if (kumaRequest.SourceSystem != SourceSystem.Discord) return true;
+        
+        await using KumaKaiNiDbContext db = new();
+        DiscordAllowedDanbooruChannel? allowedChannel = await db.DiscordAllowedDanbooruChannels
+            .FirstOrDefaultAsync(x => x.ChannelId == kumaRequest.ChannelId);
+
+        return allowedChannel != null;
     }
 
     private static async Task<ResponseMedia?> GetDanbooruImageAsync(string[] tags, SourceSystem sourceSystem, string? channelId, bool channelIsNsfw = false)
