@@ -12,6 +12,7 @@
                 nativeBuildInputs = with pkgs; [
                     dotnet
                     dotnet-ef
+                    grpc-tools
                 ];
             };
         };

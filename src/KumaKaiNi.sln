@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eng", "Eng", "{52B2C292-C3E
 		..\.gitignore = ..\.gitignore
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KumaKaiNi.Grpc", "KumaKaiNi.Grpc\KumaKaiNi.Grpc.csproj", "{1B6739BD-6753-42AD-A812-B741670EECB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{6DB67625-0E9F-4F1D-AA52-F040BA09DA99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DB67625-0E9F-4F1D-AA52-F040BA09DA99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DB67625-0E9F-4F1D-AA52-F040BA09DA99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B6739BD-6753-42AD-A812-B741670EECB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B6739BD-6753-42AD-A812-B741670EECB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B6739BD-6753-42AD-A812-B741670EECB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B6739BD-6753-42AD-A812-B741670EECB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
