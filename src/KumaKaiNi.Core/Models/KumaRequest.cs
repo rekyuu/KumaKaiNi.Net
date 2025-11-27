@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 
 namespace KumaKaiNi.Core.Models;
 
@@ -73,12 +72,6 @@ public partial class KumaRequest
     public string? Command { get; private set; }
 
     /// <summary>
-    /// Determines if the message mentions Kuma or not.
-    /// </summary>
-    [JsonIgnore]
-    public bool IsMention { get; private set; } = false;
-
-    /// <summary>
     /// The command's arguments, if it was a command.
     /// </summary>
     [JsonIgnore]
@@ -131,11 +124,8 @@ public partial class KumaRequest
 
     private void Init()
     {
-        Regex rx = KumaRegex();
-        if (rx.IsMatch(Message)) IsMention = true;
-        
         // Determine if the incoming message was a command or not
-        if (string.IsNullOrEmpty(Message) || Message[0] != '!' || Message[0] != '/') return;
+        if (string.IsNullOrEmpty(Message) || Message[0] != '!') return;
         
         string[] messageContents = Message.Split(' ');
 
@@ -143,8 +133,5 @@ public partial class KumaRequest
         Command = messageContents[0][1..];
         CommandArgs = messageContents.Skip(1).ToArray();
     }
-
-    [GeneratedRegex("kuma", RegexOptions.IgnoreCase)]
-    private static partial Regex KumaRegex();
 }
 
