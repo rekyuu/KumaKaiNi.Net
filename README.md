@@ -39,16 +39,7 @@
 
 ### Text Generation
 
-- `!ai [prompt]`, `!gpt [prompt]` - Get an AI generated response
-- `!gpt2` - Get a canned, pre-made AI generated response based on old chat history
 - `!gdq` - Get a randomly generated GDQ message
-- `!gptmodel [model]` - ADMIN ONLY: Get or set the OpenAI model
-- `!gpttokenlimit [limit]` - ADMIN ONLY: Get or set the OpenAI token limit
-- `!gptprompt` - **ADMIN ONLY**: Get the current system prompt
-- `!gptrule [rule_id]` - **ADMIN ONLY**: Get the current system prompt rules or by ID
-- `!gptrule (add|new) <rule>` - **ADMIN ONLY**: Add a new system prompt rule
-- `!gptrule (update|modify) <rule_id> <rule>` - **ADMIN ONLY**: Update a system prompt rule
-- `!gptrule (del|delete|rem|remove) <rule_id>` - **ADMIN ONLY**: Remove a system prompt rule
 
 ### Custom Commands
 
