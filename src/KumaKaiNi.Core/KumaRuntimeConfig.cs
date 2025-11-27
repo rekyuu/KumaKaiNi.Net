@@ -43,11 +43,6 @@ public static class KumaRuntimeConfig
     /// The API key for the Danbooru API.
     /// </summary>
     public static string? DanbooruApiKey { get; private set; }
-    
-    /// <summary>
-    /// The API key for OpenAI.
-    /// </summary>
-    public static string? OpenAiApiKey { get; private set; }
         
     /// <summary>
     /// The domain and port for PostgreSQL.
@@ -98,8 +93,6 @@ public static class KumaRuntimeConfig
         
         DanbooruUser = Environment.GetEnvironmentVariable("DANBOORU_USER");
         DanbooruApiKey = Environment.GetEnvironmentVariable("DANBOORU_API_KEY");
-        
-        OpenAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             
         PostgresHost = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost:5432";
         PostgresUsername = Environment.GetEnvironmentVariable("POSTGRES_USERNAME") ?? "postgres";
