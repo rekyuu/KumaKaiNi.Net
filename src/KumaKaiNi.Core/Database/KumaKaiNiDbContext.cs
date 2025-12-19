@@ -22,6 +22,8 @@ public class KumaKaiNiDbContext : DbContext
 
     public virtual DbSet<ChatLog> ChatLogs { get; set; }
 
+    public virtual DbSet<Markov> Markov { get; set; }
+
     public virtual DbSet<Quote> Quotes { get; set; }
 
     public virtual DbSet<TelegramAllowList> TelegramAllowList { get; set; }
@@ -84,6 +86,14 @@ public class KumaKaiNiDbContext : DbContext
         {
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
         });
+
+        modelBuilder.Entity<Markov>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+            entity.HasIndex(e => new { e.SourceSystem, e.ChannelId, e.PreviousWords, e.NextWord }).IsUnique();
+            entity.HasIndex(e => new { e.SourceSystem, e.ChannelId, e.PreviousWords });
+            entity.HasIndex(e => new { e.SourceSystem, e.ChannelId, e.CanStart });
+        });
         
         modelBuilder.Entity<Quote>(entity =>
         {
@@ -122,7 +132,13 @@ public class KumaKaiNiDbContext : DbContext
 
     private static string GetPostgresConnectionString()
     {
-        return $"Host={KumaRuntimeConfig.PostgresHost};Username={KumaRuntimeConfig.PostgresUsername};Password={KumaRuntimeConfig.PostgresPassword};Database={KumaRuntimeConfig.PostgresDatabase}";
+        string connString = $"Host={KumaRuntimeConfig.PostgresHost};Username={KumaRuntimeConfig.PostgresUsername};Password={KumaRuntimeConfig.PostgresPassword};Database={KumaRuntimeConfig.PostgresDatabase}";
+
+        #if DEBUG
+        return connString + ";Include Error Detail=true";
+        #else
+        return connString;
+        #endif
     }
 
     private void UpdateBaseDateTimeFields()

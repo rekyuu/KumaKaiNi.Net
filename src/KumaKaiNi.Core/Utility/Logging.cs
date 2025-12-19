@@ -1,4 +1,5 @@
 using System.Text;
+using KumaKaiNi.Core.Commands;
 using KumaKaiNi.Core.Database;
 using KumaKaiNi.Core.Database.Entities;
 using KumaKaiNi.Core.Models;
@@ -31,8 +32,12 @@ public static class Logging
             kumaRequest.ChannelId, 
             kumaRequest.ChannelIsPrivate);
         
-        db.ChatLogs.Add(requestChatLog);
+        await db.ChatLogs.AddAsync(requestChatLog);
         LogMessage(kumaRequest.SourceSystem, kumaRequest.Username, kumaRequest.Message);
+        await TextGenerationCommands.AddMessageToMarkovModel(
+            kumaRequest.SourceSystem,
+            kumaRequest.ChannelId,
+            kumaRequest.Message);
 
         await db.SaveChangesAsync();
     }
