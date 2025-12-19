@@ -28,18 +28,14 @@ public static class TextGenerationCommands
     [Command("markov")]
     public static async Task<KumaResponse?> MarkovAsync(KumaRequest kumaRequest)
     {
-        switch (kumaRequest.CommandArgs.Length)
+        if (kumaRequest is { UserAuthority: UserAuthority.Administrator, CommandArgs: ["train"] })
         {
-            case 1:
-                if (kumaRequest.CommandArgs[0] != "train" ||
-                    kumaRequest.UserAuthority != UserAuthority.Administrator) return new KumaResponse("no lol");
-
-                await TrainMarkov(kumaRequest.SourceSystem, kumaRequest.ChannelId);
-                return new KumaResponse("done training for markov chain generation, kuma");
-            default:
-                string content = await GetMarkovText(kumaRequest.SourceSystem, kumaRequest.ChannelId);
-                return !string.IsNullOrEmpty(content) ? new KumaResponse(content) : null;
+            await TrainMarkov(kumaRequest.SourceSystem, kumaRequest.ChannelId);
+            return new KumaResponse("done training for markov chain generation, kuma");
         }
+
+        string content = await GetMarkovText(kumaRequest.SourceSystem, kumaRequest.ChannelId);
+        return !string.IsNullOrEmpty(content) ? new KumaResponse(content) : null;
     }
 
     public static async Task AddMessageToMarkovModel(SourceSystem sourceSystem, string? channelId, string message)
