@@ -5,5 +5,6 @@ public enum SourceSystem
     Discord,
     Telegram,
     Terminal,
-    Twitch
+    Twitch,
+    YouTube
 }
