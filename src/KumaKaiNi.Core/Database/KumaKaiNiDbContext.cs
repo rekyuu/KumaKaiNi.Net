@@ -8,6 +8,8 @@ public class KumaKaiNiDbContext : DbContext
 {
     public virtual DbSet<AdminConfig> AdminConfigs { get; set; }
 
+    public virtual DbSet<AllowedMarkovChannels> AllowedMarkovChannels { get; set; }
+
     public virtual DbSet<CustomCommand> CustomCommands { get; set; }
 
     public virtual DbSet<DanbooruAlias> DanbooruAliases { get; set; }
@@ -46,6 +48,12 @@ public class KumaKaiNiDbContext : DbContext
         {
             entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
             entity.HasData(new AdminConfig { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), InsertedAt = DateTime.MinValue, LastModified = DateTime.MinValue });
+        });
+
+        modelBuilder.Entity<AllowedMarkovChannels>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
+            entity.HasIndex(e => e.ChannelId).IsUnique();
         });
 
         modelBuilder.Entity<ChatLog>(entity =>

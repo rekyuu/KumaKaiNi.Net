@@ -28,14 +28,48 @@ public static class TextGenerationCommands
     [Command("markov")]
     public static async Task<KumaResponse?> MarkovAsync(KumaRequest kumaRequest)
     {
-        if (kumaRequest is { UserAuthority: UserAuthority.Administrator, CommandArgs: ["train"] })
-        {
-            await TrainMarkov(kumaRequest.SourceSystem, kumaRequest.ChannelId);
-            return new KumaResponse("done training for markov chain generation, kuma");
-        }
+        if (kumaRequest.SourceSystem != SourceSystem.Discord) return null;
 
-        string content = await GetMarkovText(kumaRequest.SourceSystem, kumaRequest.ChannelId);
-        return !string.IsNullOrEmpty(content) ? new KumaResponse(content) : null;
+        switch (kumaRequest)
+        {
+            case { UserAuthority: UserAuthority.Administrator, CommandArgs: ["train"] }:
+                await TrainMarkov(kumaRequest.SourceSystem, kumaRequest.ChannelId);
+                return new KumaResponse("done training for markov chain generation, kuma");
+            case { UserAuthority: UserAuthority.Administrator, CommandArgs: ["allow"] }:
+            {
+                if (string.IsNullOrEmpty(kumaRequest.ChannelId)) return null;
+
+                await using KumaKaiNiDbContext db = new();
+                AllowedMarkovChannels? allowedChannel = await db.AllowedMarkovChannels
+                    .FirstOrDefaultAsync(x => x.ChannelId == kumaRequest.ChannelId);
+
+                KumaResponse response;
+
+                if (allowedChannel == null)
+                {
+                    AllowedMarkovChannels newChannel = new(kumaRequest.ChannelId);
+                    await db.AllowedMarkovChannels.AddAsync(newChannel);
+
+                    response = new KumaResponse("Channel enabled for markov chain generation.");
+                }
+                else
+                {
+                    db.AllowedMarkovChannels.Remove(allowedChannel);
+                    response = new KumaResponse("Channel disabled for markov chain generation.");
+                }
+
+                await db.SaveChangesAsync();
+
+                return response;
+            }
+            default:
+            {
+                if (!await IsMarkovAllowedAsync(kumaRequest)) return null;
+
+                string content = await GetMarkovText(kumaRequest.SourceSystem, kumaRequest.ChannelId);
+                return !string.IsNullOrEmpty(content) ? new KumaResponse(content) : null;
+            }
+        }
     }
 
     public static async Task AddMessageToMarkovModel(SourceSystem sourceSystem, string? channelId, string message)
@@ -173,5 +207,16 @@ public static class TextGenerationCommands
         }
 
         return string.Join(' ', result);
+    }
+
+    private static async Task<bool> IsMarkovAllowedAsync(KumaRequest kumaRequest)
+    {
+        if (kumaRequest.SourceSystem != SourceSystem.Discord) return true;
+
+        await using KumaKaiNiDbContext db = new();
+        AllowedMarkovChannels? allowedChannel = await db.AllowedMarkovChannels
+            .FirstOrDefaultAsync(x => x.ChannelId == kumaRequest.ChannelId);
+
+        return allowedChannel != null;
     }
 }
