@@ -113,6 +113,11 @@ public static class DanbooruCommands
             .Select(x => x.Tag)
             .ToArrayAsync();
 
+        if (kumaRequest.CommandArgs.Length == 0)
+        {
+            return new KumaResponse(string.Join(", ", blockedTags));
+        }
+
         int inserted = 0;
         foreach (string tag in kumaRequest.CommandArgs)
         {
