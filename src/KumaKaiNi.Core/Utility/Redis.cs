@@ -20,6 +20,7 @@ public static class Redis
     private const string KumaTelegramStreamName = "kuma:telegram:responses";
     private const string KumaTerminalStreamName = "kuma:terminal:responses";
     private const string KumaTwitchStreamName = "kuma:twitch:responses";
+    private const string KumaMatrixStreamName = "kuma:matrix:responses";
     
     private static readonly ConnectionMultiplexer? RedisConn;
 
@@ -72,6 +73,7 @@ public static class Redis
             SourceSystem.Telegram => KumaTelegramStreamName,
             SourceSystem.Terminal => KumaTerminalStreamName,
             SourceSystem.Twitch => KumaTwitchStreamName,
+            SourceSystem.Matrix => KumaMatrixStreamName,
             _ => throw new ArgumentOutOfRangeException(nameof(sourceSystem), sourceSystem, null)
         };
     }
