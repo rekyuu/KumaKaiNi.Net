@@ -136,6 +136,7 @@ internal static class Program
         // Determine what the current image should be
         int phase = Moon.GetMoonPhase(DateTime.UtcNow);
         string phasePath = $"Resources/MoonPhases/Phase{phase}.jpg";
+        if (Moon.IsBlueMoon(DateTime.UtcNow)) phasePath = $"Resources/MoonPhases/BlueMoon.jpg";
 
         // Skip if the image is already set
         const string cacheKey = "discord:moon";

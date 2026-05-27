@@ -57,6 +57,7 @@ public static class GeneralCommands
     public static KumaResponse MoonPhase()
     {
         int phase = Moon.GetMoonPhase(DateTime.UtcNow);
+        if (Moon.IsBlueMoon(DateTime.UtcNow)) return new KumaResponse("✨ Blue Moon ✨");
 
         return phase switch
         {
