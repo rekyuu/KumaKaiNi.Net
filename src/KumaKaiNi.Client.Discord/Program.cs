@@ -267,6 +267,15 @@ internal static class Program
         bool isModerator = false;
         if (message.Author is IGuildUser guildUser)
         {
+            // Determine if someone sent a message in the honeypot
+            if (await UserPostedInHoneypot(channelId) && !isAdmin && !isModerator)
+            {
+                Log.Information("Banning user for posting in honeypot: {UserId}", message.Author.Id);
+                await guildUser.BanAsync(pruneDays: 1, reason: "Posted in honeypot", options: _defaultDiscordRequestOptions);
+
+                return;
+            }
+
             isModerator = KumaDiscordConfig.DiscordModRoleId != null && 
                           guildUser.RoleIds.Contains(KumaDiscordConfig.DiscordModRoleId.Value);
         }
@@ -292,6 +301,7 @@ internal static class Program
         {
             if (message.Content.StartsWith("!makeRoleColorsPost")) await MakeRoleColorsPost(channelId);
             if (message.Content.StartsWith("!makeRoleAnnouncementsPost")) await MakeRoleAnnouncementsPost(channelId);
+            if (message.Content.StartsWith("!makeHoneypot")) await MakeHoneypotChannel(channelId);
         }
     }
 
@@ -568,5 +578,46 @@ internal static class Program
 
         Log.Information("Role announcements post made for guild ID {GuildId} with message ID {MessageId}",
             guildChannel.Guild.Id, message.Id);
+    }
+
+    private static async Task MakeHoneypotChannel(ulong channelId)
+    {
+        if (_discordClient == null) return;
+
+        if (await _discordClient.GetChannelAsync(channelId, _defaultDiscordRequestOptions)
+            is not ISocketMessageChannel channel) return;
+        if (channel is not SocketGuildChannel guildChannel) return;
+
+        // Create the message
+        EmbedBuilder embed = new()
+        {
+            Color = new Color(0x00b6b6),
+            Title = "DO NOT POST IN THIS CHANNEL",
+            Description = "YOU WILL BE BANNED IMMEDIATELY"
+        };
+
+        await channel.SendMessageAsync(
+            embed: embed.Build(),
+            options: _defaultDiscordRequestOptions);
+
+        string cacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:honeypot:channel_id";
+        await Cache.SetAsync(cacheKey, channel.Id.ToString());
+
+        Log.Information("Made honeypot channel for guild ID {GuildId} with channel ID {ChannelId}",
+            guildChannel.Guild.Id, channel.Id);
+    }
+
+    private static async Task<bool> UserPostedInHoneypot(ulong channelId)
+    {
+        if (_discordClient == null) return false;
+
+        if (await _discordClient.GetChannelAsync(channelId, _defaultDiscordRequestOptions)
+            is not ISocketMessageChannel channel) return false;
+        if (channel is not SocketGuildChannel guildChannel) return false;
+
+        string cacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:honeypot:channel_id";
+        string? channelCache = await Cache.GetAsync(cacheKey);
+
+        return channelId.ToString() == channelCache;
     }
 }
