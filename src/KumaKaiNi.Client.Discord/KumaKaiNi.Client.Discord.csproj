@@ -128,6 +128,252 @@
         <None Update="Resources\MoonPhases\BlueMoon.jpg">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="Resources\MahjongTiles\Bamboo1.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo2.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo3.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo4.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo5.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo5Dora.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo6.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo7.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo8.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo9.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara1.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara2.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara3.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara4.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara5.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara5Dora.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara6.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara7.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara8.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara9.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\DragonGreen.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\DragonRed.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\DragonWhite.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin1.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin2.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin3.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin4.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin5.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin5Dora.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin6.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin7.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin8.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin9.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueHua.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueTong.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueWan.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueYu.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindEast.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindNorth.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindSouth.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindWest.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo1.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo2.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo3.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo4.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo5.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo5Dora.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo6.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo7.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo8.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Bamboo9.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara1.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara2.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara3.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara4.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara5.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara5Dora.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara6.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara7.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara8.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Chara9.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\DragonGreen.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\DragonRed.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\DragonWhite.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin1.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin2.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin3.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin4.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin5.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin5Dora.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin6.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin7.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin8.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\Pin9.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueHua.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueTong.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueWan.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\QingqueYu.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindEast.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindNorth.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindSouth.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\MahjongTiles\WindWest.jpg">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

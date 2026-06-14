@@ -16,11 +16,16 @@ public static class KumaDiscordConfig
     /// The user ID of the administrator.
     /// </summary>
     public static ulong? DiscordAdminId { get; private set; }
-    
+
     /// <summary>
     /// The guild ID to update the moon phase guild image.
     /// </summary>
     public static ulong? DiscordMoonGuildId { get; private set; }
+
+    /// <summary>
+    /// The guild ID to update the mahjong tile guild image.
+    /// </summary>
+    public static ulong? DiscordMahjongGuildId { get; private set; }
 
     static KumaDiscordConfig()
     {
@@ -37,5 +42,9 @@ public static class KumaDiscordConfig
         string? discordMoonGuildId = Environment.GetEnvironmentVariable("DISCORD_MOON_GUILD_ID");
         bool discordMoonGuildIdParsed = ulong.TryParse(discordMoonGuildId, out ulong discordMoonGuildIdResult);
         if (discordMoonGuildIdParsed) DiscordMoonGuildId = discordMoonGuildIdResult;
+
+        string? discordMahjongGuildId = Environment.GetEnvironmentVariable("DISCORD_MAHJONG_GUILD_ID");
+        bool discordMahjongGuildIdParsed = ulong.TryParse(discordMahjongGuildId, out ulong discordMahjongGuildIdResult);
+        if (discordMahjongGuildIdParsed) DiscordMahjongGuildId = discordMahjongGuildIdResult;
     }
 }

@@ -208,4 +208,29 @@ public static class Redis
         await db.KeyDeleteAsync(key);
         return true;
     }
+
+    internal static async Task<bool> ListAddAsync(string queueName, string value)
+    {
+        IDatabase? db = Database;
+        if (db == null) return false;
+
+        await db.ListRightPushAsync(queueName, value);
+        return true;
+    }
+
+    internal static async Task<string?> ListPopAsync(string queueName)
+    {
+        IDatabase? db = Database;
+        if (db == null) return null;
+
+        return await db.ListLeftPopAsync(queueName);
+    }
+
+    internal static async Task<long> ListLengthAsync(string queueName)
+    {
+        IDatabase? db = Database;
+        if (db == null) return 0;
+
+        return await db.ListLengthAsync(queueName);
+    }
 }

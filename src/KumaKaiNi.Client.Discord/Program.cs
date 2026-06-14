@@ -23,6 +23,7 @@ internal static class Program
     private static RequestOptions? _defaultDiscordRequestOptions;
 
     private static Timer? _moonTimer;
+    private static Timer? _mahjongTimer;
     private static Timer? _festiveTimer;
     
     private static async Task Main()
@@ -114,10 +115,16 @@ internal static class Program
         
         Log.Information("Started moon phase timer");
 
+        _mahjongTimer = new Timer(60 * 60 * 1000);
+        _mahjongTimer.Elapsed += OnMahjongTimerElapsed;
+        _mahjongTimer.Start();
+
+        Log.Information("Started mahjong timer");
+
         _festiveTimer = new Timer(24 * 60 * 60 * 1000);
         _festiveTimer.Elapsed += OnFestiveTimerElapsed;
         _festiveTimer.Start();
-        
+
         Log.Information("Started festive avatar timer");
         
         return Task.CompletedTask;
@@ -151,6 +158,36 @@ internal static class Program
             x => x.Icon = phaseImage, 
             _defaultDiscordRequestOptions);
         await Cache.SetAsync(cacheKey, phasePath);
+    }
+
+    private static async void OnMahjongTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        // Check if the current bot is in the guild
+        SocketGuild? guild = _discordClient?.CurrentUser.MutualGuilds
+            .FirstOrDefault(x => x.Id == KumaDiscordConfig.DiscordMahjongGuildId);
+
+        if (guild == null) return;
+
+        // Skip if the image is already set in the last UTC day
+        string now = DateTime.UtcNow.ToString("YYYYMMdd");
+
+        const string cacheKey = "discord:mahjong";
+        string? lastSet = await Cache.GetAsync(cacheKey);
+
+        if (now == lastSet) return;
+
+        // Get a random tile
+        string tile = await Mahjong.GetTile();
+        string tilePath = $"Resources/MahjongTiles/{tile}.jpg";
+
+        // Update the image
+        Log.Information("Updating mahjong tile: {Tile}", tile);
+
+        Image tileImage = new(tilePath);
+        await guild.ModifyAsync(
+            x => x.Icon = tileImage,
+            _defaultDiscordRequestOptions);
+        await Cache.SetAsync(cacheKey, now);
     }
 
     private static async void OnFestiveTimerElapsed(object? sender, ElapsedEventArgs e)
