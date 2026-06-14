@@ -3,6 +3,7 @@ using System.Timers;
 using System.Web;
 using Discord;
 using Discord.Net;
+using Discord.Rest;
 using Discord.WebSocket;
 using KumaKaiNi.Core;
 using KumaKaiNi.Core.Models;
@@ -25,6 +26,19 @@ internal static class Program
     private static Timer? _moonTimer;
     private static Timer? _mahjongTimer;
     private static Timer? _festiveTimer;
+
+    private static readonly Dictionary<string, string> RoleColors = new()
+    {
+        {"Red", "❤️"},
+        {"Pink", "🩷"},
+        {"Orange", "🧡"},
+        {"Yellow", "💛"},
+        {"Green", "💚"},
+        {"Teal", "🩵"},
+        {"Blue", "💙"},
+        {"Purple", "💜"},
+        {"None", "🤍"},
+    };
     
     private static async Task Main()
     {
@@ -39,6 +53,9 @@ internal static class Program
                 KumaRuntimeConfig.ApplicationName, 
                 KumaRuntimeConfig.ApplicationVersion, 
                 Environment.MachineName);
+
+            Log.Verbose("Verbose logging enabled");
+            Log.Debug("Debug logging enabled");
 
             if (string.IsNullOrEmpty(KumaDiscordConfig.DiscordToken))
             {
@@ -64,7 +81,8 @@ internal static class Program
             {
                 GatewayIntents = GatewayIntents.MessageContent |
                                  GatewayIntents.Guilds |
-                                 GatewayIntents.GuildMessages
+                                 GatewayIntents.GuildMessages |
+                                 GatewayIntents.GuildMessageReactions
             };
 
             _discordClient = new DiscordSocketClient(discordConfig);
@@ -72,6 +90,7 @@ internal static class Program
             _discordClient.Log += OnDiscordLog;
             _discordClient.Ready += OnDiscordReady;
             _discordClient.MessageReceived += OnDiscordMessageReceived;
+            _discordClient.ReactionAdded += OnDiscordReactionAdded;
 
             await _discordClient.LoginAsync(TokenType.Bot, KumaDiscordConfig.DiscordToken);
             await _discordClient.StartAsync();
@@ -267,6 +286,90 @@ internal static class Program
             isNsfw);
 
         await Redis.AddRequestToStreamAsync(kumaRequest);
+
+        if (isAdmin)
+        {
+            if (message.Content.StartsWith("!makeRoleColorsPost")) await MakeRoleColorsPost(channelId);
+        }
+    }
+
+    private static async Task OnDiscordReactionAdded(
+        Cacheable<IUserMessage, ulong> userMessage,
+        Cacheable<IMessageChannel, ulong> messageChannel,
+        SocketReaction reaction)
+    {
+        // Ignore reactions from self
+        if (reaction.UserId == _discordClient?.CurrentUser.Id) return;
+
+        IUserMessage? message = await userMessage.GetOrDownloadAsync();
+        if (message == null) return;
+
+        // Handle role colors
+        if (RoleColors.ContainsValue(reaction.Emote.Name))
+            await HandleRoleColorReaction(messageChannel.Value, message, reaction);
+    }
+
+    private static async Task HandleRoleColorReaction(IMessageChannel? messageChannel, IUserMessage userMessage, SocketReaction reaction)
+    {
+        if (messageChannel is not SocketGuildChannel guildChannel) return;
+
+        string cacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:colors:message_id";
+        string? roleColorMessageId = await Cache.GetAsync(cacheKey);
+
+        if (string.IsNullOrEmpty(roleColorMessageId)) return;
+        if (userMessage.Id.ToString() != roleColorMessageId) return;
+
+        string desiredRole = RoleColors.FirstOrDefault(x => x.Value == reaction.Emote.Name).Key;
+        SocketGuildUser? user = guildChannel.GetUser(reaction.UserId);
+
+        // Add list of colors currently on the user
+        List<ulong> rolesToRemove = [];
+        foreach (SocketRole role in user.Roles)
+        {
+            if (!RoleColors.ContainsKey(role.Name)) continue;
+            if (role.Name.ToLower() == desiredRole) continue;
+
+            rolesToRemove.Add(role.Id);
+        }
+
+        if (desiredRole != "None")
+        {
+            // Get the role ID for the requested color
+            string? roleIdCache =
+                await Cache.GetAsync($"discord:guild:{guildChannel.Guild.Id}:roles:colors:{desiredRole.ToLower()}");
+
+            if (string.IsNullOrEmpty(roleIdCache))
+            {
+                Log.Information("Updating cached role IDs for guild {GuildId}", guildChannel.Guild.Id);
+
+                foreach (SocketRole? role in guildChannel.Guild.Roles ?? [])
+                {
+                    if (!RoleColors.ContainsKey(role.Name)) continue;
+
+                    string roleCacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:colors:{role.Name.ToLower()}";
+                    await Cache.SetAsync(roleCacheKey, role.Id.ToString());
+                }
+
+                roleIdCache =
+                    await Cache.GetAsync($"discord:guild:{guildChannel.Guild.Id}:roles:colors:{desiredRole.ToLower()}");
+            }
+
+            bool parsedRoleId = ulong.TryParse(roleIdCache, out ulong roleId);
+            if (parsedRoleId)
+            {
+                // Add the role
+                await user.AddRoleAsync(roleId, _defaultDiscordRequestOptions);
+                rolesToRemove.Remove(roleId);
+            }
+        }
+
+        // Remove other colors that the user has
+        if (rolesToRemove.Count > 0) await user.RemoveRolesAsync(rolesToRemove);
+
+        await userMessage.RemoveReactionAsync(
+            reaction.Emote,
+            reaction.UserId,
+            _defaultDiscordRequestOptions);
     }
 
     private static async void OnStreamEntryReceived(NameValueEntry entry)
@@ -330,5 +433,38 @@ internal static class Program
         {
             Log.Error(ex, "An exception was thrown while sending a message to Discord");
         }
+    }
+
+    private static async Task MakeRoleColorsPost(ulong channelId)
+    {
+        if (_discordClient == null) return;
+
+        if (await _discordClient.GetChannelAsync(channelId, _defaultDiscordRequestOptions)
+            is not ISocketMessageChannel channel) return;
+        if (channel is not SocketGuildChannel guildChannel) return;
+
+        // Create the message
+        List<string> description = ["React to color your username.\n"];
+        foreach (string color in RoleColors.Keys) description.Add($"{RoleColors[color]} - {color}");
+
+        EmbedBuilder embed = new()
+        {
+            Color = new Color(0x00b6b6),
+            Title = "Color Roles",
+            Description = string.Join("\n", description)
+        };
+
+        RestUserMessage? message = await channel.SendMessageAsync(
+            embed: embed.Build(),
+            options: _defaultDiscordRequestOptions);
+
+        // Create the reactions
+        foreach (string emoji in RoleColors.Values) await message.AddReactionAsync(new Emoji(emoji));
+
+        string cacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:colors:message_id";
+        await Cache.SetAsync(cacheKey, message.Id.ToString());
+
+        Log.Information("Role colors post made for guild ID {GuildId} with message ID {MessageId}",
+            guildChannel.Guild.Id, message.Id);
     }
 }
