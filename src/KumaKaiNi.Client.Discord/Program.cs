@@ -91,6 +91,7 @@ internal static class Program
             _discordClient.Ready += OnDiscordReady;
             _discordClient.MessageReceived += OnDiscordMessageReceived;
             _discordClient.ReactionAdded += OnDiscordReactionAdded;
+            _discordClient.ReactionRemoved += OnDiscordReactionRemoved;
 
             await _discordClient.LoginAsync(TokenType.Bot, KumaDiscordConfig.DiscordToken);
             await _discordClient.StartAsync();
@@ -290,6 +291,7 @@ internal static class Program
         if (isAdmin)
         {
             if (message.Content.StartsWith("!makeRoleColorsPost")) await MakeRoleColorsPost(channelId);
+            if (message.Content.StartsWith("!makeRoleAnnouncementsPost")) await MakeRoleAnnouncementsPost(channelId);
         }
     }
 
@@ -307,8 +309,8 @@ internal static class Program
         if (messageChannel.Value is not SocketGuildChannel guildChannel) return;
 
         // Handle role colors
-        string cacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:colors:message_id";
-        string? roleColorMessageId = await Cache.GetAsync(cacheKey);
+        string roleColorsCacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:colors:message_id";
+        string? roleColorMessageId = await Cache.GetAsync(roleColorsCacheKey);
 
         if (userMessage.Id.ToString() == roleColorMessageId)
         {
@@ -317,6 +319,47 @@ internal static class Program
                 reaction.Emote,
                 reaction.UserId,
                 _defaultDiscordRequestOptions);
+
+            return;
+        }
+
+        // Handle announcement roles
+        string roleAnnouncementsCacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:announcements:message_id";
+        string? roleAnnouncementsMessageId = await Cache.GetAsync(roleAnnouncementsCacheKey);
+
+        if (userMessage.Id.ToString() == roleAnnouncementsMessageId)
+        {
+            if (reaction.Emote.Name == "🔔") await HandleRoleAnnouncementReaction(guildChannel, reaction);
+            else
+            {
+                await message.RemoveReactionAsync(
+                    reaction.Emote,
+                    reaction.UserId,
+                    _defaultDiscordRequestOptions);
+            }
+        }
+    }
+
+    private static async Task OnDiscordReactionRemoved(
+        Cacheable<IUserMessage, ulong> userMessage,
+        Cacheable<IMessageChannel, ulong> messageChannel,
+        SocketReaction reaction)
+    {
+        // Ignore reactions from self
+        if (reaction.UserId == _discordClient?.CurrentUser.Id) return;
+
+        IUserMessage? message = await userMessage.GetOrDownloadAsync();
+        if (message == null) return;
+
+        if (messageChannel.Value is not SocketGuildChannel guildChannel) return;
+
+        // Handle announcement roles
+        string roleAnnouncementsCacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:announcements:message_id";
+        string? roleAnnouncementsMessageId = await Cache.GetAsync(roleAnnouncementsCacheKey);
+
+        if (userMessage.Id.ToString() == roleAnnouncementsMessageId)
+        {
+            if (reaction.Emote.Name == "🔔") await HandleRoleAnnouncementReaction(guildChannel, reaction, remove: true);
         }
     }
 
@@ -343,7 +386,7 @@ internal static class Program
 
             if (string.IsNullOrEmpty(roleIdCache))
             {
-                Log.Information("Updating cached role IDs for guild {GuildId}", guildChannel.Guild.Id);
+                Log.Information("Updating cached color role IDs for guild {GuildId}", guildChannel.Guild.Id);
 
                 foreach (SocketRole? role in guildChannel.Guild.Roles ?? [])
                 {
@@ -368,6 +411,37 @@ internal static class Program
 
         // Remove other colors that the user has
         if (rolesToRemove.Count > 0) await user.RemoveRolesAsync(rolesToRemove);
+    }
+
+    private static async Task HandleRoleAnnouncementReaction(SocketGuildChannel guildChannel, SocketReaction reaction, bool remove = false)
+    {
+        SocketGuildUser? user = guildChannel.GetUser(reaction.UserId);
+
+        string roleCacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:announcements:id";
+        string? roleIdCache = await Cache.GetAsync(roleCacheKey);
+
+        if (string.IsNullOrEmpty(roleIdCache))
+        {
+            Log.Information("Updating cached announcement role ID for guild {GuildId}", guildChannel.Guild.Id);
+
+            foreach (SocketRole? role in guildChannel.Guild.Roles ?? [])
+            {
+                if (role.Name != "Announcements") continue;
+
+                await Cache.SetAsync(roleCacheKey, role.Id.ToString());
+                break;
+            }
+
+            roleIdCache = await Cache.GetAsync(roleCacheKey);
+        }
+
+        bool parsedRoleId = ulong.TryParse(roleIdCache, out ulong roleId);
+        if (parsedRoleId)
+        {
+            // Add or remove the role
+            if (remove) await user.RemoveRoleAsync(roleId, _defaultDiscordRequestOptions);
+            else await user.AddRoleAsync(roleId, _defaultDiscordRequestOptions);
+        }
     }
 
     private static async void OnStreamEntryReceived(NameValueEntry entry)
@@ -463,6 +537,36 @@ internal static class Program
         await Cache.SetAsync(cacheKey, message.Id.ToString());
 
         Log.Information("Role colors post made for guild ID {GuildId} with message ID {MessageId}",
+            guildChannel.Guild.Id, message.Id);
+    }
+
+    private static async Task MakeRoleAnnouncementsPost(ulong channelId)
+    {
+        if (_discordClient == null) return;
+
+        if (await _discordClient.GetChannelAsync(channelId, _defaultDiscordRequestOptions)
+            is not ISocketMessageChannel channel) return;
+        if (channel is not SocketGuildChannel guildChannel) return;
+
+        // Create the message
+        EmbedBuilder embed = new()
+        {
+            Color = new Color(0x00b6b6),
+            Title = "Announcement Role",
+            Description = "React to receive a ping for announcements."
+        };
+
+        RestUserMessage? message = await channel.SendMessageAsync(
+            embed: embed.Build(),
+            options: _defaultDiscordRequestOptions);
+
+        // Create the reaction
+        await message.AddReactionAsync(new Emoji("🔔"));
+
+        string cacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:announcements:message_id";
+        await Cache.SetAsync(cacheKey, message.Id.ToString());
+
+        Log.Information("Role announcements post made for guild ID {GuildId} with message ID {MessageId}",
             guildChannel.Guild.Id, message.Id);
     }
 }
