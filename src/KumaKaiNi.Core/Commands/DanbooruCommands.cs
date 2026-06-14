@@ -34,7 +34,7 @@ public static class DanbooruCommands
     {
         if (!await IsDanbooruAllowedAsync(kumaRequest)) return new KumaResponse();
 
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:g", "~rating:s"]);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:g"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
@@ -45,7 +45,7 @@ public static class DanbooruCommands
     {
         if (!await IsDanbooruAllowedAsync(kumaRequest)) return new KumaResponse();
         
-        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["rating:q"]);
+        string[] parsedTags = await ParseDanbooruTags(kumaRequest.CommandArgs, ["~rating:s", "~rating:q"]);
         ResponseMedia? media = await GetDanbooruImageAsync(parsedTags, kumaRequest.SourceSystem, kumaRequest.ChannelId, kumaRequest.ChannelIsNsfw || kumaRequest.ChannelIsPrivate);
 
         return media?.Url != null ? new KumaResponse { Media = media } : new KumaResponse("Nothing found!");
