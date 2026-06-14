@@ -304,21 +304,24 @@ internal static class Program
         IUserMessage? message = await userMessage.GetOrDownloadAsync();
         if (message == null) return;
 
+        if (messageChannel.Value is not SocketGuildChannel guildChannel) return;
+
         // Handle role colors
-        if (RoleColors.ContainsValue(reaction.Emote.Name))
-            await HandleRoleColorReaction(messageChannel.Value, message, reaction);
-    }
-
-    private static async Task HandleRoleColorReaction(IMessageChannel? messageChannel, IUserMessage userMessage, SocketReaction reaction)
-    {
-        if (messageChannel is not SocketGuildChannel guildChannel) return;
-
         string cacheKey = $"discord:guild:{guildChannel.Guild.Id}:roles:colors:message_id";
         string? roleColorMessageId = await Cache.GetAsync(cacheKey);
 
-        if (string.IsNullOrEmpty(roleColorMessageId)) return;
-        if (userMessage.Id.ToString() != roleColorMessageId) return;
+        if (userMessage.Id.ToString() == roleColorMessageId)
+        {
+            if (RoleColors.ContainsValue(reaction.Emote.Name)) await HandleRoleColorReaction(guildChannel, reaction);
+            await message.RemoveReactionAsync(
+                reaction.Emote,
+                reaction.UserId,
+                _defaultDiscordRequestOptions);
+        }
+    }
 
+    private static async Task HandleRoleColorReaction(SocketGuildChannel guildChannel, SocketReaction reaction)
+    {
         string desiredRole = RoleColors.FirstOrDefault(x => x.Value == reaction.Emote.Name).Key;
         SocketGuildUser? user = guildChannel.GetUser(reaction.UserId);
 
@@ -365,11 +368,6 @@ internal static class Program
 
         // Remove other colors that the user has
         if (rolesToRemove.Count > 0) await user.RemoveRolesAsync(rolesToRemove);
-
-        await userMessage.RemoveReactionAsync(
-            reaction.Emote,
-            reaction.UserId,
-            _defaultDiscordRequestOptions);
     }
 
     private static async void OnStreamEntryReceived(NameValueEntry entry)
